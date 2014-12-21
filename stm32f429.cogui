@@ -2,12 +2,7 @@
 <workbench version="2.0">
 <workbenchAdvisor/>
 <window>
-<fastViewData fastViewLocation="1024">
-<orientation position="512" view="org.eclipse.debug.ui.ExpressionView"/>
-<orientation position="512" view="org.coocox.codebugger.trace.ui.traceview"/>
-<orientation position="512" view="org.eclipse.ui.console.ConsoleView"/>
-<orientation position="512" view="org.eclipse.debug.ui.VariableView"/>
-</fastViewData>
+<fastViewData fastViewLocation="1024"/>
 <perspectiveBar/>
 <page focus="true" label="Workspace - CooCox CoBuilder">
 <editors>
@@ -16,23 +11,13 @@
 <folder appearance="1" expanded="2">
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
 <part id="0"/>
-<part id="1"/>
-<part id="2"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
-<editor id="org.coocox.welcome.ui.WelcomePage" name="" partName="welcome" title="welcome" tooltip="" workbook="DefaultEditorWorkbook">
-<input factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory">&#x0A;<org.coocox.welcome.ui.WelcomePage/>
-</input>
-</editor>
-<editor id="org.coocox.builder.ui.editors.repository.RepositoryBrowser" name="Repository" partName="Repository" title="Repository" tooltip="Repository" workbook="DefaultEditorWorkbook">
-<input factoryID="org.coocox.component.ui.editors.repository.RepositoryElementFactory">&#x0A;<subPage horizontalPosition="0" selectedItemId="0" subPageIndex="2" verticalPosition="0"/>
-</input>
-</editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" partName="main.c" path="C:/STM32/OSC/Show_10_Oszi/main.c" title="main.c" tooltip="C:/STM32/OSC/Show_10_Oszi/main.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32f429/main.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="904" selectionTopPixel="270"/>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_stm32f4xx.c" partName="startup_stm32f4xx.c" path="D:/uProjects/STM32F429i-Disco_OSC/cmsis_boot/startup/startup_stm32f4xx.c" title="startup_stm32f4xx.c" tooltip="D:/uProjects/STM32F429i-Disco_OSC/cmsis_boot/startup/startup_stm32f4xx.c" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/stm32f429/cmsis_boot/startup/startup_stm32f4xx.c"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="15917" selectionTopPixel="5301"/>
 </editor>
 </editors>
 <views>
@@ -40,14 +25,13 @@
 <viewState CommonNavigator.LINKING_ENABLED="0" horizontalPosition="0" org.eclipse.ui.navigator.resources.workingSets.showTopLevelWorkingSets="0" verticalPosition="0">
 <expanded>
 <element path="/stm32f429"/>
+<element path="/stm32f429/cmsis_boot"/>
+<element path="/stm32f429/cmsis_boot/startup"/>
 </expanded>
 <selection>
-<element path="/stm32f429/cmsis_boot"/>
+<element path="/stm32f429"/>
 </selection>
 </viewState>
-</view>
-<view id="org.coocox.component.ui.ComponentView" partName="Components">
-<viewState/>
 </view>
 <view id="org.coocox.codebugger.trace.ui.traceview" partName="Semihosting">
 <viewState/>
@@ -55,20 +39,17 @@
 <view id="org.eclipse.debug.ui.DebugView" partName="Debug">
 <viewState/>
 </view>
+<view id="org.coocox.component.ui.view.ComponentView" partName="Component View">
+<viewState/>
+</view>
 <view id="org.eclipse.ui.console.ConsoleView" partName="Console">
 <viewState/>
 </view>
-<view id="org.eclipse.debug.ui.VariableView" partName="Variables">
-<viewState/>
-</view>
-<view id="org.coocox.component.ui.Help" partName="Help">
-<viewState/>
-</view>
+<view id="org.eclipse.debug.ui.VariableView" partName="Variables"/>
 </views>
-<perspectives activePart="org.eclipse.cdt.ui.editor.CEditor" activePerspective="org.coocox.builder.perspective.CoBuilder">
+<perspectives activePart="org.eclipse.ui.console.ConsoleView" activePerspective="org.coocox.builder.perspective.CoBuilder">
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.coocox.builder.ui.PerspectiveCoBuilder" id="org.coocox.builder.perspective.CoBuilder" label="CooCox CoBuilder"/>
-<alwaysOnActionSet id="org.coocox.component.ui.actionSet"/>
 <alwaysOnActionSet id="org.coocox.welcome.ui.actionSet"/>
 <alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
 <alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
@@ -77,46 +58,46 @@
 <alwaysOnActionSet id="org.eclipse.ui.actionSet.keyBindings"/>
 <alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
 <alwaysOnActionSet id="org.eclipse.debug.ui.breakpointActionSet"/>
-<alwaysOnActionSet id="org.coocox.userspace.actionSet"/>
-<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryAction"/>
-<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showConsoleAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showDebugAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.ShowDisassemblyAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showExpressionsAction"/>
-<hide_menu_item_id id="org.coocox.codebugger.configuration.showDebugAction"/>
-<hide_menu_item_id id="org.coocox.codebugger.configuration.showConsoleAction"/>
-<hide_menu_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
-<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
-<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryBrowserAction"/>
-<hide_menu_item_id id="org.coocox.codebugger.configuration.showVariablesAction"/>
-<hide_menu_item_id id="org.coocox.builder.ui.openProjectExplorerAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.trace.actions.ShowTraceControlAction"/>
-<hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showMemoryBrowserAction"/>
+<hide_menu_item_id id="org.coocox.builder.ui.openProjectExplorerAction"/>
 <hide_menu_item_id id="org.coocox.codebugger.configuration.showRegistersAction"/>
+<hide_menu_item_id id="org.coocox.codebugger.configuration.showVariablesAction"/>
+<hide_menu_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
+<hide_menu_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
+<hide_toolbar_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
 <hide_toolbar_item_id id="org.eclipse.cdt.debug.internal.ui.actions.ToggleInstructionStepModeAction"/>
 <hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
-<hide_toolbar_item_id id="org.eclipse.debug.ui.commands.TerminateAndRelaunch"/>
-<view id="org.coocox.component.ui.ComponentView"/>
 <view id="org.coocox.builder.ui.views.ProjectView"/>
-<view id="org.coocox.component.ui.Help"/>
+<view id="org.coocox.component.ui.view.ComponentView"/>
 <view id="org.eclipse.ui.console.ConsoleView"/>
 <fastViewBars/>
 <layout>
 <mainWindow>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@88feb7">
-<folder activePageID="org.coocox.component.ui.ComponentView" appearance="2" expanded="2">
-<page content="org.coocox.component.ui.ComponentView" label="Components"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@73766d">
+<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
+<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<page content="org.coocox.component.ui.view.ComponentView" label="Component View"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
 <part id="0"/>
+<part id="1"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="stickyFolderRight" ratio="0.7497309" ratioLeft="1393" ratioRight="465" relationship="2" relative="org.eclipse.ui.internal.ViewStack@88feb7">
+<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@73766d">
 <folder appearance="2" expanded="2">
 <page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@1121e48" ratio="0.79216355" ratioLeft="465" ratioRight="122" relationship="4" relative="org.eclipse.ui.internal.ViewStack@88feb7">
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1f546fd" ratio="0.69924814" ratioLeft="744" ratioRight="320" relationship="4" relative="org.eclipse.ui.internal.ViewStack@73766d">
 <folder activePageID="org.eclipse.ui.console.ConsoleView" appearance="2" expanded="2">
 <page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
@@ -124,26 +105,13 @@
 </presentation>
 </folder>
 </info>
-<info part="org.coocox.builder.ui.exampleView" ratio="0.21959096" ratioLeft="408" ratioRight="1450" relationship="2" relative="org.eclipse.ui.internal.ViewStack@88feb7"/>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@322d0e" ratio="0.82392025" ratioLeft="496" ratioRight="106" relationship="2" relative="org.coocox.builder.ui.exampleView">
-<folder activePageID="org.coocox.component.ui.Help" appearance="2" expanded="2">
-<page content="org.coocox.component.ui.Help" label="Help"/>
-<page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
+<info part="org.eclipse.ui.editorss" ratio="0.21966527" ratioLeft="420" ratioRight="1492" relationship="2" relative="org.eclipse.ui.internal.ViewStack@73766d"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@641344" ratio="0.71983916" ratioLeft="1074" ratioRight="418" relationship="2" relative="org.eclipse.ui.editorss">
+<folder appearance="2" expanded="2">
 <page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
+<page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
 <page content="org.coocox.coassistant.view.CoAssistantView" label="LabelNotFound"/>
-<page content="org.coocox.builder.ui.MoreExampleView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
-</presentation>
-</folder>
-</info>
-<info part="org.eclipse.ui.editorss" ratio="0.4490446" ratioLeft="423" ratioRight="519" relationship="4" relative="org.coocox.builder.ui.exampleView"/>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@ab217" ratio="0.36942676" ratioLeft="348" ratioRight="594" relationship="4" relative="org.eclipse.ui.internal.ViewStack@88feb7">
-<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
-<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
-<part id="0"/>
-</presentation>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
 </folder>
 </info>
 </mainWindow>
@@ -151,7 +119,6 @@
 </perspective>
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.coocox.codebugger.configuration.ui.Perspective" id="org.coocox.codebugger.configuration.perspective" label="CoDebugger"/>
-<alwaysOnActionSet id="org.coocox.component.ui.actionSet"/>
 <alwaysOnActionSet id="org.coocox.welcome.ui.actionSet"/>
 <alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
 <alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
@@ -161,42 +128,38 @@
 <alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
 <alwaysOnActionSet id="org.eclipse.debug.ui.breakpointActionSet"/>
 <alwaysOnActionSet id="org.eclipse.debug.ui.debugActionSet"/>
+<hide_menu_item_id id="org.coocox.builder.ui.newFile"/>
 <hide_menu_item_id id="org.coocox.builder.ui.newFolder"/>
-<hide_menu_item_id id="org.coocox.welcome.ui.action.repository"/>
-<hide_menu_item_id id="org.eclipse.ui.file.save"/>
-<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
-<hide_menu_item_id id="org.coocox.builder.ui.rebuild"/>
-<hide_menu_item_id id="org.eclipse.ui.file.saveAll"/>
 <hide_menu_item_id id="org.coocox.builder.ui.openFile"/>
+<hide_menu_item_id id="org.eclipse.ui.file.save"/>
 <hide_menu_item_id id="org.eclipse.ui.file.saveAs"/>
+<hide_menu_item_id id="org.eclipse.ui.file.saveAll"/>
 <hide_menu_item_id id="org.coocox.builder.rcp.projectMenu"/>
 <hide_menu_item_id id="org.coocox.builder.rcp.flashMenu"/>
-<hide_menu_item_id id="org.coocox.builder.ui.debug"/>
 <hide_menu_item_id id="org.coocox.builder.ui.showHelpViewAction"/>
-<hide_menu_item_id id="org.coocox.builder.ui.showHelpViewAction1"/>
-<hide_menu_item_id id="org.coocox.builder.ui.newFile"/>
-<hide_menu_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
-<hide_menu_item_id id="org.coocox.builder.ui.builderDefaultLayout"/>
-<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
-<hide_menu_item_id id="org.coocox.builder.ui.build"/>
-<hide_menu_item_id id="org.coocox.builder.ui.showOutlineAction"/>
-<hide_menu_item_id id="org.coocox.welcome.ui.action.welcome"/>
-<hide_menu_item_id id="org.coocox.builder.ui.showPeripheralsAction"/>
 <hide_menu_item_id id="org.coocox.component.ui.ShowRepositoryAction"/>
-<hide_toolbar_item_id id="org.coocox.builder.ui.actions.TargetManageAction"/>
+<hide_menu_item_id id="org.coocox.builder.ui.debug"/>
+<hide_menu_item_id id="org.coocox.builder.ui.build"/>
+<hide_menu_item_id id="org.coocox.builder.ui.rebuild"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.refactoring.menu"/>
+<hide_menu_item_id id="org.eclipse.jdt.ui.source.menu"/>
+<hide_menu_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
+<hide_menu_item_id id="org.coocox.welcome.ui.action.welcome"/>
+<hide_menu_item_id id="org.coocox.welcome.ui.action.repository"/>
 <hide_toolbar_item_id id="org.coocox.builder.ui.newProject"/>
-<hide_toolbar_item_id id="org.coocox.welcome.ui.action.repository"/>
-<hide_toolbar_item_id id="org.eclipse.ui.file.save"/>
-<hide_toolbar_item_id id="org.coocox.builder.ui.rebuild"/>
-<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideFlashEraseAction"/>
-<hide_toolbar_item_id id="org.coocox.builder.ui.debug"/>
 <hide_toolbar_item_id id="org.coocox.builder.ui.newFile"/>
-<hide_toolbar_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
-<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
-<hide_toolbar_item_id id="org.coocox.builder.ui.build"/>
-<hide_toolbar_item_id id="org.coocox.welcome.ui.action.welcome"/>
-<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideProgramDownloadAction"/>
+<hide_toolbar_item_id id="org.eclipse.ui.file.save"/>
 <hide_toolbar_item_id id="org.coocox.component.ui.ShowRepositoryAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.build"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.rebuild"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.debug"/>
+<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideProgramDownloadAction"/>
+<hide_toolbar_item_id id="org.coocox.codebugger.configuration.coideFlashEraseAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.actions.TargetManageAction"/>
+<hide_toolbar_item_id id="org.coocox.builder.ui.actions.ConfigurationAction"/>
+<hide_toolbar_item_id id="org.coocox.welcome.ui.action.welcome"/>
+<hide_toolbar_item_id id="org.coocox.welcome.ui.action.repository"/>
+<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
 <view id="org.eclipse.ui.console.ConsoleView"/>
 <view id="org.eclipse.debug.ui.DebugView"/>
 <view id="org.coocox.codebugger.trace.ui.traceview"/>
@@ -204,41 +167,56 @@
 <view id="org.coocox.builder.ui.views.ProjectView"/>
 <fastViewBars/>
 <viewLayoutRec closeable="false" id="org.eclipse.debug.ui.DebugView"/>
-<layout>&#x0A;<mainWindow>&#x0A;<info folder="true" part="org.eclipse.ui.internal.ViewStack@173ab0d">&#x0A;<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+<layout>
+<mainWindow>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@12004f4">
+<folder activePageID="org.coocox.builder.ui.views.ProjectView" appearance="2" expanded="2">
+<page content="org.coocox.builder.ui.views.ProjectView" label="Project"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@173ab0d">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<info folder="true" part="stickyFolderRight" ratio="0.74964637" ratioLeft="1060" ratioRight="354" relationship="2" relative="org.eclipse.ui.internal.ViewStack@12004f4">
+<folder appearance="2" expanded="2">
+<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
 <page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@1b0d8be" ratio="0.69957536" ratioLeft="659" ratioRight="283" relationship="4" relative="org.eclipse.ui.internal.ViewStack@173ab0d">&#x0A;<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">&#x0A;<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1656a4f" ratio="0.69975185" ratioLeft="564" ratioRight="242" relationship="4" relative="org.eclipse.ui.internal.ViewStack@12004f4">
+<folder activePageID="org.eclipse.debug.ui.DebugView" appearance="2" expanded="2">
+<page content="org.eclipse.ui.console.ConsoleView" label="Console"/>
 <page content="org.eclipse.debug.ui.DebugView" label="Debug"/>
 <page content="org.eclipse.debug.ui.BreakpointView" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
 <part id="1"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@165c08f" ratio="0.5" ratioLeft="956" ratioRight="956" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1b0d8be">&#x0A;<folder activePageID="org.eclipse.debug.ui.VariableView" appearance="2" expanded="2">&#x0A;<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@1f028e8" ratio="0.5" ratioLeft="707" ratioRight="707" relationship="2" relative="org.eclipse.ui.internal.ViewStack@1656a4f">
+<folder activePageID="org.coocox.codebugger.trace.ui.traceview" appearance="2" expanded="2">
+<page content="org.coocox.codebugger.trace.ui.traceview" label="Semihosting"/>
 <page content="org.eclipse.debug.ui.VariableView" label="Variables"/>
 <page content="org.eclipse.debug.ui.ExpressionView" label="LabelNotFound"/>
 <page content="org.eclipse.debug.ui.MemoryView" label="LabelNotFound"/>
 <page content="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser" label="LabelNotFound"/>
-<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">&#x0A;<part id="0"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
 <part id="1"/>
 </presentation>
 </folder>
 </info>
-<info folder="true" part="org.eclipse.ui.internal.ViewStack@145191c" ratio="0.75" ratioLeft="1434" ratioRight="478" relationship="2" relative="org.eclipse.ui.internal.ViewStack@173ab0d">&#x0A;<folder appearance="2" expanded="2">&#x0A;<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="LabelNotFound"/>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@db1fb" ratio="0.74964637" ratioLeft="1060" ratioRight="354" relationship="2" relative="org.eclipse.ui.internal.ViewStack@12004f4">
+<folder appearance="2" expanded="2">
+<page content="org.eclipse.cdt.dsf.debug.ui.disassembly.view" label="LabelNotFound"/>
 <page content="org.eclipse.ui.views.ContentOutline" label="LabelNotFound"/>
 <page content="org.eclipse.debug.ui.RegisterView" label="LabelNotFound"/>
 <page content="org.coocox.coassistant.view.CoAssistantView_debug" label="LabelNotFound"/>
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory"/>
 </folder>
 </info>
-<info part="org.eclipse.ui.editorss" ratio="0.29986054" ratioLeft="430" ratioRight="1004" relationship="2" relative="org.eclipse.ui.internal.ViewStack@173ab0d"/>
+<info part="org.eclipse.ui.editorss" ratio="0.3" ratioLeft="318" ratioRight="742" relationship="2" relative="org.eclipse.ui.internal.ViewStack@12004f4"/>
 </mainWindow>
 </layout>
 </perspective>
@@ -246,167 +224,87 @@
 <workingSets/>
 <navigationHistory>
 <editors>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/uboszi_lib/oszi.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/uboszi_lib/oszi.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/ub_lib/stm32_ub_lcd_ili9341.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/ub_lib/stm32_ub_lcd_ili9341.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/uboszi_lib/menu.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/ub_lib/stm32_ub_sdram.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/main.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/uboszi_lib/menu.c"/>
 <editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage">
 <org.coocox.welcome.ui.WelcomePage/>
 </editor>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/main.c"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/uboszi_lib/menu.h"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
+<editor factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" uri="file:/C:/Users/Mitek/AppData/Local/Temp/ccONI5di.s"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/cmsis_boot/startup/startup_stm32f4xx.c"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage">
+<org.coocox.welcome.ui.WelcomePage/>
+</editor>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/STM32F429VI/STM32F429VI.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/STM32F429VI/main.c"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage">
+<org.coocox.welcome.ui.WelcomePage/>
+</editor>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" path="/Test/components/STM32F429xx_cmsisboot/startup_stm32f429xx.S"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage">
+<org.coocox.welcome.ui.WelcomePage/>
+</editor>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/stm32f429/cmsis_boot/startup/startup_stm32f4xx.c"/>
+<editor factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor">
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</editor>
 </editors>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="8936" y="0"/>
+<item historyLabel="Welcome" index="0"/>
+<item historyLabel="Configuration" index="1"/>
+<item historyLabel="ccONI5di.s" index="2">
+<position info="not_deleted" x="3078" y="20"/>
 </item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="2248" y="8"/>
+<item historyLabel="Configuration" index="1"/>
+<item historyLabel="startup_stm32f4xx.c" index="3">
+<position info="not_deleted" x="6702" y="0"/>
 </item>
-<item historyLabel="stm32_ub_sdram.h" index="5">
-<position info="not_deleted" x="706" y="15"/>
+<item historyLabel="Configuration" index="4"/>
+<item historyLabel="startup_stm32f4xx.c" index="3">
+<position info="not_deleted" x="6702" y="0"/>
 </item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="1253" y="0"/>
+<item historyLabel="Configuration" index="4"/>
+<item historyLabel="startup_stm32f4xx.c" index="3">
+<position info="not_deleted" x="16511" y="0"/>
 </item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31788" y="0"/>
-</item>
-<item historyLabel="stm32_ub_sdram.h" index="5">
-<position info="not_deleted" x="706" y="15"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="2646" y="16"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="1253" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="2646" y="16"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31788" y="0"/>
-</item>
-<item historyLabel="stm32_ub_sdram.h" index="5">
-<position info="not_deleted" x="706" y="15"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="1253" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="2646" y="16"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31788" y="0"/>
-</item>
-<item historyLabel="oszi.h" index="1">
-<position info="not_deleted" x="3493" y="10"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="2646" y="16"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31788" y="0"/>
-</item>
-<item historyLabel="stm32_ub_sdram.h" index="5">
-<position info="not_deleted" x="706" y="15"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="1253" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="1708" y="22"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31788" y="0"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31479" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="1708" y="22"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="5984" y="16"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31569" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="5944" y="35"/>
-</item>
-<item historyLabel="oszi.c" index="0">
-<position info="not_deleted" x="31102" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="5944" y="35"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="menu.c" index="4">
-<position info="not_deleted" x="25075" y="16"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="oszi.h" index="1">
-<position info="not_deleted" x="3493" y="10"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.h" index="2">
-<position info="not_deleted" x="1708" y="22"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="stm32_ub_lcd_ili9341.c" index="3">
-<position info="not_deleted" x="5944" y="35"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="stm32_ub_sdram.h" index="5">
-<position info="not_deleted" x="706" y="15"/>
-</item>
-<item historyLabel="main.c" index="6">
-<position info="not_deleted" x="746" y="0"/>
-</item>
-<item historyLabel="menu.c" index="7">
-<position/>
-</item>
-<item historyLabel="welcome" index="8"/>
-<item historyLabel="main.c" index="9">
-<position info="not_deleted" x="203" y="0"/>
-</item>
-<item historyLabel="menu.c" index="7">
-<position info="not_deleted" x="28713" y="0"/>
-</item>
-<item historyLabel="menu.h" index="10">
+<item historyLabel="Configuration" index="5"/>
+<item historyLabel="Welcome" index="6"/>
+<item historyLabel="STM32F429VI.c" index="7">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="menu.c" index="7">
-<position info="not_deleted" x="28964" y="0"/>
+<item historyLabel="main.c" index="8">
+<position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="menu.h" index="10">
-<position info="not_deleted" x="5623" y="12"/>
+<item historyLabel="Configuration" index="9"/>
+<item historyLabel="main.c" index="8">
+<position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="menu.c" index="7">
-<position info="not_deleted" x="28767" y="0"/>
+<item historyLabel="STM32F429VI.c" index="7">
+<position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="menu.h" index="10">
-<position info="not_deleted" x="5623" y="12"/>
+<item historyLabel="Welcome" index="6"/>
+<item historyLabel="Welcome" index="10"/>
+<item historyLabel="startup_stm32f429xx.S" index="11">
+<position info="not_deleted" x="4038" y="0"/>
 </item>
-<item historyLabel="menu.c" index="7">
-<position info="not_deleted" x="28767" y="0"/>
+<item historyLabel="Welcome" index="12"/>
+<item historyLabel="startup_stm32f4xx.c" index="13">
+<position info="not_deleted" x="16082" y="0"/>
 </item>
-<item active="true" historyLabel="main.c" index="9">
-<position info="not_deleted" x="203" y="0"/>
+<item historyLabel="Configuration" index="14"/>
+<item historyLabel="startup_stm32f4xx.c" index="13">
+<position info="not_deleted" x="16082" y="0"/>
+</item>
+<item active="true" historyLabel="startup_stm32f4xx.c" index="13">
+<position info="not_deleted" x="15917" y="0"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -415,50 +313,60 @@
 <actionBarAdvisor/>
 </window>
 <mruList>
-<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.ui.systemExternalEditor" name="stm32f429.coproj" tooltip="C:\STM32\OSC\Show_10_Oszi\stm32f429.coproj">
-<persistable uri="file:/C:/STM32/OSC/Show_10_Oszi/stm32f429.coproj"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor" name="" tooltip="">
+<persistable>
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="menu.h" tooltip="stm32f429/uboszi_lib/menu.h">
-<persistable path="/stm32f429/uboszi_lib/menu.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="startup_stm32f4xx.c" tooltip="stm32f429/cmsis_boot/startup/startup_stm32f4xx.c">
+<persistable path="/stm32f429/cmsis_boot/startup/startup_stm32f4xx.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="menu.c" tooltip="stm32f429/uboszi_lib/menu.c">
-<persistable path="/stm32f429/uboszi_lib/menu.c"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
+<persistable>
+<org.coocox.welcome.ui.WelcomePage/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_sdram.h" tooltip="stm32f429/ub_lib/stm32_ub_sdram.h">
-<persistable path="/stm32f429/ub_lib/stm32_ub_sdram.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="startup_stm32f429xx.S" tooltip="Test/components/STM32F429xx_cmsisboot/startup_stm32f429xx.S">
+<persistable path="/Test/components/STM32F429xx_cmsisboot/startup_stm32f429xx.S"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_lcd_ili9341.c" tooltip="stm32f429/ub_lib/stm32_ub_lcd_ili9341.c">
-<persistable path="/stm32f429/ub_lib/stm32_ub_lcd_ili9341.c"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
+<persistable>
+<org.coocox.welcome.ui.WelcomePage/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_lcd_ili9341.h" tooltip="stm32f429/ub_lib/stm32_ub_lcd_ili9341.h">
-<persistable path="/stm32f429/ub_lib/stm32_ub_lcd_ili9341.h"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor" name="" tooltip="">
+<persistable>
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_graphic2d.h" tooltip="stm32f429/ub_lib/stm32_ub_graphic2d.h">
-<persistable path="/stm32f429/ub_lib/stm32_ub_graphic2d.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="main.c" tooltip="STM32F429VI/main.c">
+<persistable path="/STM32F429VI/main.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="oszi.h" tooltip="stm32f429/uboszi_lib/oszi.h">
-<persistable path="/stm32f429/uboszi_lib/oszi.h"/>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="STM32F429VI.c" tooltip="STM32F429VI/STM32F429VI.c">
+<persistable path="/STM32F429VI/STM32F429VI.c"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="oszi.c" tooltip="stm32f429/uboszi_lib/oszi.c">
-<persistable path="/stm32f429/uboszi_lib/oszi.c"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.welcome.ui.WelcomePage" name="" tooltip="">
+<persistable>
+<org.coocox.welcome.ui.WelcomePage/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_systick.h" tooltip="stm32f429/ub_lib/stm32_ub_systick.h">
-<persistable path="/stm32f429/ub_lib/stm32_ub_systick.h"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor" name="" tooltip="">
+<persistable>
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_systick.c" tooltip="stm32f429/ub_lib/stm32_ub_systick.c">
-<persistable path="/stm32f429/ub_lib/stm32_ub_systick.c"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor" name="" tooltip="">
+<persistable>
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</persistable>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="stm32_ub_uart.c" tooltip="stm32f429/ub_lib/stm32_ub_uart.c">
-<persistable path="/stm32f429/ub_lib/stm32_ub_uart.c"/>
+<file factoryID="org.eclipse.ui.ide.FileStoreEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="ccONI5di.s" tooltip="C:\Users\Mitek\AppData\Local\Temp\ccONI5di.s">
+<persistable uri="file:/C:/Users/Mitek/AppData/Local/Temp/ccONI5di.s"/>
 </file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="adc.c" tooltip="stm32f429/uboszi_lib/adc.c">
-<persistable path="/stm32f429/uboszi_lib/adc.c"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="adc.h" tooltip="stm32f429/uboszi_lib/adc.h">
-<persistable path="/stm32f429/uboszi_lib/adc.h"/>
-</file>
-<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="fft.c" tooltip="stm32f429/uboszi_lib/fft.c">
-<persistable path="/stm32f429/uboszi_lib/fft.c"/>
+<file factoryID="org.coocox.builder.ui.persistent.PersistentElementFactory" id="org.coocox.builder.ui.editors.ConfigEditor" name="" tooltip="">
+<persistable>
+<org.coocox.builder.ui.editors.ConfigEditor/>
+</persistable>
 </file>
 </mruList>
 </workbench>

@@ -299,17 +299,22 @@ void Default_Reset_Handler(void)
   
   /* Zero fill the bss segment.  This is done with inline assembly since this
      will clear the value of pulDest if it is not kept in a register. */
-  __asm("  ldr     r0, =_sbss\n"
-        "  ldr     r1, =_ebss\n"
-        "  mov     r2, #0\n"
-        "  .thumb_func\n"
+	__asm(
+		"	LDR		R0, =_sbss\n"
+        "	LDR		R1, =_ebss\n"
+        "	MOVS	R2, #0\n"
+		"	MOVS	R3, #4\n"
+		"	B		zero_init\n"
         "zero_loop:\n"
-        "    cmp     r0, r1\n"
-        "    it      lt\n"
-        "    strlt   r2, [r0], #4\n"
-        "    blt     zero_loop");
+		"	STR		R2, [R0]\n"
+		"	ADD		R0, R0, R3\n"
+		"zero_init:\n"
+		"	CMP		R0, R1\n"
+		"	BCC		zero_loop\n"
+	);
+
 #ifdef __FPU_USED
-  /* Enable FPU.*/ 
+  /* Enable FPU.*/
   __asm("  LDR.W R0, =0xE000ED88\n"
         "  LDR R1, [R0]\n"
         "  ORR R1, R1, #(0xF << 20)\n"
