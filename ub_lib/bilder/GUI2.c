@@ -2528,4 +2528,3 @@ UB_Image GUI2 = {
   196,         // Breite des Bildes (in Pixel)
   102,         // Hoehe des Bildes  (in Pixel)
 };
-

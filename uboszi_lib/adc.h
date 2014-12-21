@@ -26,19 +26,17 @@
 // (keine Nummer doppelt und von 0 beginnend)
 //--------------------------------------------------------------
 typedef enum {
-  ADC_PA5 = 0,  // PA5
-  ADC_PA3 = 1,  // PA3
-  ADC_PA7 = 2   // PA7
-}ADC1d_NAME_t;
-
-#define  ADC1d_ANZ   2 // Anzahl von ADC1d_NAME_t (maximum = 16)
-
+	ADC_FIRST	= 0,
+	ADC_PA5		= 0,	// PA5
+	ADC_PA7		= 1,	// PA7
+	ADC1d_ANZ	= 2
+} ADC1d_NAME_t;
 
 //--------------------------------------------------------------
 // Defines vom ADC (nicht ‰ndern)
 //--------------------------------------------------------------
-#define  ADC_ARRAY_LEN         300 // Anzahl der Messwerte (pro Kanal)
-#define  ADC_HALF_ARRAY_LEN    ADC_ARRAY_LEN/2 
+#define  ADC_ARRAY_LEN         300	// Anzahl der Messwerte (pro Kanal)
+#define  ADC_HALF_ARRAY_LEN    ADC_ARRAY_LEN / 2
 
 
 
@@ -47,9 +45,9 @@ typedef enum {
 // Jeder Buffer ist so groﬂ wie ein kompletter Oszi-Screen
 // (300 Pixel x 2 Kan‰le x 16bit)
 //--------------------------------------------------------------
-volatile uint16_t ADC_DMA_Buffer_A[ADC1d_ANZ*ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_B[ADC1d_ANZ*ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_C[ADC1d_ANZ*ADC_ARRAY_LEN];  //  (C) sortierte Daten
+extern volatile uint16_t ADC_DMA_Buffer_A[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
+extern volatile uint16_t ADC_DMA_Buffer_B[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
+extern volatile uint16_t ADC_DMA_Buffer_C[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (C) sortierte Daten
 
 
 //--------------------------------------------------------------
@@ -108,12 +106,12 @@ volatile uint16_t ADC_DMA_Buffer_C[ADC1d_ANZ*ADC_ARRAY_LEN];  //  (C) sortierte 
 // Struktur eines ADC Kanals
 //--------------------------------------------------------------
 typedef struct {
-  ADC1d_NAME_t ADC_NAME;  // Name
-  GPIO_TypeDef* ADC_PORT; // Port
-  const uint16_t ADC_PIN; // Pin
-  const uint32_t ADC_CLK; // Clock
-  const uint8_t ADC_CH;   // ADC-Kanal
-}ADC1d_t;
+	ADC1d_NAME_t ADC_NAME;  // Name
+	GPIO_TypeDef* ADC_PORT; // Port
+	const uint16_t ADC_PIN; // Pin
+	const uint32_t ADC_CLK; // Clock
+	const uint8_t ADC_CH;   // ADC-Kanal
+} ADC1d_t;
 
 
 
@@ -131,22 +129,22 @@ typedef struct {
 
 //--------------------------------------------------------------
 typedef enum {
-  ADC_VORLAUF =0,
-  ADC_RUNNING,
-  ADC_PRE_TRIGGER,
-  ADC_TRIGGER_OK,
-  ADC_READY
-}ADC_Status_t;
+	ADC_VORLAUF = 0,
+	ADC_RUNNING,
+	ADC_PRE_TRIGGER,
+	ADC_TRIGGER_OK,
+	ADC_READY
+} ADC_Status_t;
 
 
 //--------------------------------------------------------------
 typedef struct {
-  ADC_Status_t status;
-  uint32_t trigger_pos;
-  uint32_t trigger_quarter;
-  uint32_t dma_status;
-}ADC_t;
-ADC_t ADC_UB;
+	ADC_Status_t status;
+	uint32_t trigger_pos;
+	uint32_t trigger_quarter;
+	uint32_t dma_status;
+} ADC_t;
+extern ADC_t ADC_UB;
 
 
 //--------------------------------------------------------------

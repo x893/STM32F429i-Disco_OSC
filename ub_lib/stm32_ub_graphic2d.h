@@ -15,8 +15,8 @@
 #include "stm32f4xx_dma2d.h"
 
 typedef enum {
-  LCD_DIR_HORIZONTAL =0,
-  LCD_DIR_VERTICAL
+	LCD_DIR_HORIZONTAL = 0,
+	LCD_DIR_VERTICAL
 }LCD_DIR_t;
 
 
@@ -26,10 +26,10 @@ typedef enum {
 //--------------------------------------------------------------
 typedef struct UB_Image_t
 {
-  const uint16_t *table; // Tabelle mit den Daten
-  uint16_t width;        // Breite des Bildes (in Pixel)
-  uint16_t height;       // Hoehe des Bildes  (in Pixel)
-}UB_Image;
+	const uint16_t *table; // Tabelle mit den Daten
+	uint16_t width;        // Breite des Bildes (in Pixel)
+	uint16_t height;       // Hoehe des Bildes  (in Pixel)
+} UB_Image;
 
 
 //--------------------------------------------------------------
@@ -45,12 +45,12 @@ extern UB_Image GUI2;
 // Struktur von einer Kopie-Koordinate
 //--------------------------------------------------------------
 typedef struct DMA2D_Koord_t {
-  uint32_t source_xp; // Quelle X-Start
-  uint32_t source_yp; // Quelle Y-Start
-  uint32_t source_w;  // Quelle Breite
-  uint32_t source_h;  // Quelle Höhe
-  uint32_t dest_xp;   // Ziel X-Start
-  uint32_t dest_yp;   // Ziel Y-Start
+	uint32_t source_xp; // Quelle X-Start
+	uint32_t source_yp; // Quelle Y-Start
+	uint32_t source_w;  // Quelle Breite
+	uint32_t source_h;  // Quelle Höhe
+	uint32_t dest_xp;   // Ziel X-Start
+	uint32_t dest_yp;   // Ziel Y-Start
 }DMA2D_Koord;
 
 

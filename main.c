@@ -20,21 +20,19 @@
 #include "main.h"
 #include "oszi.h"
 
-
-
 int main(void)
 {
-  SystemInit(); // Quarz Einstellungen aktivieren
+	SystemInit(); // Quarz Einstellungen aktivieren
 
-  // init funktion
-  oszi_init();
+	// init funktion
+	oszi_init();
 
-  // main function (endless)
-  oszi_start();
+	// main function (endless)
+	oszi_start();
 
-  while(1)
-  {
+	while (1)
+	{
 
-  }
+	}
 }
 

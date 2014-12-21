@@ -20,7 +20,7 @@
 // MultiByte defines
 //--------------------------------------------------------------
 #define    I2C3_MULTIBYTE_ANZ   10        // anzahl der Bytes
-uint8_t    I2C3_DATA[I2C3_MULTIBYTE_ANZ]; // Array
+extern uint8_t I2C3_DATA[I2C3_MULTIBYTE_ANZ]; // Array
 
 
 
@@ -43,19 +43,19 @@ uint8_t    I2C3_DATA[I2C3_MULTIBYTE_ANZ]; // Array
 // Struktur eines I2C-Pins
 //--------------------------------------------------------------
 typedef struct {
-  GPIO_TypeDef* PORT;     // Port
-  const uint16_t PIN;     // Pin
-  const uint32_t CLK;     // Clock
-  const uint8_t SOURCE;   // Source
-}I2C3_PIN_t; 
+	GPIO_TypeDef* PORT;     // Port
+	const uint16_t PIN;     // Pin
+	const uint32_t CLK;     // Clock
+	const uint8_t SOURCE;   // Source
+}I2C3_PIN_t;
 
 
 //--------------------------------------------------------------
 // Struktur vom I2C-Device
 //--------------------------------------------------------------
 typedef struct {
-  I2C3_PIN_t  SCL;       // Clock-Pin
-  I2C3_PIN_t  SDA;       // Data-Pin
+	I2C3_PIN_t  SCL;       // Clock-Pin
+	I2C3_PIN_t  SDA;       // Data-Pin
 }I2C3_DEV_t;
 
 

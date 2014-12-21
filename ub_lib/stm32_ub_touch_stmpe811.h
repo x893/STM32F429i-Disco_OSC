@@ -16,20 +16,20 @@
 
 // Touch-Status
 typedef enum {
-  TOUCH_PRESSED  = 0,   // Touch ist betaetigt
-  TOUCH_RELEASED = 1	// Touch ist nicht betaetigt
-}Touch_Status_t;
+	TOUCH_PRESSED = 0,   // Touch ist betaetigt
+	TOUCH_RELEASED = 1	// Touch ist nicht betaetigt
+} Touch_Status_t;
 
 
 //-----------------------------------------
 // Globale Struktur der Touch-Daten
 //-----------------------------------------
 typedef struct {
-  Touch_Status_t status;
-  uint16_t xp;
-  uint16_t yp;
-}Touch_Data_t;
-Touch_Data_t Touch_Data;
+	Touch_Status_t status;
+	uint16_t xp;
+	uint16_t yp;
+} Touch_Data_t;
+extern Touch_Data_t Touch_Data;
 
 
 

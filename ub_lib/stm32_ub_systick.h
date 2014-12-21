@@ -25,7 +25,7 @@
 
 
 
-uint32_t  GUI_Timer_ms;
+extern uint32_t  GUI_Timer_ms;
 
 
 //--------------------------------------------------------------
@@ -42,7 +42,7 @@ uint32_t  GUI_Timer_ms;
 //--------------------------------------------------------------
 void UB_Systick_Init(void);
 #if SYSTICK_RESOLUTION==1
-  void UB_Systick_Pause_us(volatile uint32_t pause);
+void UB_Systick_Pause_us(volatile uint32_t pause);
 #endif
 void UB_Systick_Pause_ms(volatile uint32_t pause);
 void UB_Systick_Pause_s(volatile uint32_t pause);

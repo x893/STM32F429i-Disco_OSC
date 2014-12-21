@@ -43,20 +43,20 @@
 // Display Mode
 //--------------------------------------------------------------
 typedef enum {
-  PORTRAIT =0,
-  LANDSCAPE
-}LCD_MODE_t;
-LCD_MODE_t  LCD_DISPLAY_MODE;
+	PORTRAIT = 0,
+	LANDSCAPE
+} LCD_MODE_t;
+extern LCD_MODE_t  LCD_DISPLAY_MODE;
 
 
 //--------------------------------------------------------------
 // Globale Variabeln
 //--------------------------------------------------------------
-uint32_t LCD_CurrentFrameBuffer;   // aktuelle Adresse zum zeichnen
-uint32_t LCD_CurrentLayer;         // 0=Hintergrund, 1=Vodergrund
-uint32_t LCD_CurrentOrientation;   // 0=0Grad, 1=180Grad
-uint32_t LCD_MenuFrameBuffer;      // Adressse vom Menu
-uint32_t LCD_ADCFrameBuffer;       // Adressse vom ADC
+extern uint32_t LCD_CurrentFrameBuffer;   // aktuelle Adresse zum zeichnen
+extern uint32_t LCD_CurrentLayer;         // 0=Hintergrund, 1=Vodergrund
+extern uint32_t LCD_CurrentOrientation;   // 0=0Grad, 1=180Grad
+extern uint32_t LCD_MenuFrameBuffer;      // Adressse vom Menu
+extern uint32_t LCD_ADCFrameBuffer;       // Adressse vom ADC
 
 
 //--------------------------------------------------------------

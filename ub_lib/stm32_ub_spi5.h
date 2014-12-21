@@ -19,14 +19,14 @@
 // SPI-Mode (Full-Duplex)
 //--------------------------------------------------------------
 typedef enum {
-  SPI_MODE_0_MSB = 0,  // CPOL=0, CPHA=0 (MSB-First)
-  SPI_MODE_1_MSB,      // CPOL=0, CPHA=1 (MSB-First)
-  SPI_MODE_2_MSB,      // CPOL=1, CPHA=0 (MSB-First)
-  SPI_MODE_3_MSB,      // CPOL=1, CPHA=1 (MSB-First)
-  SPI_MODE_0_LSB,      // CPOL=0, CPHA=0 (LSB-First)
-  SPI_MODE_1_LSB,      // CPOL=0, CPHA=1 (LSB-First)
-  SPI_MODE_2_LSB,      // CPOL=1, CPHA=0 (LSB-First)
-  SPI_MODE_3_LSB       // CPOL=1, CPHA=1 (LSB-First) 
+	SPI_MODE_0_MSB = 0,  // CPOL=0, CPHA=0 (MSB-First)
+	SPI_MODE_1_MSB,      // CPOL=0, CPHA=1 (MSB-First)
+	SPI_MODE_2_MSB,      // CPOL=1, CPHA=0 (MSB-First)
+	SPI_MODE_3_MSB,      // CPOL=1, CPHA=1 (MSB-First)
+	SPI_MODE_0_LSB,      // CPOL=0, CPHA=0 (LSB-First)
+	SPI_MODE_1_LSB,      // CPOL=0, CPHA=1 (LSB-First)
+	SPI_MODE_2_LSB,      // CPOL=1, CPHA=0 (LSB-First)
+	SPI_MODE_3_LSB       // CPOL=1, CPHA=1 (LSB-First) 
 }SPI5_Mode_t;
 
 
@@ -52,19 +52,19 @@ typedef enum {
 // Struktur eines SPI-Pins
 //--------------------------------------------------------------
 typedef struct {
-  GPIO_TypeDef* PORT;     // Port
-  const uint16_t PIN;     // Pin
-  const uint32_t CLK;     // Clock
-  const uint8_t SOURCE;   // Source
-}SPI5_PIN_t; 
+	GPIO_TypeDef* PORT;     // Port
+	const uint16_t PIN;     // Pin
+	const uint32_t CLK;     // Clock
+	const uint8_t SOURCE;   // Source
+}SPI5_PIN_t;
 
 //--------------------------------------------------------------
 // Struktur vom SPI-Device (im Full-Duplex-Mode)
 //--------------------------------------------------------------
 typedef struct {
-  SPI5_PIN_t  SCK;        // SCK-Pin
-  SPI5_PIN_t  MOSI;       // MOSI-Pin
-  SPI5_PIN_t  MISO;       // MISO-Pin
+	SPI5_PIN_t  SCK;        // SCK-Pin
+	SPI5_PIN_t  MOSI;       // MOSI-Pin
+	SPI5_PIN_t  MISO;       // MISO-Pin
 }SPI5_DEV_t;
 
 

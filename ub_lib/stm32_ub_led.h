@@ -20,33 +20,35 @@
 // Liste aller LEDs
 // (keine Nummer doppelt und von 0 beginnend)
 //--------------------------------------------------------------
-typedef enum 
+typedef enum
 {
-  LED_GREEN = 0,  // LED3 auf dem STM32F429-Discovery
-  LED_RED = 1     // LED4 auf dem STM32F429-Discovery
-}LED_NAME_t;
+	LED_FIRST	= 0,
+	LED_GREEN	= 0,	// LED3 auf dem STM32F429-Discovery
+	LED_RED		= 1,	// LED4 auf dem STM32F429-Discovery
+	LED_ANZ				// Anzahl von LED_NAME_t
+} LED_NAME_t;
 
-#define  LED_ANZ   2 // Anzahl von LED_NAME_t
+//!!! #define  LED_ANZ   2 
 
 
 //--------------------------------------------------------------
 // Status einer LED
 //--------------------------------------------------------------
 typedef enum {
-  LED_OFF = 0,  // LED AUS
-  LED_ON        // LED EIN
-}LED_STATUS_t;
+	LED_OFF = 0,  // LED AUS
+	LED_ON        // LED EIN
+} LED_STATUS_t;
 
 
 //--------------------------------------------------------------
 // Struktur einer LED
 //--------------------------------------------------------------
 typedef struct {
-  LED_NAME_t LED_NAME;    // Name
-  GPIO_TypeDef* LED_PORT; // Port
-  const uint16_t LED_PIN; // Pin
-  const uint32_t LED_CLK; // Clock
-  LED_STATUS_t LED_INIT;  // Init
+	LED_NAME_t LED_NAME;    // Name
+	GPIO_TypeDef* LED_PORT; // Port
+	const uint16_t LED_PIN; // Pin
+	const uint32_t LED_CLK; // Clock
+	LED_STATUS_t LED_INIT;  // Init
 }LED_t;
 
 
