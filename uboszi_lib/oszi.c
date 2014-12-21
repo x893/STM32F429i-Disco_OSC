@@ -413,7 +413,7 @@ void p_oszi_sw_init(void)
 	Menu.send.screen = SETTING_TRIGGER;
 	Menu.send.data = 0;
 
-	Menu.fft.mode = 0;			// FFT=CH1
+	Menu.fft.mode = 1;				// FFT=CH1
 
 	GUI.gui_xpos = GUI_XPOS_OFF;	// GUI ausgeblendet
 	GUI.akt_menu = MM_NONE;
