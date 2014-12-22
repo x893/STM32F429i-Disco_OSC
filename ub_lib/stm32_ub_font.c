@@ -26,145 +26,121 @@
 // mit Vorder- und Hintergrundfarbe (Font = max 16 Pixel breite)
 // -> Font muss mit &-Operator uebergeben werden
 //--------------------------------------------------------------
-void UB_Font_DrawChar(uint16_t x, uint16_t y, uint8_t ascii, UB_Font *font, uint16_t vg, uint16_t bg)
+void UB_Font_DrawChar(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font *font, uint16_t fg, uint16_t bg)
 {
-	uint16_t xn, yn, start_maske, maske;
-	const uint16_t *wert;
+	register uint16_t xn, yn, start_mask, mask;
+	register const uint16_t *bitmap;
 
+	ascii -= ' ';
+	bitmap = &font->table[ascii * font->height];
 
-	ascii -= 32;
-	wert = &font->table[ascii * font->height];
-
-	if (LCD_DISPLAY_MODE == PORTRAIT) {
-		start_maske = 0x80;
-		if (font->width > 8) start_maske = 0x8000;
-
-		for (yn = 0; yn < font->height; yn++) {
-			maske = start_maske;
-			// Cursor setzen
+	start_mask = (font->width > 8) ? 0x8000 : 0x80;
+	for (yn = 0; yn < font->height; yn++)
+	{
+		mask = start_mask;
+		// Set cursor
+		if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
+		{
 			UB_LCD_SetCursor2Draw(x, yn + y);
-			for (xn = 0; xn < font->width; xn++) {
-				if ((wert[yn] & maske) == 0x00) {
-					// Pixel in Hintergrundfarbe zeichnen
-					UB_LCD_DrawPixel(bg);
-				}
-				else {
-					// Pixel in Vordergrundfarbe zeichnen
-					UB_LCD_DrawPixel(vg);
-				}
-				maske = (maske >> 1);
-			}
 		}
-	}
-	else {
-		start_maske = 0x80;
-		if (font->width>8) start_maske = 0x8000;
-
-		for (yn = 0; yn < font->height; yn++) {
-			maske = start_maske;
-			// Cursor setzen
+		else
+		{
 			UB_LCD_SetCursor2Draw(x + font->height - yn, y);
-			for (xn = 0; xn < font->width; xn++) {
-				if ((wert[yn] & maske) == 0x00) {
-					// Pixel in Hintergrundfarbe zeichnen
-					UB_LCD_DrawPixel(bg);
-				}
-				else {
-					// Pixel in Vordergrundfarbe zeichnen
-					UB_LCD_DrawPixel(vg);
-				}
-				maske = (maske >> 1);
+		}
+		for (xn = 0; xn < font->width; xn++)
+		{
+			if ((bitmap[yn] & mask) == 0x00)
+			{
+					// Draw pixels in background color
+				UB_LCD_DrawPixel(bg);
 			}
+			else {
+				// Draw pixels in the foreground color
+				UB_LCD_DrawPixel(fg);
+			}
+			mask >>= 1;
 		}
 	}
 }
 
 
 //--------------------------------------------------------------
-// Zeichnet einen String eines Fonts an x,y Position
-// mit Vorder- und Hintergrundfarbe (Font = max 16 Pixel breite)
-// -> Font muss mit &-Operator uebergeben werden
+// Draws a string of a font to x, y position
+// with foreground and background color (font = max 16 pixels wide)
+// -> Font must be handed over with & operator
 //--------------------------------------------------------------
-void UB_Font_DrawString(uint16_t x, uint16_t y, char *ptr, UB_Font *font, uint16_t vg, uint16_t bg)
+void UB_Font_DrawString(uint16_t x, uint16_t y, const char *ptr, const UB_Font *font, uint16_t fg, uint16_t bg)
 {
-	uint16_t pos;
+	register uint16_t pos;
+	register char ch;
 
-	if (LCD_DISPLAY_MODE == PORTRAIT) {
+	if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
+	{
 		pos = x;
-		while (*ptr != 0) {
-			UB_Font_DrawChar(pos, y, *ptr, font, vg, bg);
+		while ((ch = *ptr++) != 0)
+		{
+			UB_Font_DrawChar(pos, y, ch, font, fg, bg);
 			pos += font->width;
-			ptr++;
 		}
 	}
-	else {
+	else
+	{
 		pos = y;
-		while (*ptr != 0) {
-			UB_Font_DrawChar(x, pos, *ptr, font, vg, bg);
+		while ((ch = *ptr++) != 0)
+		{
+			UB_Font_DrawChar(x, pos, ch, font, fg, bg);
 			pos += font->width;
-			ptr++;
 		}
 	}
 }
 
 
 //--------------------------------------------------------------
-// Zeichnet ein Ascii-Zeichen eines Fonts an x,y Position
-// mit Vorder- und Hintergrundfarbe (Font = max 32 Pixel breite)
-// -> Font muss mit &-Operator uebergeben werden
+// Draws an ascii characters in a font of x, y position
+// with foreground and background color (font = max 32 pixels wide)
+// -> Font must be handed over with & operator
 //--------------------------------------------------------------
-void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, UB_Font32 *font, uint16_t vg, uint16_t bg)
+void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font32 *font, uint16_t fg, uint16_t bg)
 {
-	uint16_t xn, yn;
-	uint32_t start_maske, maske;
-	const uint32_t *wert;
+	register uint16_t xn, yn;
+	register uint32_t start_mask, mask;
+	register const uint32_t *bitmap;
 
+	ascii -= ' ';
+	bitmap = &font->table[ascii * font->height];
 
-	ascii -= 32;
-	wert = &font->table[ascii * font->height];
+	if (font->width > 16)
+		start_mask = 0x80000000;
+	else if (font->width > 8)
+		start_mask = 0x8000;
+	else
+		start_mask = 0x80;
 
-	if (LCD_DISPLAY_MODE == PORTRAIT) {
-		start_maske = 0x80;
-		if (font->width > 8) start_maske = 0x8000;
-		if (font->width > 16) start_maske = 0x80000000;
-
-		for (yn = 0; yn < font->height; yn++) {
-			maske = start_maske;
-			// Cursor setzen
+	for (yn = 0; yn < font->height; yn++)
+	{
+		mask = start_mask;
+		// Set the cursor
+		if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
+		{
 			UB_LCD_SetCursor2Draw(x, yn + y);
-			for (xn = 0; xn < font->width; xn++) {
-				if ((wert[yn] & maske) == 0x00) {
-					// Pixel in Hintergrundfarbe zeichnen
-					UB_LCD_DrawPixel(bg);
-				}
-				else {
-					// Pixel in Vordergrundfarbe zeichnen
-					UB_LCD_DrawPixel(vg);
-				}
-				maske = (maske >> 1);
-			}
 		}
-	}
-	else {
-		start_maske = 0x80;
-		if (font->width>8) start_maske = 0x8000;
-		if (font->width>16) start_maske = 0x80000000;
-
-		for (yn = 0; yn < font->height; yn++) {
-			maske = start_maske;
-			// Cursor setzen
+		else
+		{
 			UB_LCD_SetCursor2Draw(x + font->height - yn, y);
-			for (xn = 0; xn < font->width; xn++) {
-				if ((wert[yn] & maske) == 0x00) {
-					// Pixel in Hintergrundfarbe zeichnen
-					UB_LCD_DrawPixel(bg);
-				}
-				else {
-					// Pixel in Vordergrundfarbe zeichnen
-					UB_LCD_DrawPixel(vg);
-				}
-				maske = (maske >> 1);
+		}
+
+		for (xn = 0; xn < font->width; xn++)
+		{
+			if ((bitmap[yn] & mask) == 0x00)
+			{
+				// Draw pixels in background color
+				UB_LCD_DrawPixel(bg);
 			}
+			else {
+				// Draw pixels in the foreground color
+				UB_LCD_DrawPixel(fg);
+			}
+			mask >>= 1;
 		}
 	}
 }
@@ -175,24 +151,27 @@ void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, UB_Font32 *font, 
 // mit Vorder- und Hintergrundfarbe (Font = max 32 Pixel breite)
 // -> Font muss mit &-Operator uebergeben werden
 //--------------------------------------------------------------
-void UB_Font_DrawString32(uint16_t x, uint16_t y, char *ptr, UB_Font32 *font, uint16_t vg, uint16_t bg)
+void UB_Font_DrawString32(uint16_t x, uint16_t y, const char *ptr, const UB_Font32 *font, uint16_t fg, uint16_t bg)
 {
-	uint16_t pos;
+	register uint16_t pos;
+	register char ch;
 
-	if (LCD_DISPLAY_MODE == PORTRAIT) {
+	if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
+	{
 		pos = x;
-		while (*ptr != 0) {
-			UB_Font_DrawChar32(pos, y, *ptr, font, vg, bg);
+		while ((ch = *ptr++) != '\0')
+		{
+			UB_Font_DrawChar32(pos, y, ch, font, fg, bg);
 			pos += font->width;
-			ptr++;
 		}
 	}
-	else {
+	else
+	{
 		pos = y;
-		while (*ptr != 0) {
-			UB_Font_DrawChar32(x, pos, *ptr, font, vg, bg);
+		while ((ch = *ptr++) != '\0')
+		{
+			UB_Font_DrawChar32(x, pos, ch, font, fg, bg);
 			pos += font->width;
-			ptr++;
 		}
 	}
 }
