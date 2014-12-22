@@ -29,10 +29,5 @@ int main(void)
 
 	// main function (endless)
 	oszi_start();
-
-	while (1)
-	{
-
-	}
 }
 

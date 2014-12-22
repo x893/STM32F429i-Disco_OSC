@@ -23,13 +23,10 @@
 typedef enum
 {
 	LED_FIRST	= 0,
-	LED_GREEN	= 0,	// LED3 auf dem STM32F429-Discovery
-	LED_RED		= 1,	// LED4 auf dem STM32F429-Discovery
-	LED_ANZ				// Anzahl von LED_NAME_t
+	LED_GREEN	= 0,	// LED3 on STM32F429-Discovery
+	LED_RED		= 1,	// LED4 on STM32F429-Discovery
+	LED_LAST
 } LED_NAME_t;
-
-//!!! #define  LED_ANZ   2 
-
 
 //--------------------------------------------------------------
 // Status einer LED

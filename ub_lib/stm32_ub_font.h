@@ -40,24 +40,24 @@ typedef struct UB_Font32_t {
 // fuer alle benutzten Fonts muss das entsprechende C-File
 // in der CooCox-IDE hinzugefügt werden
 //--------------------------------------------------------------
-extern UB_Font Arial_7x10;
-extern UB_Font Arial_8x13;
-extern UB_Font Arial_10x15;
-extern UB_Font Arial_11x18;
-extern UB_Font Arial_13x19;
-extern UB_Font Arial_14x22;
-extern UB_Font Arial_16x25;
-extern UB_Font32 Arial_18x27;
+extern const UB_Font Arial_7x10;
+extern const UB_Font Arial_8x13;
+extern const UB_Font Arial_10x15;
+extern const UB_Font Arial_11x18;
+extern const UB_Font Arial_13x19;
+extern const UB_Font Arial_14x22;
+extern const UB_Font Arial_16x25;
+extern const UB_Font32 Arial_18x27;
 
 
 
 //--------------------------------------------------------------
 // Globale Funktionen
 //--------------------------------------------------------------
-void UB_Font_DrawChar(uint16_t x, uint16_t y, uint8_t ascii, UB_Font *font, uint16_t vg, uint16_t bg);
-void UB_Font_DrawString(uint16_t x, uint16_t y, char *ptr, UB_Font *font, uint16_t vg, uint16_t bg);
-void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, UB_Font32 *font, uint16_t vg, uint16_t bg);
-void UB_Font_DrawString32(uint16_t x, uint16_t y, char *ptr, UB_Font32 *font, uint16_t vg, uint16_t bg);
+void UB_Font_DrawChar		(uint16_t x, uint16_t y, uint8_t ascii,   const UB_Font *font,   uint16_t fg, uint16_t bg);
+void UB_Font_DrawString		(uint16_t x, uint16_t y, const char *ptr, const UB_Font *font,   uint16_t fg, uint16_t bg);
+void UB_Font_DrawChar32		(uint16_t x, uint16_t y, uint8_t ascii,   const UB_Font32 *font, uint16_t fg, uint16_t bg);
+void UB_Font_DrawString32	(uint16_t x, uint16_t y, const char *ptr, const UB_Font32 *font, uint16_t fg, uint16_t bg);
 
 
 //--------------------------------------------------------------

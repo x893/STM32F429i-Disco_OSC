@@ -26,109 +26,116 @@
 //--------------------------------------------------------------
 // Definition von SPI5
 //--------------------------------------------------------------
-SPI5_DEV_t SPI5DEV = {
+const SPI5_DEV_t SPI5DEV = {
 	// PORT , PIN      , Clock              , Source 
 	{ GPIOF, GPIO_Pin_7, RCC_AHB1Periph_GPIOF, GPIO_PinSource7 }, // SCK an PF7
 	{ GPIOF, GPIO_Pin_9, RCC_AHB1Periph_GPIOF, GPIO_PinSource9 }, // MOSI an PF9
 	{ GPIOF, GPIO_Pin_8, RCC_AHB1Periph_GPIOF, GPIO_PinSource8 }, // MISO an PF8
 };
 
-
-
 //--------------------------------------------------------------
-// Init von SPI5 (im Full-Duplex-Mode) 
-// Return_wert :
-//  -> ERROR   , wenn SPI schon mit anderem Mode initialisiert
-//  -> SUCCESS , wenn SPI init ok war
+// Init of SPI5 (in full-duplex mode)
+// Return:
+//  -> ERROR   , if SPI been initialized with a different mode
+//  -> SUCCESS , if SPI init ok
 //--------------------------------------------------------------
 ErrorStatus UB_SPI5_Init(SPI5_Mode_t mode)
 {
-	ErrorStatus ret_wert = ERROR;
+	ErrorStatus result = ERROR;
 	static uint8_t init_ok = 0;
 	static SPI5_Mode_t init_mode;
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	SPI_InitTypeDef  SPI_InitStructure;
 
-	// initialisierung darf nur einmal gemacht werden
-	if (init_ok != 0) {
-		if (init_mode == mode) ret_wert = SUCCESS;
-		return(ret_wert);
+	// Initialization may be made only once
+	if (init_ok == 0)
+	{
+		// SPI-Clock enable
+		RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI5, ENABLE);
+
+		// Clock Enable der Pins
+		RCC_AHB1PeriphClockCmd(SPI5DEV.SCK.CLK, ENABLE);
+		RCC_AHB1PeriphClockCmd(SPI5DEV.MOSI.CLK, ENABLE);
+		RCC_AHB1PeriphClockCmd(SPI5DEV.MISO.CLK, ENABLE);
+
+		// Connect SPI alternative-function with the IO pins
+		GPIO_PinAFConfig(SPI5DEV.SCK.PORT, SPI5DEV.SCK.SOURCE, GPIO_AF_SPI5);
+		GPIO_PinAFConfig(SPI5DEV.MOSI.PORT, SPI5DEV.MOSI.SOURCE, GPIO_AF_SPI5);
+		GPIO_PinAFConfig(SPI5DEV.MISO.PORT, SPI5DEV.MISO.SOURCE, GPIO_AF_SPI5);
+
+		// SPI as an alternative function with the pull
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+		// SCK-Pin
+		GPIO_InitStructure.GPIO_Pin = SPI5DEV.SCK.PIN;
+		GPIO_Init(SPI5DEV.SCK.PORT, &GPIO_InitStructure);
+		// MOSI-Pin
+		GPIO_InitStructure.GPIO_Pin = SPI5DEV.MOSI.PIN;
+		GPIO_Init(SPI5DEV.MOSI.PORT, &GPIO_InitStructure);
+		// MISO-Pin
+		GPIO_InitStructure.GPIO_Pin = SPI5DEV.MISO.PIN;
+		GPIO_Init(SPI5DEV.MISO.PORT, &GPIO_InitStructure);
+
+		SPI_I2S_DeInit(SPI5);
+
+		// SPI-Configuration
+		SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+		SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
+		SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
+		if ((mode == SPI_MODE_0_MSB) || (mode == SPI_MODE_0_LSB))
+		{
+			SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+			SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+		}
+		else if ((mode == SPI_MODE_1_MSB) || (mode == SPI_MODE_1_LSB))
+		{
+			SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
+			SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+		}
+		else if ((mode == SPI_MODE_2_MSB) || (mode == SPI_MODE_2_LSB))
+		{
+			SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
+			SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
+		}
+		else
+		{
+			SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
+			SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
+		}
+		SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
+		SPI_InitStructure.SPI_BaudRatePrescaler = SPI5_VORTEILER;
+
+		if (mode == SPI_MODE_0_MSB
+		||	mode == SPI_MODE_1_MSB
+		||	mode == SPI_MODE_2_MSB
+		||	mode == SPI_MODE_3_MSB
+			)
+		{
+			SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
+		}
+		else
+		{
+			SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_LSB;
+		}
+
+		SPI_InitStructure.SPI_CRCPolynomial = 7;
+		SPI_Init(SPI5, &SPI_InitStructure);
+
+		// SPI enable
+		SPI_Cmd(SPI5, ENABLE);
+
+		// Init save mode
+		init_ok = 1;
+		init_mode = mode;
+		result = SUCCESS;
 	}
+	else if (init_mode == mode)
+		result = SUCCESS;
 
-	// SPI-Clock enable
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI5, ENABLE);
-
-	// Clock Enable der Pins
-	RCC_AHB1PeriphClockCmd(SPI5DEV.SCK.CLK, ENABLE);
-	RCC_AHB1PeriphClockCmd(SPI5DEV.MOSI.CLK, ENABLE);
-	RCC_AHB1PeriphClockCmd(SPI5DEV.MISO.CLK, ENABLE);
-
-	// SPI Alternative-Funktions mit den IO-Pins verbinden
-	GPIO_PinAFConfig(SPI5DEV.SCK.PORT, SPI5DEV.SCK.SOURCE, GPIO_AF_SPI5);
-	GPIO_PinAFConfig(SPI5DEV.MOSI.PORT, SPI5DEV.MOSI.SOURCE, GPIO_AF_SPI5);
-	GPIO_PinAFConfig(SPI5DEV.MISO.PORT, SPI5DEV.MISO.SOURCE, GPIO_AF_SPI5);
-
-	// SPI als Alternative-Funktion mit PullDown
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
-
-	// SCK-Pin
-	GPIO_InitStructure.GPIO_Pin = SPI5DEV.SCK.PIN;
-	GPIO_Init(SPI5DEV.SCK.PORT, &GPIO_InitStructure);
-	// MOSI-Pin
-	GPIO_InitStructure.GPIO_Pin = SPI5DEV.MOSI.PIN;
-	GPIO_Init(SPI5DEV.MOSI.PORT, &GPIO_InitStructure);
-	// MISO-Pin
-	GPIO_InitStructure.GPIO_Pin = SPI5DEV.MISO.PIN;
-	GPIO_Init(SPI5DEV.MISO.PORT, &GPIO_InitStructure);
-
-	SPI_I2S_DeInit(SPI5);
-
-	// SPI-Konfiguration
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	if ((mode == SPI_MODE_0_MSB) || (mode == SPI_MODE_0_LSB)) {
-		SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-		SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-	}
-	else if ((mode == SPI_MODE_1_MSB) || (mode == SPI_MODE_1_LSB)) {
-		SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-		SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	}
-	else if ((mode == SPI_MODE_2_MSB) || (mode == SPI_MODE_2_LSB)) {
-		SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
-		SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-	}
-	else {
-		SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
-		SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	}
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI5_VORTEILER;
-
-	if ((mode == SPI_MODE_0_MSB) || (mode == SPI_MODE_1_MSB) ||
-		(mode == SPI_MODE_2_MSB) || (mode == SPI_MODE_3_MSB)) {
-		SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	}
-	else {
-		SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_LSB;
-	}
-
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(SPI5, &SPI_InitStructure);
-
-	// SPI enable
-	SPI_Cmd(SPI5, ENABLE);
-
-	// init Mode speichern
-	init_ok = 1;
-	init_mode = mode;
-	ret_wert = SUCCESS;
-
-	return(ret_wert);
+	return result;
 }
 
 

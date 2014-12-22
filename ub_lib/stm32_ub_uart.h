@@ -26,8 +26,8 @@ typedef enum
 {
 	UART_FIRST	= 0,
 	COM1 = 0,	// COM1 (TX=PA9, RX=PA10)
-	UART_ANZ	// Anzahl von UART_NAME_t
-}UART_NAME_t;
+	UART_LAST
+} UART_NAME_t;
 
 //--------------------------------------------------------------
 // Endekennung beim Senden
@@ -89,11 +89,11 @@ typedef struct {
 // Struktur für UART_RX
 //--------------------------------------------------------------
 typedef struct {
-	char rx_buffer[RX_BUF_SIZE]; // RX-Puffer
-	uint8_t wr_ptr;              // Schreib Pointer
-	UART_RXSTATUS_t status;      // RX-Status
+	uint8_t wr_ptr;					// Write pointer
+	UART_RXSTATUS_t status;			// RX status
+	char rx_buffer[RX_BUF_SIZE];	// RX buffer
 } UART_RX_t;
-extern UART_RX_t UART_RX[UART_ANZ];
+extern UART_RX_t UART_RX[UART_LAST];
 
 
 //--------------------------------------------------------------
@@ -101,7 +101,7 @@ extern UART_RX_t UART_RX[UART_ANZ];
 //--------------------------------------------------------------
 void UB_Uart_Init(void);
 void UB_Uart_SendByte(UART_NAME_t uart, uint16_t wert);
-void UB_Uart_SendString(UART_NAME_t uart, char *ptr, UART_LASTBYTE_t end_cmd);
+void UB_Uart_SendString(UART_NAME_t uart, const char *ptr, UART_LASTBYTE_t end_cmd);
 UART_RXSTATUS_t UB_Uart_ReceiveString(UART_NAME_t uart, char *ptr);
 
 

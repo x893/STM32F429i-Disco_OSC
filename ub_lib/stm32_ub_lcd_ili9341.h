@@ -46,36 +46,41 @@ typedef enum {
 	PORTRAIT = 0,
 	LANDSCAPE
 } LCD_MODE_t;
-extern LCD_MODE_t  LCD_DISPLAY_MODE;
-
 
 //--------------------------------------------------------------
 // Globale Variabeln
 //--------------------------------------------------------------
-extern uint32_t LCD_CurrentFrameBuffer;   // aktuelle Adresse zum zeichnen
-extern uint32_t LCD_CurrentLayer;         // 0=Hintergrund, 1=Vodergrund
-extern uint32_t LCD_CurrentOrientation;   // 0=0Grad, 1=180Grad
-extern uint32_t LCD_MenuFrameBuffer;      // Adressse vom Menu
-extern uint32_t LCD_ADCFrameBuffer;       // Adressse vom ADC
+typedef struct {
+	uint32_t LCD_CurrentFrameBuffer;   // aktuelle Adresse zum zeichnen
+	uint32_t LCD_MenuFrameBuffer;      // Adressse vom Menu
+	uint32_t LCD_ADCFrameBuffer;       // Adressse vom ADC
+	uint32_t aktCursorPos;
+	uint16_t aktCursorX;
+	uint16_t aktCursorY;
+	uint16_t LCD_CurrentLayer;         // 0=Hintergrund, 1=Vodergrund
+	uint16_t LCD_CurrentOrientation;   // 0=0Grad, 1=180Grad
+	LCD_MODE_t  LCD_DISPLAY_MODE;
+} LCD_Context_t;
 
+extern LCD_Context_t LCD_Context;
 
 //--------------------------------------------------------------
 // Defines vom Display
 //--------------------------------------------------------------
-#define  LCD_MAXX           ((uint16_t)240)      // Pixel in X-Richtung
-#define  LCD_MAXY           ((uint16_t)320)      // Pixel in Y-Richtung
-#define  LCD_PIXEL  LCD_MAXX*LCD_MAXY
+#define  LCD_MAXX		((uint16_t)240)      // Pixel in X-Richtung
+#define  LCD_MAXY		((uint16_t)320)      // Pixel in Y-Richtung
+#define  LCD_PIXEL		(((uint32_t)LCD_MAXX) * ((uint32_t)LCD_MAXY))
 
-#define  LCD_INIT_PAUSE   200  // kleine Pause beim Init
-#define  LCD_SPI_PAUSE    10   // kleine Pause bei SPI
+#define  LCD_INIT_PAUSE	200  // kleine Pause beim Init
+#define  LCD_SPI_PAUSE	10   // kleine Pause bei SPI
 
 
 
 //--------------------------------------------------------------
 // Defines für das Display-RAM
 //--------------------------------------------------------------
-#define  LCD_FRAME_BUFFER     SDRAM_START_ADR         // Start vom SDRAM
-#define  LCD_FRAME_OFFSET   ((uint32_t)(LCD_PIXEL*2)) // größe von einem Puffer (in Byte)
+#define  LCD_FRAME_BUFFER	SDRAM_START_ADR         // Start vom SDRAM
+#define  LCD_FRAME_OFFSET	((uint32_t)(LCD_PIXEL * 2)) // größe von einem Puffer (in Byte)
 
 
 //--------------------------------------------------------------

@@ -27,7 +27,7 @@ uint32_t  GUI_Timer_ms;
 //--------------------------------------------------------------
 // Globale Pausen-Variabeln
 //--------------------------------------------------------------
-static volatile uint32_t Systick_Delay;  // Globaler Pausenzaehler
+static volatile uint32_t Systick_Delay;
 
 //--------------------------------------------------------------
 // Init vom System-Counter
@@ -38,13 +38,12 @@ void UB_Systick_Init(void)
 	RCC_ClocksTypeDef RCC_Clocks;
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
-
 	// alle Variabeln zurücksetzen
 	Systick_Delay = 0;
 	GUI_Timer_ms = 0;
 
 
-#if SYSTICK_RESOLUTION==1
+#if SYSTICK_RESOLUTION == 1
 	// Timer auf 1us einstellen
 	RCC_GetClocksFreq(&RCC_Clocks);
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000000);
@@ -65,21 +64,19 @@ void UB_Systick_Init(void)
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIO_TST_1_PORT, &GPIO_InitStructure);
-
 }
 
 
-#if SYSTICK_RESOLUTION==1
+#if SYSTICK_RESOLUTION == 1
 //--------------------------------------------------------------
 // Pausenfunktion (in us)
 // die CPU wartet bis die Zeit abgelaufen ist
 //--------------------------------------------------------------
 void UB_Systick_Pause_us(volatile uint32_t pause)
 {
-
 	Systick_Delay = pause;
-
-	while (Systick_Delay != 0);
+	while (Systick_Delay != 0)
+		;
 }
 #endif
 
@@ -91,15 +88,15 @@ void UB_Systick_Pause_us(volatile uint32_t pause)
 void UB_Systick_Pause_ms(volatile uint32_t pause)
 {
 #if SYSTICK_RESOLUTION==1
-	uint32_t ms;
-
-	for (ms = 0; ms < pause; ms++) {
+	while (pause != 0)
+	{
 		UB_Systick_Pause_us(1000);
+		--pause;
 	}
 #else
 	Systick_Delay = pause;
-
-	while (Systick_Delay != 0);
+	while (Systick_Delay != 0)
+		;
 #endif
 }
 
@@ -110,10 +107,10 @@ void UB_Systick_Pause_ms(volatile uint32_t pause)
 //--------------------------------------------------------------
 void UB_Systick_Pause_s(volatile uint32_t pause)
 {
-	uint32_t s;
-
-	for (s = 0; s < pause; s++) {
+	while (pause != 0)
+	{
 		UB_Systick_Pause_ms(1000);
+		--pause;
 	}
 }
 
@@ -130,14 +127,15 @@ void SysTick_Handler(void)
 	GPIO_TST_1_PORT->ODR ^= GPIO_TST_1_PIN;
 
 	// Tick für Pause
-	if (Systick_Delay != 0x00) {
+	if (Systick_Delay != 0)
+	{
 		Systick_Delay--;
 	}
 
-	if (GUI_Timer_ms != 0) {
+	if (GUI_Timer_ms != 0)
+	{
 		GUI_Timer_ms--;
 	}
-
 }
 
 

@@ -63,44 +63,40 @@ static void P_SDRAM_delay(volatile uint32_t nCount);
 //--------------------------------------------------------------
 ErrorStatus UB_SDRAM_Init(void)
 {
-	ErrorStatus ret_wert = ERROR;
-	uint16_t oldwert, istwert;
+	register ErrorStatus result = ERROR;
+	register uint16_t old_value, new_value;
 	static uint8_t init_ok = 0;
 
-	// initialisierung darf nur einmal gemacht werden
-	if (init_ok != 0) {
-		if (init_ok == 1) {
-			return(SUCCESS);
-		}
-		else {
-			return(ERROR);
-		}
-	}
-
-	// IO-Lines initialisieren
-	P_SDRAM_InitIO();
-	// FMC initialisieren
-	P_SDRAM_InitFMC();
-
-	//-----------------------------------------
-	// check ob SDRAM vorhanden ist
-	// schreib-/lese-Test auf Adr 0x00
-	//-----------------------------------------
-	oldwert = UB_SDRAM_Read16b(0x00);
-	UB_SDRAM_Write16b(0x00, 0x5A3C);
-	istwert = UB_SDRAM_Read16b(0x00);
-	UB_SDRAM_Write16b(0x00, oldwert);
-	if (istwert == 0x5A3C) ret_wert = SUCCESS; // RAM vorhanden
-
-	// init Mode speichern
-	if (ret_wert == SUCCESS) {
-		init_ok = 1;
-	}
-	else {
+	// Initialization may be made only once
+	if (init_ok == 0)
+	{
 		init_ok = 2;
+
+		// IO-Lines initialisieren
+		P_SDRAM_InitIO();
+		// FMC initialisieren
+		P_SDRAM_InitFMC();
+
+		//-----------------------------------------
+		// check ob SDRAM vorhanden ist
+		// schreib-/lese-Test auf Adr 0x00
+		//-----------------------------------------
+		old_value = UB_SDRAM_Read16b(0);
+		UB_SDRAM_Write16b(0, 0x5A3C);
+		new_value = UB_SDRAM_Read16b(0);
+		UB_SDRAM_Write16b(0, old_value);
+		if (new_value == 0x5A3C)
+		{
+			init_ok = 1;
+			result = SUCCESS;
+		}
+	}
+	else if (init_ok == 1)
+	{
+		result = SUCCESS;
 	}
 
-	return(ret_wert);
+	return result;
 }
 
 
@@ -111,9 +107,9 @@ ErrorStatus UB_SDRAM_Init(void)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 1 Byte abstand zueinander haben
 //--------------------------------------------------------------
-void UB_SDRAM_Write8b(uint32_t adr, uint8_t wert)
+void UB_SDRAM_Write8b(uint32_t addr, uint8_t data)
 {
-	*(uint8_t*)(SDRAM_START_ADR + adr) = wert;
+	*(uint8_t*)(SDRAM_START_ADR + addr) = data;
 }
 
 
@@ -124,13 +120,9 @@ void UB_SDRAM_Write8b(uint32_t adr, uint8_t wert)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 1 Byte abstand zueinander haben
 //-------------------------------------------------------------- 
-uint8_t UB_SDRAM_Read8b(uint32_t adr)
+uint8_t UB_SDRAM_Read8b(uint32_t addr)
 {
-	uint8_t ret_wert = 0;
-
-	ret_wert = *(__IO uint8_t*)(SDRAM_START_ADR + adr);
-
-	return(ret_wert);
+	return (*(__IO uint8_t*)(SDRAM_START_ADR + addr));
 }
 
 
@@ -141,9 +133,9 @@ uint8_t UB_SDRAM_Read8b(uint32_t adr)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 2 Bytes abstand zueinander haben
 //--------------------------------------------------------------
-void UB_SDRAM_Write16b(uint32_t adr, uint16_t wert)
+void UB_SDRAM_Write16b(uint32_t addr, uint16_t data)
 {
-	*(uint16_t*)(SDRAM_START_ADR + adr) = wert;
+	*(uint16_t*)(SDRAM_START_ADR + addr) = data;
 }
 
 
@@ -154,13 +146,9 @@ void UB_SDRAM_Write16b(uint32_t adr, uint16_t wert)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 2 Bytes abstand zueinander haben
 //-------------------------------------------------------------- 
-uint16_t UB_SDRAM_Read16b(uint32_t adr)
+uint16_t UB_SDRAM_Read16b(uint32_t addr)
 {
-	uint16_t ret_wert = 0;
-
-	ret_wert = *(__IO uint16_t*)(SDRAM_START_ADR + adr);
-
-	return(ret_wert);
+	return (*(__IO uint16_t*)(SDRAM_START_ADR + addr));
 }
 
 
@@ -171,9 +159,9 @@ uint16_t UB_SDRAM_Read16b(uint32_t adr)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 4 Bytes abstand zueinander haben
 //--------------------------------------------------------------
-void UB_SDRAM_Write32b(uint32_t adr, uint32_t wert)
+void UB_SDRAM_Write32b(uint32_t addr, uint32_t data)
 {
-	*(uint32_t*)(SDRAM_START_ADR + adr) = wert;
+	*(uint32_t*)(SDRAM_START_ADR + addr) = data;
 }
 
 
@@ -184,15 +172,10 @@ void UB_SDRAM_Write32b(uint32_t adr, uint32_t wert)
 // adr  : [0 bis SDRAM_MAX_ADR]
 // Adressen muessen 4 Bytes abstand zueinander haben
 //-------------------------------------------------------------- 
-uint32_t UB_SDRAM_Read32b(uint32_t adr)
+uint32_t UB_SDRAM_Read32b(uint32_t addr)
 {
-	uint32_t ret_wert = 0;
-
-	ret_wert = *(__IO uint32_t*)(SDRAM_START_ADR + adr);
-
-	return(ret_wert);
+	return (*(__IO uint32_t*)(SDRAM_START_ADR + addr));
 }
-
 
 //--------------------------------------------------------------
 // schreibt einen Block von 32bit Werten ins externe SDRAM
@@ -203,21 +186,18 @@ uint32_t UB_SDRAM_Read32b(uint32_t adr)
 //--------------------------------------------------------------
 void UB_SDRAM_WriteBuffer32b(uint32_t* ptrBuffer, uint32_t startAdr, uint32_t lenBuffer)
 {
-	volatile uint32_t write_pointer = (uint32_t)startAdr;
-
 	FMC_SDRAMWriteProtectionConfig(FMC_Bank2_SDRAM, DISABLE);
 
-	// warten bis Controller bereit
+	// Wait until controller ready
 	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
 
-	// alle Daten schreiben
-	for (; lenBuffer != 0; lenBuffer--) {
-		// Transfer data to the memory
-		*(uint32_t *)(SDRAM_START_ADR + write_pointer) = *ptrBuffer++;
-		write_pointer += 4;
+	// Write all data
+	while (lenBuffer-- != 0)
+	{	// Transfer data to the memory
+		*(uint32_t *)(SDRAM_START_ADR + startAdr) = *ptrBuffer++;
+		startAdr += 4;
 	}
 }
-
 
 //--------------------------------------------------------------
 // lieﬂt einen Block von 32bit Werten aus dem externen SDRAM
@@ -228,16 +208,11 @@ void UB_SDRAM_WriteBuffer32b(uint32_t* ptrBuffer, uint32_t startAdr, uint32_t le
 //--------------------------------------------------------------
 void UB_SDRAM_ReadBuffer32b(uint32_t* ptrBuffer, uint32_t startAdr, uint32_t lenBuffer)
 {
-	volatile uint32_t write_pointer = (uint32_t)startAdr;
-
-
-	// warten bis Controller bereit
 	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
-
-	// alle Daten lesen
-	for (; lenBuffer != 0x00; lenBuffer--) {
-		*ptrBuffer++ = *(volatile uint32_t *)(SDRAM_START_ADR + write_pointer);
-		write_pointer += 4;
+	while (lenBuffer-- != 0)
+	{
+		*ptrBuffer++ = *(volatile uint32_t *)(SDRAM_START_ADR + startAdr);
+		startAdr += 4;
 	}
 }
 
@@ -251,30 +226,29 @@ void P_SDRAM_InitIO(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD |
-		RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG, ENABLE);
-
+	RCC_AHB1PeriphClockCmd(0
+		| RCC_AHB1Periph_GPIOB
+		| RCC_AHB1Periph_GPIOC
+		| RCC_AHB1Periph_GPIOD
+		| RCC_AHB1Periph_GPIOE
+		| RCC_AHB1Periph_GPIOF
+		| RCC_AHB1Periph_GPIOG
+		, ENABLE);
 
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource5, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_FMC);
 
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6;
-
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-
 	GPIO_PinAFConfig(GPIOC, GPIO_PinSource0, GPIO_AF_FMC);
-
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
-
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
-
 
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource0, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource1, GPIO_AF_FMC);
@@ -284,12 +258,8 @@ void P_SDRAM_InitIO(void)
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource14, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOD, GPIO_PinSource15, GPIO_AF_FMC);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 |
-		GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 |
-		GPIO_Pin_15;
-
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
-
 
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource0, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource1, GPIO_AF_FMC);
@@ -303,13 +273,8 @@ void P_SDRAM_InitIO(void)
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource14, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOE, GPIO_PinSource15, GPIO_AF_FMC);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_7 |
-		GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |
-		GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 |
-		GPIO_Pin_14 | GPIO_Pin_15;
-
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
-
 
 	GPIO_PinAFConfig(GPIOF, GPIO_PinSource0, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOF, GPIO_PinSource1, GPIO_AF_FMC);
@@ -323,13 +288,8 @@ void P_SDRAM_InitIO(void)
 	GPIO_PinAFConfig(GPIOF, GPIO_PinSource14, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOF, GPIO_PinSource15, GPIO_AF_FMC);
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 |
-		GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 |
-		GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 |
-		GPIO_Pin_14 | GPIO_Pin_15;
-
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOF, &GPIO_InitStructure);
-
 
 	GPIO_PinAFConfig(GPIOG, GPIO_PinSource0, GPIO_AF_FMC);
 	GPIO_PinAFConfig(GPIOG, GPIO_PinSource1, GPIO_AF_FMC);
@@ -339,9 +299,7 @@ void P_SDRAM_InitIO(void)
 	GPIO_PinAFConfig(GPIOG, GPIO_PinSource15, GPIO_AF_FMC);
 
 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 |
-		GPIO_Pin_5 | GPIO_Pin_8 | GPIO_Pin_15;
-
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_8 | GPIO_Pin_15;
 	GPIO_Init(GPIOG, &GPIO_InitStructure);
 }
 
@@ -402,19 +360,20 @@ void P_SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 
 	FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
 	P_SDRAM_delay(10);
-
 
 	FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
 	FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 
 	FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
@@ -423,11 +382,13 @@ void P_SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 
 	FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 
 	FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
@@ -443,7 +404,8 @@ void P_SDRAM_InitSequence(void)
 	FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
 	FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 
 	FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
 
@@ -454,7 +416,8 @@ void P_SDRAM_InitSequence(void)
 	//-----------------------------------------------
 	FMC_SetRefreshCount(683);
 
-	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET);
+	while (FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+		;
 }
 
 
@@ -462,9 +425,10 @@ void P_SDRAM_InitSequence(void)
 // interne Funktion
 // kleine Pause
 //--------------------------------------------------------------
-static void P_SDRAM_delay(volatile uint32_t nCount)
+static void P_SDRAM_delay(uint32_t nCount)
 {
 	volatile uint32_t index = 0;
-	for (index = (100000 * nCount); index != 0; index--);
+	for (index = (100000 * nCount); index != 0; index--)
+		;
 }
 

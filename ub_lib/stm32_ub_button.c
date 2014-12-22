@@ -18,18 +18,13 @@
 //--------------------------------------------------------------
 #include "stm32_ub_button.h"
 
-
-
 //--------------------------------------------------------------
 // interne Funktionen
 //--------------------------------------------------------------
-#if BUTTON_USE_TIMER==1
-void P_Button_InitTIM(void);
-void P_Button_InitNVIC(void);
+#if BUTTON_USE_TIMER == 1
+	void P_Button_InitTIM(void);
+	void P_Button_InitNVIC(void);
 #endif
-
-
-
 
 //--------------------------------------------------------------
 // Definition aller Buttons
@@ -37,12 +32,12 @@ void P_Button_InitNVIC(void);
 //
 // Widerstand : [GPIO_PuPd_NOPULL,GPIO_PuPd_UP,GPIO_PuPd_DOWN]
 //--------------------------------------------------------------
-BUTTON_t BUTTON[] = {
+const BUTTON_t BUTTON[] = {
 	//	Name		PORT	PIN		CLOCK					Widerstand				Status
 	// PA0 = User-Button auf dem Discovery-Board
-	{ BTN_USER, GPIOA, GPIO_Pin_0, RCC_AHB1Periph_GPIOA, GPIO_PuPd_NOPULL, Bit_RESET },
+	{ BTN_USER, GPIOA, GPIO_Pin_0, RCC_AHB1Periph_GPIOA, GPIO_PuPd_NOPULL },
 };
-
+uint8_t BUTTON_State[] = { Bit_RESET };
 
 //--------------------------------------------------------------
 // Init aller Buttons
@@ -52,7 +47,7 @@ void UB_Button_Init(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	BUTTON_NAME_t btn_name;
 
-	for (btn_name = BUTTON_FIRST; btn_name < BUTTON_ANZ; btn_name++)
+	for (btn_name = BUTTON_FIRST; btn_name < BUTTON_LAST; btn_name++)
 	{
 		// Clock Enable
 		RCC_AHB1PeriphClockCmd(BUTTON[btn_name].BUTTON_CLK, ENABLE);
@@ -96,63 +91,51 @@ BUTTON_STATUS_t UB_Button_Read(BUTTON_NAME_t btn_name)
 //--------------------------------------------------------------
 bool UB_Button_OnPressed(BUTTON_NAME_t btn_name)
 {
-	return (Bit_RESET != BUTTON[btn_name].BUTTON_AKT);
+	return (Bit_RESET != BUTTON_State[btn_name]);
 }
 #endif
 
 
-#if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // Button OnClick Auswertung (entprellt)
 // ret_wert, ist nur einmal true wenn der Button betätigt wurde
 //--------------------------------------------------------------
 bool UB_Button_OnClick(BUTTON_NAME_t btn_name)
 {
-	uint8_t wert, old;
-	static uint8_t old_wert[BUTTON_ANZ];
+	uint8_t state, old;
+	static uint8_t old_state[BUTTON_LAST];
 
-	wert = BUTTON[btn_name].BUTTON_AKT;
-	old = old_wert[btn_name];
-	old_wert[btn_name] = wert;
+	state = BUTTON_State[btn_name];
+	old = old_state[btn_name];
+	old_state[btn_name] = state;
 
-	if (wert == Bit_RESET) {
-		return(false);
-	}
-	else if (old != Bit_RESET) {
-		return(false);
-	}
-	else {
-		return(true);
-	}
+	if (state == Bit_RESET || old != Bit_RESET)
+		return false;
+	return true;
 }
-#endif
 
-
-#if BUTTON_USE_TIMER==1
+#if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // Button OnRelease Auswertung (entprellt)
 // ret_wert, ist nur einmal true wenn der Button losgelassen wurde
 //--------------------------------------------------------------
 bool UB_Button_OnRelease(BUTTON_NAME_t btn_name)
 {
-	uint8_t wert, old;
-	static uint8_t old_wert[BUTTON_ANZ];
+	uint8_t state, old;
+	static uint8_t old_state[BUTTON_LAST];
 
-	wert = BUTTON[btn_name].BUTTON_AKT;
-	old = old_wert[btn_name];
-	old_wert[btn_name] = wert;
+	state = BUTTON_State[btn_name];
+	old = old_state[btn_name];
+	old_state[btn_name] = state;
 
-	if (wert != Bit_RESET)
-		return (false);
-	else if (old == Bit_RESET)
-		return (false);
-	else
-		return (true);
+	if (state != Bit_RESET || old == Bit_RESET)
+		return false;
+	return true;
 }
 #endif
 
 
-#if BUTTON_USE_TIMER==1
+#if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // interne Funktion
 // init vom Timer
@@ -178,7 +161,7 @@ void P_Button_InitTIM(void)
 #endif
 
 
-#if BUTTON_USE_TIMER==1
+#if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // interne Funktion
 // init vom NVIC
@@ -202,23 +185,20 @@ void P_Button_InitNVIC(void)
 #endif
 
 
-#if BUTTON_USE_TIMER==1
+#if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // ISR vom Timer
 //--------------------------------------------------------------
 void UB_BUTTON_TIM_ISR_HANDLER(void)
 {
 	BUTTON_NAME_t btn_name;
-	uint8_t wert;
-
 	// es gibt hier nur eine Interrupt Quelle
 	TIM_ClearITPendingBit(UB_BUTTON_TIM, TIM_IT_Update);
 
 	// alle Buttons einlesen
-	for (btn_name = BUTTON_FIRST; btn_name < BUTTON_ANZ; btn_name++)
+	for (btn_name = BUTTON_FIRST; btn_name < BUTTON_LAST; btn_name++)
 	{
-		wert = GPIO_ReadInputDataBit(BUTTON[btn_name].BUTTON_PORT, BUTTON[btn_name].BUTTON_PIN);
-		BUTTON[btn_name].BUTTON_AKT = wert;
+		BUTTON_State[btn_name] = GPIO_ReadInputDataBit(BUTTON[btn_name].BUTTON_PORT, BUTTON[btn_name].BUTTON_PIN);
 	}
 }
 #endif

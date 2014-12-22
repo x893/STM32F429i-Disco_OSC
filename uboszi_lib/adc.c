@@ -14,16 +14,16 @@
 
 #include "adc.h"
 
-volatile uint16_t ADC_DMA_Buffer_A[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_B[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_C[ADC1d_ANZ * ADC_ARRAY_LEN];  //  (C) sortierte Daten
+volatile uint16_t ADC_DMA_Buffer_A[ADC1d_LAST * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
+volatile uint16_t ADC_DMA_Buffer_B[ADC1d_LAST * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
+volatile uint16_t ADC_DMA_Buffer_C[ADC1d_LAST * ADC_ARRAY_LEN];  //  (C) sortierte Daten
+
 ADC_t ADC_UB;
 
 //--------------------------------------------------------------
-// Definition der benutzten ADC Pins (max=16)
-// Reihenfolge wie bei ADC1d_NAME_t
+// Definition of the ADC pins used (max = 16)
 //--------------------------------------------------------------
-ADC1d_t ADC1d[] =
+const ADC1d_t ADC1d[] =
 {
 	//NAME  ,PORT , PIN      , CLOCK              , Kanal
 	{ ADC_PA5, GPIOA, GPIO_Pin_5, RCC_AHB1Periph_GPIOA, ADC_Channel_5 }, // ADC an PA5 = ADC12_IN5
@@ -43,12 +43,11 @@ void ADC_searchTrigger_A2(void);
 void ADC_searchTrigger_B2(void);
 
 //--------------------------------------------------------------
-// init vom ADC1 und ADC2 im DMA Mode
-// und starten der zyklischen Wandlung
+// Init ADC1 and ADC2 in DMA Mode and start the cyclic conversion
 //--------------------------------------------------------------
 void ADC_Init_ALL(void)
 {
-	// init aller Variablen
+	// Init all variables
 	ADC_UB.status = ADC_VORLAUF;
 	ADC_UB.trigger_pos = 0;
 	ADC_UB.trigger_quarter = 0;
@@ -69,97 +68,47 @@ void ADC_Init_ALL(void)
 //
 // n : [0...16]
 //--------------------------------------------------------------
+const uint16_t ADC_Freq_Table[] = {
+	5375,	3124,	// 5s => 5Hz	= 200ms
+	2687,	2499,	// 2s => 12,5Hz	= 80ms
+	1343,	2499,	// 1s => 25Hz	= 40ms
+	671,	2499,	// 500ms => 50Hz	= 20ms
+	335,	1999,	// 200ms => 125Hz	= 8ms
+	167,	1999,	// 100ms => 250Hz	= 4ms
+	83,		1999,	// 50ms  => 500Hz	= 2ms
+	41,		1599,	// 20ms  => 1,25kHz = 800us
+	20,		1599,	// 10ms  => 2,5kHz	= 400us
+	20,		799,	// 5ms   => 5kHz	= 200us
+	20,		319,	// 2ms   => 12,5kHz	= 80us
+	20,		159,	// 1ms   => 25kHz	= 40us
+	20,		79,		// 500us => 50kHz	= 20us
+	20,		31,		// 200us => 125kHz	= 8us
+	20,		15,		// 100us => 250kHz	= 4us
+	20,		7,		// 50us  => 500kHz	= 2us
+	20,		3,		// 25us  => 1MHz	= 1us
+};
 void ADC_change_Frq(uint32_t n)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
-	uint32_t prescaler, period;
+	register uint32_t prescaler = OSZI_TIM2_PRESCALE;
+	register uint32_t period = OSZI_TIM2_PERIODE;
 
 	// Timer anhalten
 	TIM_Cmd(TIM2, DISABLE);
-
-	switch (n)
+	if (n <= 16)
 	{
-	case 0: // 5s=>5Hz=5s
-		prescaler = 5375;
-		period = 3124;
-		break;
-	case 1: // 2s=>12,5Hz=80ms
-		prescaler = 2687;
-		period = 2499;
-		break;
-	case 2: // 1s=>25Hz=40ms
-		prescaler = 1343;
-		period = 2499;
-		break;
-	case 3: // 500ms=>50Hz=20ms
-		prescaler = 671;
-		period = 2499;
-		break;
-	case 4: // 200ms=>125Hz=8ms
-		prescaler = 335;
-		period = 1999;
-		break;
-	case 5: // 100ms=>250Hz=4ms
-		prescaler = 167;
-		period = 1999;
-		break;
-	case 6: // 50ms=>500Hz=2ms
-		prescaler = 83;
-		period = 1999;
-		break;
-	case 7: // 20ms=>1,25kHz=800us
-		prescaler = 41;
-		period = 1599;
-		break;
-	case 8: // 10ms=>2,5kHz400us
-		prescaler = 20;
-		period = 1599;
-		break;
-	case 9: // 5ms=>5kHz=200us
-		prescaler = 20;
-		period = 799;
-		break;
-	case 10: // 2ms=>12,5kHz=80us
-		prescaler = 20;
-		period = 319;
-		break;
-	case 11: // 1ms=>25kHz=40us
-		prescaler = 20;
-		period = 159;
-		break;
-	case 12: // 500us=>50kHz=20us
-		prescaler = 20;
-		period = 79;
-		break;
-	case 13: // 200us=>125kHz=8us
-		prescaler = 20;
-		period = 31;
-		break;
-	case 14: // 100us=>250kHz=4us
-		prescaler = 20;
-		period = 15;
-		break;
-	case 15: // 50us=>500kHz=2us
-		prescaler = 20;
-		period = 7;
-		break;
-	case 16: // 25us=>1MHz=1us
-		prescaler = 20;
-		period = 3;
-		break;
-	default:
-		prescaler = OSZI_TIM2_PRESCALE;
-		period = OSZI_TIM2_PERIODE;
+		prescaler = ADC_Freq_Table[n * 2];
+		period = ADC_Freq_Table[n * 2 + 1];
 	}
-
-	// einstellen der neuen Werte
+	
+	// Set the new values
 	TIM_TimeBaseStructure.TIM_Period = period;
 	TIM_TimeBaseStructure.TIM_Prescaler = prescaler;
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 
-	// Timer wieder starten, falls notwendig
+	// Start timer again, if necessary
 	if (ADC_UB.status != ADC_READY)
 	{
 		// Timer2 enable
@@ -177,15 +126,13 @@ void ADC_change_Mode(uint32_t n)
 {
 	DMA_InitTypeDef DMA_InitStructure;
 
-	// Merker setzen
+	// Set flag
 	ADC_UB.dma_status = 1;
 
-	// Timer analten
 	TIM_Cmd(TIM2, DISABLE);
 
-	// DMA-Disable
 	DMA_Cmd(ADC1_DMA_STREAM, DISABLE);
-	// warten bis DMA-Stream disable
+	// Wait until DMA stream disable
 	while (DMA_GetCmdStatus(ADC1_DMA_STREAM) == ENABLE)
 		;
 	DMA_DeInit(ADC1_DMA_STREAM);
@@ -195,7 +142,7 @@ void ADC_change_Mode(uint32_t n)
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)ADC1_CDR_ADDRESS;
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) & ADC_DMA_Buffer_A;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-	DMA_InitStructure.DMA_BufferSize = ADC1d_ANZ * ADC_ARRAY_LEN;
+	DMA_InitStructure.DMA_BufferSize = ADC1d_LAST * ADC_ARRAY_LEN;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
 	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -211,30 +158,30 @@ void ADC_change_Mode(uint32_t n)
 	if (n != 1)
 	{
 		// Double-Buffer-Mode
-		ADC1_DMA_STREAM->CR |= (uint32_t)DMA_SxCR_DBM;
+		ADC1_DMA_STREAM->CR |= DMA_SxCR_DBM;
 		ADC1_DMA_STREAM->M1AR = (uint32_t) & ADC_DMA_Buffer_B;
 	}
 	else
 	{
 		// Normal Mode
-		ADC1_DMA_STREAM->CR &= ~(uint32_t)DMA_SxCR_DBM;
+		ADC1_DMA_STREAM->CR &= ~DMA_SxCR_DBM;
 	}
 
-	// Flags löschen
+	// Clear flags
 	DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
 	DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
 
 	// DMA-enable
 	DMA_Cmd(ADC1_DMA_STREAM, ENABLE);
 
-	// warten bis DMA-Stream enable
+	// Wait until DMA enable Stream
 	while (DMA_GetCmdStatus(ADC1_DMA_STREAM) == DISABLE)
 		;
 
-	// NVIC neu initialisieren
+	// Initialize NVIC
 	P_ADC_InitNVIC();
 
-	// Timer wieder starten, falls notwendig
+	// Start timer again, if necessary
 	if ((ADC_UB.status != ADC_READY) || (n == 1))
 	{
 		// Timer2 enable
@@ -242,41 +189,38 @@ void ADC_change_Mode(uint32_t n)
 		TIM_Cmd(TIM2, ENABLE);
 	}
 
-	// Merker zurücksetzen
+	// Reset flag
 	ADC_UB.dma_status = 0;
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// löschen aller ADC-Arrays
+// Clear all ADC arrays
 //--------------------------------------------------------------
 void P_ADC_Clear(void)
 {
-	uint32_t n;
+	register uint32_t n = ADC1d_LAST * ADC_ARRAY_LEN;
+	register volatile uint16_t *dstA = ADC_DMA_Buffer_A;
+	register volatile uint16_t *dstB = ADC_DMA_Buffer_B;
+	register volatile uint16_t *dstC = ADC_DMA_Buffer_C;
 
-	for (n = 0; n < ADC_ARRAY_LEN; n++)
+	while (n != 0)
 	{
-		ADC_DMA_Buffer_A[n * 2] = 0x00;
-		ADC_DMA_Buffer_A[(n * 2) + 1] = 0x00;
-
-		ADC_DMA_Buffer_B[n * 2] = 0x00;
-		ADC_DMA_Buffer_B[(n * 2) + 1] = 0x00;
-
-		ADC_DMA_Buffer_C[n * 2] = 0x00;
-		ADC_DMA_Buffer_C[(n * 2) + 1] = 0x00;
+		n--;
+		*dstA++ = 0;
+		*dstB++ = 0;
+		*dstC++ = 0;
 	}
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// Init aller IO-Pins
+// Init all IO-Pins
 //--------------------------------------------------------------
 void P_ADC_InitIO(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	ADC1d_NAME_t adc_name;
 
-	for (adc_name = ADC_FIRST; adc_name < ADC1d_ANZ; adc_name++)
+	for (adc_name = ADC_FIRST; adc_name < ADC1d_LAST; adc_name++)
 	{
 		// Clock Enable
 		RCC_AHB1PeriphClockCmd(ADC1d[adc_name].ADC_CLK, ENABLE);
@@ -290,8 +234,7 @@ void P_ADC_InitIO(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// Init vom DMA (im Double-Buffer-Mode)
+// Init DMA (im Double-Buffer-Mode)
 //--------------------------------------------------------------
 void P_ADC_InitDMA_DoubleBuffer(void)
 {
@@ -302,7 +245,7 @@ void P_ADC_InitDMA_DoubleBuffer(void)
 
 	// DMA-Disable
 	DMA_Cmd(ADC1_DMA_STREAM, DISABLE);
-	// warten bis DMA-Stream disable
+	// Wait for DMA-Stream disable
 	while (DMA_GetCmdStatus(ADC1_DMA_STREAM) == ENABLE)
 		;
 	DMA_DeInit(ADC1_DMA_STREAM);
@@ -312,7 +255,7 @@ void P_ADC_InitDMA_DoubleBuffer(void)
 	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)ADC1_CDR_ADDRESS;
 	DMA_InitStructure.DMA_Memory0BaseAddr = (uint32_t) & ADC_DMA_Buffer_A;
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralToMemory;
-	DMA_InitStructure.DMA_BufferSize = ADC1d_ANZ * ADC_ARRAY_LEN;
+	DMA_InitStructure.DMA_BufferSize = ADC1d_LAST * ADC_ARRAY_LEN;
 	DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
 	DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_HalfWord;
@@ -326,39 +269,37 @@ void P_ADC_InitDMA_DoubleBuffer(void)
 	DMA_Init(ADC1_DMA_STREAM, &DMA_InitStructure);
 
 	// Double-Buffer-Mode
-	ADC1_DMA_STREAM->CR |= (uint32_t)DMA_SxCR_DBM;
+	ADC1_DMA_STREAM->CR |= DMA_SxCR_DBM;
 	ADC1_DMA_STREAM->M1AR = (uint32_t) & ADC_DMA_Buffer_B;
 
-	// Flags löschen
+	// Clear flasg
 	DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
 	DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
 
 	// DMA-enable
 	DMA_Cmd(ADC1_DMA_STREAM, ENABLE);
 
-	// warten bis DMA-Stream enable
+	// Wait for DMA-Stream enable
 	while (DMA_GetCmdStatus(ADC1_DMA_STREAM) == DISABLE)
 		;
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// init vom NVIC
+// Init NVIC
 //--------------------------------------------------------------
 void P_ADC_InitNVIC(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	//---------------------------------------------
-	// init vom DMA Interrupt
-	// für TransferComplete Interrupt
-	// und HalfTransferComplete Interrupt
+	// Init DMA interrupt for Transfer Complete Interrupt
+	// and Half Transfer Complete Interrupt
 	// DMA2, Stream0, Channel0
 	//---------------------------------------------
 
 	DMA_ITConfig(DMA2_Stream0, DMA_IT_TC | DMA_IT_HT, ENABLE);
 
-	// NVIC konfig
+	// NVIC config
 	NVIC_InitStructure.NVIC_IRQChannel = DMA2_Stream0_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -367,8 +308,7 @@ void P_ADC_InitNVIC(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// Init von ADC Nr.1+2 (im Dual regular simultaneous mode)
+// Init ADC 1+2 (in Dual regular simultaneous mode)
 //
 // @ 12bit + ADC_TwoSamplingDelay_5Cycles + 21MHz ADC-Clock :
 //
@@ -399,11 +339,10 @@ void P_ADC_InitADC(void)
 	//-------------------------------------
 
 	ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
-	ADC_InitStructure.ADC_ScanConvMode = DISABLE; // nur ein Eintrag in der Regular-List -> disable
+	ADC_InitStructure.ADC_ScanConvMode = DISABLE; // only one entry in the Regular List -> disable
 	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
 	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;
-	ADC_InitStructure.ADC_ExternalTrigConvEdge =
-			ADC_ExternalTrigConvEdge_Rising; // Master wird getriggert
+	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_Rising; // Master is triggered
 	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
 	ADC_InitStructure.ADC_NbrOfConversion = 1;
 	ADC_Init(ADC1, &ADC_InitStructure);
@@ -415,10 +354,10 @@ void P_ADC_InitADC(void)
 	//-------------------------------------
 
 	ADC_InitStructure.ADC_Resolution = ADC_Resolution_12b;
-	ADC_InitStructure.ADC_ScanConvMode = DISABLE; // nur ein Eintrag in der Regular-List -> disable
+	ADC_InitStructure.ADC_ScanConvMode = DISABLE; // only one entry in the Regular List -> disable
 	ADC_InitStructure.ADC_ContinuousConvMode = DISABLE;
 	ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_T2_TRGO;
-	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None; // Slave darf nicht gertriggert werden
+	ADC_InitStructure.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None; // Slave may not be triggered
 	ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right;
 	ADC_InitStructure.ADC_NbrOfConversion = 1;
 	ADC_Init(ADC2, &ADC_InitStructure);
@@ -427,8 +366,7 @@ void P_ADC_InitADC(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// Enable und start vom ADC und DMA
+// Enable and start from the ADC and DMA
 //--------------------------------------------------------------
 void P_ADC_Start(void)
 {
@@ -442,8 +380,7 @@ void P_ADC_Start(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// init vom Timer
+// Init Timer
 //--------------------------------------------------------------
 void P_ADC_InitTimer2(void)
 {
@@ -468,22 +405,23 @@ void P_ADC_InitTimer2(void)
 }
 
 //--------------------------------------------------------------
-// Interrupt (ISR-Funktion)
-// wird bei DMA Interrupt aufgerufen
-//   (Bei HalfTransferComplete und TransferCompleteInterrupt)
+// Interrupt (ISR-Function)
+// is called when DMA interrupt
+//   (In Half Transfer Complete and TransferCompleteInterrupt)
 //
 //--------------------------------------------------------------
 void DMA2_Stream0_IRQHandler(void)
 {
 	if (DMA_GetITStatus(DMA2_Stream0, DMA_IT_HTIF0))
 	{
-		// HalfTransferInterruptComplete Interrupt von DMA2 ist aufgetreten
+		// HalfTransferInterruptComplete interrupt from DMA2 occurred
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
 
 		if (ADC_UB.dma_status == 0)
 		{
-			if ((ADC_UB.status == ADC_RUNNING)
-					|| (ADC_UB.status == ADC_PRE_TRIGGER))
+			if (ADC_UB.status == ADC_RUNNING
+			||	ADC_UB.status == ADC_PRE_TRIGGER
+				)
 			{
 				if ((ADC1_DMA_STREAM->CR & DMA_SxCR_CT) == 0)
 				{
@@ -498,7 +436,7 @@ void DMA2_Stream0_IRQHandler(void)
 	}
 	else if (DMA_GetITStatus(DMA2_Stream0, DMA_IT_TCIF0))
 	{
-		// TransferInterruptComplete Interrupt von DMA2 ist aufgetreten
+		// TransferInterruptComplete interrupt from DMA2 occurred
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
 
 		if (ADC_UB.dma_status == 0)
@@ -535,8 +473,7 @@ void DMA2_Stream0_IRQHandler(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// sucht Trigger-Punkt in Quadrant-1
+// Examined trigger point in quadrant 1
 //--------------------------------------------------------------
 void ADC_searchTrigger_A1(void)
 {
@@ -546,7 +483,7 @@ void ADC_searchTrigger_A1(void)
 	if (Menu.trigger.mode == 1)
 		return;
 
-	if (Menu.trigger.source == 0)
+	if (Menu.trigger.source == MENU_TRIGGER_CH1)
 	{
 		ch = 0;
 		trigger = Menu.trigger.value_ch1;
@@ -608,8 +545,7 @@ void ADC_searchTrigger_A1(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// sucht Trigger-Punkt in Quadrant-2
+// Examined trigger point in quadrant 2
 //--------------------------------------------------------------
 void ADC_searchTrigger_A2(void)
 {
@@ -619,7 +555,7 @@ void ADC_searchTrigger_A2(void)
 	if (Menu.trigger.mode == 1)
 		return;
 
-	if (Menu.trigger.source == 0)
+	if (Menu.trigger.source == MENU_TRIGGER_CH1)
 	{
 		ch = 0;
 		trigger = Menu.trigger.value_ch1;
@@ -681,8 +617,7 @@ void ADC_searchTrigger_A2(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// sucht Trigger-Punkt in Quadrant-3
+// Examined trigger point in quadrant 3
 //--------------------------------------------------------------
 void ADC_searchTrigger_B1(void)
 {
@@ -692,7 +627,7 @@ void ADC_searchTrigger_B1(void)
 	if (Menu.trigger.mode == 1)
 		return;
 
-	if (Menu.trigger.source == 0)
+	if (Menu.trigger.source == MENU_TRIGGER_CH1)
 	{
 		ch = 0;
 		trigger = Menu.trigger.value_ch1;
@@ -754,8 +689,7 @@ void ADC_searchTrigger_B1(void)
 }
 
 //--------------------------------------------------------------
-// interne Funktion
-// sucht Trigger-Punkt in Quadrant-4
+// Examined trigger point in quadrant 4
 //--------------------------------------------------------------
 void ADC_searchTrigger_B2(void)
 {
@@ -765,7 +699,7 @@ void ADC_searchTrigger_B2(void)
 	if (Menu.trigger.mode == 1)
 		return;
 
-	if (Menu.trigger.source == 0)
+	if (Menu.trigger.source == MENU_TRIGGER_CH1)
 	{
 		ch = 0;
 		trigger = Menu.trigger.value_ch1;

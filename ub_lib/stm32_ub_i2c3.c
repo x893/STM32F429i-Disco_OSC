@@ -34,7 +34,7 @@ uint8_t I2C3_DATA[I2C3_MULTIBYTE_ANZ]; // Array
 //--------------------------------------------------------------
 // Definition von I2C3
 //--------------------------------------------------------------
-I2C3_DEV_t I2C3DEV = {
+const I2C3_DEV_t I2C3DEV = {
 	// PORT , PIN      , Clock              , Source 
 	{ GPIOA, GPIO_Pin_8, RCC_AHB1Periph_GPIOA, GPIO_PinSource8 }, // SCL an PA8
 	{ GPIOC, GPIO_Pin_9, RCC_AHB1Periph_GPIOC, GPIO_PinSource9 }, // SDA an PC9

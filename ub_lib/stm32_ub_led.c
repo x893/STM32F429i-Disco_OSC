@@ -23,7 +23,7 @@
 //
 // Init : [LED_OFF,LED_ON]
 //--------------------------------------------------------------
-LED_t LED[] = {
+const LED_t LED[] = {
 	// Name    ,PORT , PIN       , CLOCK              , Init
 	// PG13 = Gruene LED auf dem Discovery-Board
 	{ LED_GREEN, GPIOG, GPIO_Pin_13, RCC_AHB1Periph_GPIOG, LED_OFF },
@@ -39,20 +39,21 @@ void UB_Led_Init(void)
 	GPIO_InitTypeDef  GPIO_InitStructure;
 	LED_NAME_t led_name;
 
-	for (led_name = LED_FIRST; led_name < LED_ANZ; led_name++)
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+
+	for (led_name = LED_FIRST; led_name < LED_LAST; led_name++)
 	{
-		// Clock Enable
+		// LED port clock Enable
 		RCC_AHB1PeriphClockCmd(LED[led_name].LED_CLK, ENABLE);
 
-		// Config als Digital-Ausgang
+		// Config as digital output
 		GPIO_InitStructure.GPIO_Pin = LED[led_name].LED_PIN;
-		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 		GPIO_Init(LED[led_name].LED_PORT, &GPIO_InitStructure);
 
-		// Default Wert einstellen
+		// Set default value
 		if (LED[led_name].LED_INIT == LED_OFF)
 		{
 			UB_Led_Off(led_name);

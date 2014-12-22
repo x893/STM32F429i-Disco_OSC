@@ -32,16 +32,9 @@ arm_rfft_instance_f32 S;
 //--------------------------------------------------------------
 uint32_t fft_init(void)
 {
-	arm_status status;
-	uint32_t doBitReverse = 1;
-	uint32_t ifftFlag = 0;
-
-	status = ARM_MATH_SUCCESS;
 	// FFT init
-	status = arm_rfft_init_f32(&S, &S_CFFT, FFT_LENGTH, ifftFlag, doBitReverse);
-	if (status != ARM_MATH_SUCCESS)
-		return (0);
-
+	if (arm_rfft_init_f32(&S, &S_CFFT, FFT_LENGTH, 0, 1) != ARM_MATH_SUCCESS)
+		return 0;
 	return 1;
 }
 

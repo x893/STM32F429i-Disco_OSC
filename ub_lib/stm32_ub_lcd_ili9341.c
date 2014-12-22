@@ -44,12 +44,7 @@
 
 #include "stm32_ub_lcd_ili9341.h"
 
-LCD_MODE_t  LCD_DISPLAY_MODE;
-uint32_t LCD_CurrentFrameBuffer;   // aktuelle Adresse zum zeichnen
-uint32_t LCD_CurrentLayer;         // 0=Hintergrund, 1=Vodergrund
-uint32_t LCD_CurrentOrientation;   // 0=0Grad, 1=180Grad
-uint32_t LCD_MenuFrameBuffer;      // Adressse vom Menu
-uint32_t LCD_ADCFrameBuffer;       // Adressse vom ADC
+LCD_Context_t LCD_Context;
 
 void P_LCD9341_InitIO(void);
 void P_LCD9341_InitLTCD(void);
@@ -62,12 +57,6 @@ void P_LCD9341_DATA(uint8_t wert);
 void P_LCD9341_Delay(volatile uint32_t nCount);
 
 //--------------------------------------------------------------
-// Globale Variabeln
-//--------------------------------------------------------------
-static uint16_t aktCursorX, aktCursorY;
-static uint32_t aktCursorPos;
-
-//--------------------------------------------------------------
 // Init vom LCD-Display
 // Return_wert :
 //  -> ERROR   , wenn Display nicht gefunden wurde
@@ -75,28 +64,24 @@ static uint32_t aktCursorPos;
 //--------------------------------------------------------------
 ErrorStatus UB_LCD_Init(void)
 {
-	// init aller IO-Pins
-	P_LCD9341_InitIO();
-	// init vom SPI-BUS
-	UB_SPI5_Init(SPI_MODE_0_MSB);
-	// LCD-Controller initialisieren
-	P_LCD9341_InitChip();
-	// beim init auf Portrait-Mode
-	LCD_DISPLAY_MODE = PORTRAIT;
-	// init vom SDRAM
-	UB_SDRAM_Init();
-	// init vom LTDC
-	P_LCD9341_InitLTCD();
+	P_LCD9341_InitIO();				// Init IO-Pins
+	UB_SPI5_Init(SPI_MODE_0_MSB);	// Init SPI-BUS
+	P_LCD9341_InitChip();			// LCD-Controller init
+	LCD_Context.LCD_DISPLAY_MODE = PORTRAIT;
+	
+	UB_SDRAM_Init();				// Init SDRAM
 
-	aktCursorX = 0;
-	aktCursorY = 0;
-	aktCursorPos = 0;
+	P_LCD9341_InitLTCD();			// Init LTDC
 
-	LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
-	LCD_MenuFrameBuffer = LCD_FRAME_BUFFER + (2 * LCD_FRAME_OFFSET);
-	LCD_ADCFrameBuffer = LCD_FRAME_BUFFER + (3 * LCD_FRAME_OFFSET);
-	LCD_CurrentLayer = 0;
-	LCD_CurrentOrientation = 0;
+	LCD_Context.aktCursorX = 0;
+	LCD_Context.aktCursorY = 0;
+	LCD_Context.aktCursorPos = 0;
+
+	LCD_Context.LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
+	LCD_Context.LCD_MenuFrameBuffer = LCD_FRAME_BUFFER + (2 * LCD_FRAME_OFFSET);
+	LCD_Context.LCD_ADCFrameBuffer = LCD_FRAME_BUFFER + (3 * LCD_FRAME_OFFSET);
+	LCD_Context.LCD_CurrentLayer = 0;
+	LCD_Context.LCD_CurrentOrientation = 0;
 
 	return SUCCESS;
 }
@@ -155,8 +140,8 @@ void UB_LCD_LayerInit_Fullscreen(void)
 //--------------------------------------------------------------
 void UB_LCD_SetLayer_1(void)
 {
-	LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
-	LCD_CurrentLayer = 0;
+	LCD_Context.LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
+	LCD_Context.LCD_CurrentLayer = 0;
 }
 
 //--------------------------------------------------------------
@@ -164,8 +149,8 @@ void UB_LCD_SetLayer_1(void)
 //--------------------------------------------------------------
 void UB_LCD_SetLayer_2(void)
 {
-	LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
-	LCD_CurrentLayer = 1;
+	LCD_Context.LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
+	LCD_Context.LCD_CurrentLayer = 1;
 }
 
 //--------------------------------------------------------------
@@ -173,7 +158,7 @@ void UB_LCD_SetLayer_2(void)
 //--------------------------------------------------------------
 void UB_LCD_SetLayer_Menu(void)
 {
-	LCD_CurrentFrameBuffer = LCD_MenuFrameBuffer;
+	LCD_Context.LCD_CurrentFrameBuffer = LCD_Context.LCD_MenuFrameBuffer;
 	// CurrentLayer nicht verändern
 }
 
@@ -182,7 +167,7 @@ void UB_LCD_SetLayer_Menu(void)
 //--------------------------------------------------------------
 void UB_LCD_SetLayer_ADC(void)
 {
-	LCD_CurrentFrameBuffer = LCD_ADCFrameBuffer;
+	LCD_Context.LCD_CurrentFrameBuffer = LCD_Context.LCD_ADCFrameBuffer;
 	// CurrentLayer nicht verändern
 }
 
@@ -191,27 +176,27 @@ void UB_LCD_SetLayer_ADC(void)
 //--------------------------------------------------------------
 void UB_LCD_SetLayer_Back(void)
 {
-	if (LCD_CurrentLayer == 0)
+	if (LCD_Context.LCD_CurrentLayer == 0)
 	{
-		LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
+		LCD_Context.LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER;
 	}
 	else
 	{
-		LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
+		LCD_Context.LCD_CurrentFrameBuffer = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
 	}
 }
 
 //--------------------------------------------------------------
-// Füllt den aktuellen Layer komplett mit einer Farbe
+// Fills the current layer complete with a color
 //--------------------------------------------------------------
 void UB_LCD_FillLayer(uint16_t color)
 {
-	uint32_t index = 0;
-
-	// Bildschirm loeschen
-	for (index = 0x00; index < LCD_FRAME_OFFSET; index += 2)
+	register uint32_t index = LCD_PIXEL;
+	register uint16_t *dst = (uint16_t*)LCD_Context.LCD_CurrentFrameBuffer;
+	while (index != 0)
 	{
-		*(volatile uint16_t*)(LCD_CurrentFrameBuffer + index) = color;
+		index--;
+		*dst++ = color;
 	}
 }
 
@@ -219,15 +204,15 @@ void UB_LCD_FillLayer(uint16_t color)
 // setzt Transparenz Wert vom aktuellen Layer
 // wert : [0...255] 0=durchsichtig ... 255=solid
 //--------------------------------------------------------------
-void UB_LCD_SetTransparency(uint8_t wert)
+void UB_LCD_SetTransparency(uint8_t alpha)
 {
-	if (LCD_CurrentLayer == 0)
+	if (LCD_Context.LCD_CurrentLayer == 0)
 	{
-		LTDC_LayerAlpha(LTDC_Layer1, wert);
+		LTDC_LayerAlpha(LTDC_Layer1, alpha);
 	}
 	else
 	{
-		LTDC_LayerAlpha(LTDC_Layer2, wert);
+		LTDC_LayerAlpha(LTDC_Layer2, alpha);
 	}
 	LTDC_ReloadConfig(LTDC_IMReload);
 }
@@ -237,11 +222,11 @@ void UB_LCD_SetTransparency(uint8_t wert)
 //--------------------------------------------------------------
 void UB_LCD_SetCursor2Draw(uint16_t xpos, uint16_t ypos)
 {
-	aktCursorX = xpos;
-	aktCursorY = ypos;
+	register LCD_Context_t *lcd = &LCD_Context;
 
-	aktCursorPos = LCD_CurrentFrameBuffer
-		+ (2 * ((aktCursorY * LCD_MAXX) + aktCursorX));
+	lcd->aktCursorX = xpos;
+	lcd->aktCursorY = ypos;
+	lcd->aktCursorPos = lcd->LCD_CurrentFrameBuffer + (2 * ((lcd->aktCursorY * LCD_MAXX) + lcd->aktCursorX));
 }
 
 //--------------------------------------------------------------
@@ -250,31 +235,33 @@ void UB_LCD_SetCursor2Draw(uint16_t xpos, uint16_t ypos)
 //--------------------------------------------------------------
 void UB_LCD_DrawPixel(uint16_t color)
 {
-	*(volatile uint16_t*)(aktCursorPos) = color;
-	if (LCD_DISPLAY_MODE == PORTRAIT)
+	register LCD_Context_t *lcd = &LCD_Context;
+
+	*(volatile uint16_t*)(lcd->aktCursorPos) = color;
+
+	if (lcd->LCD_DISPLAY_MODE == PORTRAIT)
 	{
-		aktCursorX++;
-		if (aktCursorX >= LCD_MAXX)
+		lcd->aktCursorX++;
+		if (lcd->aktCursorX >= LCD_MAXX)
 		{
-			aktCursorX = 0;
-			aktCursorY++;
-			if (aktCursorY >= LCD_MAXY)
-				aktCursorY = 0;
+			lcd->aktCursorX = 0;
+			lcd->aktCursorY++;
+			if (lcd->aktCursorY >= LCD_MAXY)
+				lcd->aktCursorY = 0;
 		}
 	}
 	else
 	{
-		aktCursorY++;
-		if (aktCursorY >= LCD_MAXY)
+		lcd->aktCursorY++;
+		if (lcd->aktCursorY >= LCD_MAXY)
 		{
-			aktCursorY = 0;
-			aktCursorX++;
-			if (aktCursorX >= LCD_MAXX)
-				aktCursorX = 0;
+			lcd->aktCursorY = 0;
+			lcd->aktCursorX++;
+			if (lcd->aktCursorX >= LCD_MAXX)
+				lcd->aktCursorX = 0;
 		}
 	}
-	aktCursorPos = LCD_CurrentFrameBuffer
-		+ (2 * ((aktCursorY * LCD_MAXX) + aktCursorX));
+	lcd->aktCursorPos = lcd->LCD_CurrentFrameBuffer + (2 * ((lcd->aktCursorY * LCD_MAXX) + lcd->aktCursorX));
 }
 
 //--------------------------------------------------------------
@@ -287,11 +274,11 @@ void UB_LCD_SetMode(LCD_MODE_t mode)
 {
 	if (mode == PORTRAIT)
 	{
-		LCD_DISPLAY_MODE = PORTRAIT;
+		LCD_Context.LCD_DISPLAY_MODE = PORTRAIT;
 	}
 	else
 	{
-		LCD_DISPLAY_MODE = LANDSCAPE;
+		LCD_Context.LCD_DISPLAY_MODE = LANDSCAPE;
 	}
 }
 
@@ -302,7 +289,7 @@ void UB_LCD_Rotate_0(void)
 {
 	P_LCD9341_CMD(LCD_MAC);
 	P_LCD9341_DATA(0xC8);
-	LCD_CurrentOrientation = 0;
+	LCD_Context.LCD_CurrentOrientation = 0;
 }
 
 //--------------------------------------------------------------
@@ -312,7 +299,7 @@ void UB_LCD_Rotate_180(void)
 {
 	P_LCD9341_CMD(LCD_MAC);
 	P_LCD9341_DATA(0x08);
-	LCD_CurrentOrientation = 1;
+	LCD_Context.LCD_CurrentOrientation = 1;
 }
 
 //--------------------------------------------------------------
@@ -321,14 +308,14 @@ void UB_LCD_Rotate_180(void)
 //--------------------------------------------------------------
 void UB_LCD_Copy_Layer1_to_Layer2(void)
 {
-	uint32_t index;
-	uint32_t quelle = LCD_FRAME_BUFFER;
-	uint32_t ziel = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
-
-	for (index = 0; index < LCD_FRAME_OFFSET; index += 2)
+	register uint32_t index = LCD_PIXEL;
+	register uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER);
+	register uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
+	
+	while (index != 0)
 	{
-		*(volatile uint16_t*)(ziel + index) = *(volatile uint16_t*)(quelle
-			+ index);
+		index--;
+		*dst++ = *src++;
 	}
 }
 
@@ -338,14 +325,14 @@ void UB_LCD_Copy_Layer1_to_Layer2(void)
 //--------------------------------------------------------------
 void UB_LCD_Copy_Layer2_to_Layer1(void)
 {
-	uint32_t index;
-	uint32_t quelle = LCD_FRAME_BUFFER + LCD_FRAME_OFFSET;
-	uint32_t ziel = LCD_FRAME_BUFFER;
-
-	for (index = 0; index < LCD_FRAME_OFFSET; index += 2)
+	register uint32_t index = LCD_PIXEL;
+	register uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
+	register uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER);
+	
+	while (index != 0)
 	{
-		*(volatile uint16_t*)(ziel + index) = *(volatile uint16_t*)(quelle
-			+ index);
+		index--;
+		*dst++ = *src++;
 	}
 }
 
@@ -355,7 +342,7 @@ void UB_LCD_Copy_Layer2_to_Layer1(void)
 //--------------------------------------------------------------
 void UB_LCD_Refresh(void)
 {
-	if (LCD_CurrentLayer == 0)
+	if (LCD_Context.LCD_CurrentLayer == 0)
 	{
 		UB_LCD_SetLayer_2();
 		UB_LCD_SetTransparency(0);
@@ -388,10 +375,6 @@ void P_LCD9341_InitIO(void)
 	RCC_AHB1PeriphClockCmd(LCD_CS_GPIO_CLK, ENABLE);
 
 	GPIO_InitStructure.GPIO_Pin = LCD_CS_PIN;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_Init(LCD_CS_GPIO_PORT, &GPIO_InitStructure);
 
 	P_LCD9341_CS(Bit_SET);

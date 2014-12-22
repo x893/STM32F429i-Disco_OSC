@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 //--------------------------------------------------------------
 // Defines der Farben
 //--------------------------------------------------------------
@@ -26,21 +25,16 @@
 #define  MENU_BG_COL        RGB_COL_BLUE      // Menu Hintergrund
 #define  MENU_AK_COL        RGB_COL_RED       // Aktiver Hintergrund
 
-
 //--------------------------------------------------------------
 // Defines der Schrift (nicht ändern !!)
 //--------------------------------------------------------------
 #define  FONT_H             10 // hoehe der Schriftart
 #define  FONT_W             7  // breite der Schriftart
 
-
-
-
 //--------------------------------------------------------------
 // Defines zum Umrechnen von Spannungen
 //--------------------------------------------------------------
 #define  FAKTOR_ADC            3.0/4095
-
 
 //--------------------------------------------------------------
 // Defines zum Umrechnen von Spannungen
@@ -89,17 +83,15 @@
 #define  FFAKTOR_50u           500.0f / 4095 / 2
 #define  FFAKTOR_25u          1000.0f / 4095 / 2
 
-
-
 //--------------------------------------------------------------
 // Anzahl der Nachkommastellen bei Float
 //  Faktor ->  100 = 2 Nachkommastellen,  Formatierung -> "%d.%02d"
 //  Faktor -> 1000 = 3 Nachkommastellen,  Formatierung -> "%d.%03d"
 //  usw
 //--------------------------------------------------------------
-#define  STRING_FLOAT_FAKTOR     100    // 100 = 2 Nachkommastellen
-#define  STRING_FLOAT_FORMAT "%d.%02d"  // Formatierung
-#define  STRING_FLOAT_FORMAT2 "-%d.%02d"  // Formatierung
+#define  STRING_FLOAT_FAKTOR	100			// 100 = 2 Nachkommastellen
+#define  STRING_FLOAT_FORMAT	"%d.%02d"	// Formatierung
+#define  STRING_FLOAT_FORMAT2	"-%d.%02d"	// Formatierung
 
 
 //--------------------------------------------------------------
@@ -115,53 +107,49 @@
 // Button der GUI
 //--------------------------------------------------------------
 typedef enum {
-  GUI_BTN_NONE =0,
-  GUI_BTN_UP,
-  GUI_BTN_DOWN,
-  GUI_BTN_LEFT,
-  GUI_BTN_RIGHT
-}GUI_Button_t;
-
-
+	GUI_BTN_NONE =0,
+	GUI_BTN_UP,
+	GUI_BTN_DOWN,
+	GUI_BTN_LEFT,
+	GUI_BTN_RIGHT
+} GUI_Button_t;
 
 //--------------------------------------------------------------
 // returnwerte der GUI
 //--------------------------------------------------------------
 typedef enum {
-  MENU_NO_CHANGE =0,
-  MENU_CHANGE_GUI,
-  MENU_CHANGE_NORMAL,
-  MENU_CHANGE_FRQ,
-  MENU_CHANGE_MODE,
-  MENU_CHANGE_VALUE,
-  MENU_SEND_DATA
+	MENU_NO_CHANGE =0,
+	MENU_CHANGE_GUI,
+	MENU_CHANGE_NORMAL,
+	MENU_CHANGE_FRQ,
+	MENU_CHANGE_MODE,
+	MENU_CHANGE_VALUE,
+	MENU_SEND_DATA
 } MENU_Status_t;
-
-
 
 //--------------------------------------------------------------
 // Main-Menü-Punkte
 //--------------------------------------------------------------
 typedef enum {
-  MM_NONE =0,
-  MM_CH1,
-  MM_CH2,
-  MM_TIME,
-  MM_SETTING,
-  MM_TRG_SOURCE,
-  MM_TRG_EDGE,
-  MM_TRG_MODE,
-  MM_TRG_VAL,
-  MM_TRG_RESET,
-  MM_CH_VIS,
-  MM_CH_POS,
-  MM_CUR_MODE,
-  MM_CUR_P1,
-  MM_CUR_P2,
-  MM_SEND_MODE,
-  MM_SEND_SCREEN,
-  MM_SEND_DATA,
-  MM_FFT_MODE
+	MM_NONE =0,
+	MM_CH1,
+	MM_CH2,
+	MM_TIME,
+	MM_SETTING,
+	MM_TRG_SOURCE,
+	MM_TRG_EDGE,
+	MM_TRG_MODE,
+	MM_TRG_VAL,
+	MM_TRG_RESET,
+	MM_CH_VIS,
+	MM_CH_POS,
+	MM_CUR_MODE,
+	MM_CUR_P1,
+	MM_CUR_P2,
+	MM_SEND_MODE,
+	MM_SEND_SCREEN,
+	MM_SEND_DATA,
+	MM_FFT_MODE
 } MM_Akt_Item_t;
 
 //--------------------------------------------------------------
@@ -174,121 +162,92 @@ typedef enum {
 #define SETTING_VERSION  6
 #define SETTING_HELP     7
 
-
-
-//--------------------------------------------------------------
-// Struktur für die Main-Menü-Punkte
-//--------------------------------------------------------------
 typedef struct {
-  char *txt;          // linke Seite vom Menu-Text
-  uint16_t yp;        // Ypos an die das Menu gezeichnet wird
-  uint16_t um_cnt;    // Anzahl der Menu-Unterpunkte
-}MM_Item_t;
+	const char *txt;		// linke Seite vom Menu-Text
+	uint16_t yp;			// Ypos an die das Menu gezeichnet wird
+	uint16_t um_cnt;		// Anzahl der Menu-Unterpunkte
+} MM_Item_t;
 
-//--------------------------------------------------------------
-// Struktur von einem Untermenu
-//--------------------------------------------------------------
 typedef struct {
-  char *stxt;     // Text
-}SM_Item_t;
+	const char *stxt;		// Text
+} SM_Item_t;
 
 
-//--------------------------------------------------------------
-// Struktur von "Channel"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t faktor;  // aktueller Vorteiler (5V,2V,1V usw)
-  uint32_t visible; // sichtbar (On, Off)
-  int16_t position; // Y-Position
-}Channel_t;
+  uint32_t faktor;		// aktueller Vorteiler (5V,2V,1V usw)
+  uint32_t visible;		// sichtbar (On, Off)
+  int16_t position;		// Y-Position
+} Channel_t;
 
-
-//--------------------------------------------------------------
-// Struktur von "Timebase"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t value;    // Wert Timebase (5s,2s,1s,500ms usw)
-}Timebase_t;
+	uint16_t value;		// Wert Timebase (5s,2s,1s,500ms usw)
+} Timebase_t;
 
+enum MenuTriggerSource_e {
+	MENU_TRIGGER_CH1 = 0,
+	MENU_TRIGGER_CH2 = 1,
+	MENU_TRIGGER_LAST
+};
 
-//--------------------------------------------------------------
-// Struktur von "Trigger"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t source;    // aktuelle Source (CH1, CH2)
-  uint32_t edge;      // Trigger-Flanke (HI, LO)
-  uint32_t mode;      // Mode (Normal, Auto, Single)
-  uint32_t single;    // Single-Status
-  uint16_t value_ch1; // Trigger-Value (CH1)
-  uint16_t value_ch2; // Trigger-Value (CH2)
-}Trigger_t;
+	uint16_t source;	// aktuelle Source (CH1, CH2)
+	uint16_t edge;		// Trigger-Flanke (HI, LO)
+	uint16_t mode;		// Mode (Normal, Auto, Single)
+	uint16_t single;	// Single-Status
+	uint16_t value_ch1;	// Trigger-Value (CH1)
+	uint16_t value_ch2;	// Trigger-Value (CH2)
+} Trigger_t;
 
+enum  MenuCursorMode_e {
+	MENU_CURSOR_MODE_OFF	= 0,
+	MENU_CURSOR_MODE_CH1	= 1,
+	MENU_CURSOR_MODE_CH2	= 2,
+	MENU_CURSOR_MODE_TIME	= 3,
+	MENU_CURSOR_MODE_FFT	= 4,
+	MENU_CURSOR_MODE_LAST
+};
 
-//--------------------------------------------------------------
-// Struktur von "Cursor"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t mode;  // aktueller Mode (Off, CH1, CH2, Time)
-  uint16_t p1;    // Wert Cursor-A (bei CH1 oder CH2)
-  uint16_t p2;    // Wert Cursor-B (bei CH1 oder CH2)
-  uint16_t t1;    // Wert Cursor-A (bei Time)
-  uint16_t t2;    // Wert Cursor-B (bei Time)
-  uint16_t f1;    // Wert Cursor-A (bei FFT)
-}Cursor_t;
+	uint16_t mode;	// aktueller Mode (Off, CH1, CH2, Time)
+	uint16_t p1;		// Wert Cursor-A (bei CH1 oder CH2)
+	uint16_t p2;		// Wert Cursor-B (bei CH1 oder CH2)
+	uint16_t t1;		// Wert Cursor-A (bei Time)
+	uint16_t t2;		// Wert Cursor-B (bei Time)
+	uint16_t f1;		// Wert Cursor-A (bei FFT)
+} Cursor_t;
 
-
-//--------------------------------------------------------------
-// Struktur von "Send"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t mode;  	// Mode (CH1,CH2,CH1+CH2)
-  uint32_t screen;      // Screen
-  uint32_t data;  	// Datamode (Offline, Start)
-}Send_t;
+	uint16_t mode;		// Mode (CH1,CH2,CH1+CH2)
+	uint16_t screen;	// Screen
+	uint16_t data;		// Datamode (Offline, Start)
+} Send_t;
 
-
-//--------------------------------------------------------------
-// Struktur von "FFT"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t mode;  	// Mode (Off,CH1,CH2)
-}FFT_t;
+	uint16_t mode;		// Mode (Off,CH1,CH2)
+} FFT_t;
 
-
-//--------------------------------------------------------------
-// Struktur von "Menu"
-//--------------------------------------------------------------
 typedef struct {
-	uint32_t akt_transparenz;	// aktuelle Transparenz
-	uint32_t akt_setting;      // aktives Setting
-	Channel_t ch1;             // Daten "Channel-1"
-	Channel_t ch2;             // Daten "Channel-2"
-	Timebase_t timebase;       // Daten "Timebase"
-	Trigger_t trigger;         // Daten "Trigger"
-	Cursor_t cursor;           // Daten "Cursor"
-	Send_t send;               // Daten "Send"
-	FFT_t fft;                 // Daten "FFT"
+	uint16_t Transparency;	// aktuelle Transparenz
+	uint16_t Setting;			// Active Setting
+	Channel_t ch1;				// Daten "Channel-1"
+	Channel_t ch2;				// Daten "Channel-2"
+	Timebase_t timebase;		// Daten "Timebase"
+	Trigger_t trigger;			// Daten "Trigger"
+	Cursor_t cursor;			// Daten "Cursor"
+	Send_t send;				// Daten "Send"
+	FFT_t fft;					// Daten "FFT"
 } Menu_t;
 extern Menu_t Menu;
 
-
-
-//--------------------------------------------------------------
-// Struktur der "GUI"
-//--------------------------------------------------------------
 typedef struct {
-  uint32_t gui_xpos;
-  MM_Akt_Item_t akt_menu;
-  MM_Akt_Item_t old_menu;
-  GUI_Button_t akt_button;
-  GUI_Button_t old_button;
+	uint32_t gui_xpos;
+	MM_Akt_Item_t akt_menu;
+	MM_Akt_Item_t old_menu;
+	GUI_Button_t akt_button;
+	GUI_Button_t old_button;
 } GUI_t;
 extern GUI_t GUI;
 
-
-//--------------------------------------------------------------
-// Globale Funktionen
-//--------------------------------------------------------------
 void menu_draw_all(void);
 MENU_Status_t menu_check_touch(void);
 

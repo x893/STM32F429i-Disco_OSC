@@ -40,18 +40,17 @@ typedef struct UB_Image_t
 extern UB_Image GUI1;
 extern UB_Image GUI2;
 
-
 //--------------------------------------------------------------
-// Struktur von einer Kopie-Koordinate
+// Structure of a copy-coordinate
 //--------------------------------------------------------------
 typedef struct DMA2D_Koord_t {
-	uint32_t source_xp; // Quelle X-Start
-	uint32_t source_yp; // Quelle Y-Start
-	uint32_t source_w;  // Quelle Breite
-	uint32_t source_h;  // Quelle Höhe
-	uint32_t dest_xp;   // Ziel X-Start
-	uint32_t dest_yp;   // Ziel Y-Start
-}DMA2D_Koord;
+	uint32_t SrcX;
+	uint32_t SrcY;
+	uint32_t Width;
+	uint32_t Height;
+	uint32_t DstX;
+	uint32_t DstY;
+} DMA2D_Coord;
 
 
 //--------------------------------------------------------------
@@ -65,9 +64,9 @@ void UB_Graphic2D_DrawRectDMA(uint16_t xp, uint16_t yp, uint16_t w, uint16_t h, 
 void UB_Graphic2D_DrawFullRectDMA(uint16_t xp, uint16_t yp, uint16_t w, uint16_t h, uint16_t c);
 void UB_Graphic2D_DrawCircleNormal(uint16_t xp, uint16_t yp, uint16_t r, uint16_t c);
 void UB_Graphic2D_DrawFullCircleDMA(uint16_t xp, uint16_t yp, uint16_t r, uint16_t c);
-void UB_Graphic2D_CopyImgDMA(UB_Image *img, DMA2D_Koord koord);
+void UB_Graphic2D_CopyImgDMA(UB_Image *img, DMA2D_Coord *coord);
 void UB_Graphic2D_Copy1DMA(void);
-void UB_Graphic2D_Copy2DMA(uint32_t tranzparenz);
+void UB_Graphic2D_Copy2DMA(uint16_t tranzparenz);
 
 
 

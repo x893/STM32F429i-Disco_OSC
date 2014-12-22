@@ -12,20 +12,17 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_gpio.h"
 #include "stm32f4xx_rcc.h"
-
-
+#include <stdbool.h>
 
 //--------------------------------------------------------------
 // Aktivieren, Deaktivieren der entprellten Funktionen mit Timer
 // 1=aktiv, 0=inaktiv
 //--------------------------------------------------------------
-#define  BUTTON_USE_TIMER      1  // Funktionen per Timer
+#define  BUTTON_USE_TIMER      1	// Functions by timer
 
-
-#if BUTTON_USE_TIMER==1
-#include "stm32f4xx_tim.h"
-#include "misc.h"
-#include <stdbool.h>
+#if BUTTON_USE_TIMER == 1
+	#include "stm32f4xx_tim.h"
+	#include "misc.h"
 #endif
 
 
@@ -37,7 +34,7 @@ typedef enum
 {
 	BUTTON_FIRST= 0,
 	BTN_USER	= 0,    // BTN1 auf dem STM32F429-Discovery
-	BUTTON_ANZ			// Anzahl von Button_NAME_t
+	BUTTON_LAST			// Anzahl von Button_NAME_t
 } BUTTON_NAME_t;
 
 //--------------------------------------------------------------
@@ -56,7 +53,7 @@ typedef enum {
 // TIM_Frq = TIM_CLK/(periode+1)/(vorteiler+1)
 // TIM_Frq = 20Hz => 50ms (nicht kleiner als 1ms einstellen)
 //--------------------------------------------------------------
-#if BUTTON_USE_TIMER==1
+#if BUTTON_USE_TIMER == 1
 #define   UB_BUTTON_TIM              TIM7
 #define   UB_BUTTON_TIM_CLK          RCC_APB1Periph_TIM7
 #define   UB_BUTTON_TIM_PERIODE      4999
@@ -76,8 +73,7 @@ typedef struct {
 	const uint16_t BUTTON_PIN;  // Pin
 	const uint32_t BUTTON_CLK;  // Clock
 	GPIOPuPd_TypeDef BUTTON_R;  // Widerstand
-	uint8_t BUTTON_AKT;         // Istwert
-}BUTTON_t;
+} BUTTON_t;
 
 
 //--------------------------------------------------------------
@@ -85,9 +81,10 @@ typedef struct {
 //--------------------------------------------------------------
 void UB_Button_Init(void);
 BUTTON_STATUS_t UB_Button_Read(BUTTON_NAME_t btn_name);
-#if BUTTON_USE_TIMER==1
-bool UB_Button_OnPressed(BUTTON_NAME_t btn_name);
 bool UB_Button_OnClick(BUTTON_NAME_t btn_name);
+
+#if BUTTON_USE_TIMER == 1
+bool UB_Button_OnPressed(BUTTON_NAME_t btn_name);
 bool UB_Button_OnRelease(BUTTON_NAME_t btn_name);
 #endif
 

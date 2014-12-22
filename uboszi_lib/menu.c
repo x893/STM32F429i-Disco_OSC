@@ -23,8 +23,7 @@ GUI_t GUI;
 //--------------------------------------------------------------
 // interne Funktionen
 //--------------------------------------------------------------
-void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr,
-		uint32_t mode);
+void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr, uint32_t mode);
 void p_menu_draw_BOT_TRG(void);
 void p_menu_draw_BOT_CH1(void);
 void p_menu_draw_BOT_CH2(void);
@@ -40,7 +39,7 @@ float P_FFT_to_Float(uint32_t faktor, uint16_t pos);
 uint16_t LINE(uint16_t n);
 uint16_t GET_LINE(uint16_t xp);
 void p_menu_draw_GUI(void);
-void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr);
+void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint16_t um_nr);
 void p_get_GUI_button(uint16_t x, uint16_t y);
 MENU_Status_t p_make_GUI_changes(void);
 MENU_Status_t p_gui_inc_menu(void);
@@ -51,7 +50,7 @@ int16_t inc_intval(int16_t wert, uint16_t startwert);
 int16_t dec_intval(int16_t wert, uint16_t startwert);
 
 //--------------------------------------------------------------
-// Globale Buffer (für printf)
+// Globale Buffer (for printf)
 //--------------------------------------------------------------
 char buf[30];
 char bval[10];
@@ -68,14 +67,14 @@ const MM_Item_t MM_ITEM[] =
 	{ "CH2=",	11 * FONT_W,	 6 }, // CH2            [UM_01]
 	{ "T=",		21 * FONT_W,	17 }, // TIME           [UM_02]
 	{ "Menu=",	31 * FONT_W,	 8 }, // Menu           [UM_03]
-	{ "S=",		 1 * FONT_W,	 2 }, // TRG Source     [UM_04]
+	{ "S=",		 1 * FONT_W,	MENU_TRIGGER_LAST		}, // TRG Source     [UM_04]
 	{ "E=",		 8 * FONT_W,	 2 }, // TRG Edge       [UM_05]
 	{ "M=",		14 * FONT_W,	 3 }, // TRG Mode       [UM_06]
 	{ "V=",		24 * FONT_W,	 1 }, // TRG Value      [UM_07]
 	{ "",		35 * FONT_W,	 1 }, // TRG Reset      [UM_10]
 	{ "V=",		 1 * FONT_W,	 2 }, // CH Visible     [UM_08]
 	{ "P=",		 8 * FONT_W,	 1 }, // CH Position    [UM_07]
-	{ "M=",		 1 * FONT_W,	 5 }, // CUR Mode       [UM_09]
+	{ "M=",		 1 * FONT_W,	 MENU_CURSOR_MODE_LAST	}, // CUR Mode       [UM_09]
 	{ "A=",		 9 * FONT_W,	 1 }, // CUR A Position [UM_07]
 	{ "B=",		21 * FONT_W,	 1 }, // CUR B Position [UM_07]
 	{ "M=",		 1 * FONT_W,	 7 }, // SEND Mode      [UM_11]
@@ -269,7 +268,7 @@ void menu_draw_all(void)
 
 	if (Menu.send.data == 0)
 	{
-		p_gui_draw_TOP(MM_SETTING, UM_03, Menu.akt_setting);
+		p_gui_draw_TOP(MM_SETTING, UM_03, Menu.Setting);
 	}
 	else
 	{
@@ -282,31 +281,32 @@ void menu_draw_all(void)
 	//---------------------------------
 	// Hintergrundbalken
 	UB_Graphic2D_DrawFullRectDMA(0, 0, LCD_MAXY, FONT_H + 2, MENU_BG_COL);
+
 	// Bottom-Menus
-	if (Menu.akt_setting == SETTING_TRIGGER)
+	if (Menu.Setting == SETTING_TRIGGER)
 		p_menu_draw_BOT_TRG();
-	if (Menu.akt_setting == SETTING_CH1)
+	else if (Menu.Setting == SETTING_CH1)
 		p_menu_draw_BOT_CH1();
-	if (Menu.akt_setting == SETTING_CH2)
+	else if (Menu.Setting == SETTING_CH2)
 		p_menu_draw_BOT_CH2();
-	if (Menu.akt_setting == SETTING_CURSOR)
+	else if (Menu.Setting == SETTING_CURSOR)
 		p_menu_draw_BOT_CUR();
-	if (Menu.akt_setting == SETTING_FFT)
+	else if (Menu.Setting == SETTING_FFT)
 		p_menu_draw_BOT_FFT();
-	if (Menu.akt_setting == SETTING_SEND)
+	else if (Menu.Setting == SETTING_SEND)
 		p_menu_draw_BOT_SEND();
-	if (Menu.akt_setting == SETTING_VERSION)
+	else if (Menu.Setting == SETTING_VERSION)
 		p_menu_draw_BOT_VERSION();
-	if (Menu.akt_setting == SETTING_HELP)
+	else if (Menu.Setting == SETTING_HELP)
 		p_menu_draw_BOT_HELP();
 
 	if (GUI.gui_xpos == GUI_XPOS_OFF)
 	{
-		Menu.akt_transparenz = 100;
+		Menu.Transparency = 100;
 	}
 	else
 	{
-		Menu.akt_transparenz = 200;
+		Menu.Transparency = 200;
 		//--------------------------
 		// GUI
 		//--------------------------
@@ -320,63 +320,63 @@ void menu_draw_all(void)
 //--------------------------------------------------------------
 void p_menu_draw_GUI(void)
 {
-	DMA2D_Koord koord;
+	DMA2D_Coord coord;
 
 	//--------------------------
 	// leere GUI zeichnen
 	//--------------------------
-	koord.source_xp = 0;
-	koord.source_yp = 0;
-	koord.source_w = GUI1.width;
-	koord.source_h = GUI1.height;
-	koord.dest_xp = GUI_YPOS;
-	koord.dest_yp = GUI.gui_xpos;
+	coord.SrcX = 0;
+	coord.SrcY = 0;
+	coord.Width = GUI1.width;
+	coord.Height = GUI1.height;
+	coord.DstX = GUI_YPOS;
+	coord.DstY = GUI.gui_xpos;
 
-	UB_Graphic2D_CopyImgDMA(&GUI1, koord);
+	UB_Graphic2D_CopyImgDMA(&GUI1, &coord);
 
 	//--------------------------
-	// betaetigten Button zeichnen
+	// Draw-operated button
 	//--------------------------
 	if (GUI.akt_button == GUI_BTN_RIGHT)
 	{
-		koord.source_xp = GUI1.width / 2;
-		koord.source_yp = GUI1.height / 2;
-		koord.source_w = GUI1.width / 2;
-		koord.source_h = GUI1.height / 2;
-		koord.dest_xp = GUI_YPOS + (GUI1.width / 2);
-		koord.dest_yp = GUI.gui_xpos + (GUI1.height / 2);
-		UB_Graphic2D_CopyImgDMA(&GUI2, koord);
+		coord.SrcX = GUI1.width / 2;
+		coord.SrcY = GUI1.height / 2;
+		coord.Width = GUI1.width / 2;
+		coord.Height = GUI1.height / 2;
+		coord.DstX = GUI_YPOS + (GUI1.width / 2);
+		coord.DstY = GUI.gui_xpos + (GUI1.height / 2);
 	}
 	else if (GUI.akt_button == GUI_BTN_LEFT)
 	{
-		koord.source_xp = GUI1.width / 2;
-		koord.source_yp = 0;
-		koord.source_w = GUI1.width / 2;
-		koord.source_h = GUI1.height / 2;
-		koord.dest_xp = GUI_YPOS + (GUI1.width / 2);
-		koord.dest_yp = GUI.gui_xpos;
-		UB_Graphic2D_CopyImgDMA(&GUI2, koord);
+		coord.SrcX = GUI1.width / 2;
+		coord.SrcY = 0;
+		coord.Width = GUI1.width / 2;
+		coord.Height = GUI1.height / 2;
+		coord.DstX = GUI_YPOS + (GUI1.width / 2);
+		coord.DstY = GUI.gui_xpos;
 	}
 	else if (GUI.akt_button == GUI_BTN_UP)
 	{
-		koord.source_xp = GUI1.width / 4;
-		koord.source_yp = 0;
-		koord.source_w = GUI1.width / 4;
-		koord.source_h = GUI1.height;
-		koord.dest_xp = GUI_YPOS + (GUI1.width / 4);
-		koord.dest_yp = GUI.gui_xpos;
-		UB_Graphic2D_CopyImgDMA(&GUI2, koord);
+		coord.SrcX = GUI1.width / 4;
+		coord.SrcY = 0;
+		coord.Width = GUI1.width / 4;
+		coord.Height = GUI1.height;
+		coord.DstX = GUI_YPOS + (GUI1.width / 4);
+		coord.DstY = GUI.gui_xpos;
 	}
 	else if (GUI.akt_button == GUI_BTN_DOWN)
 	{
-		koord.source_xp = 0;
-		koord.source_yp = 0;
-		koord.source_w = GUI1.width / 4;
-		koord.source_h = GUI1.height;
-		koord.dest_xp = GUI_YPOS;
-		koord.dest_yp = GUI.gui_xpos;
-		UB_Graphic2D_CopyImgDMA(&GUI2, koord);
+		coord.SrcX = 0;
+		coord.SrcY = 0;
+		coord.Width = GUI1.width / 4;
+		coord.Height = GUI1.height;
+		coord.DstX = GUI_YPOS;
+		coord.DstY = GUI.gui_xpos;
 	}
+	else
+		return;
+
+	UB_Graphic2D_CopyImgDMA(&GUI2, &coord);
 }
 
 //--------------------------------------------------------------
@@ -460,8 +460,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_SETTING)
 	{
-		if (Menu.akt_setting < max - 1)
-			Menu.akt_setting++;
+		if (Menu.Setting < max - 1)
+			Menu.Setting++;
 	}
 	else if (GUI.akt_menu == MM_TRG_SOURCE)
 	{
@@ -481,7 +481,7 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_TRG_VAL)
 	{
-		if (Menu.trigger.source == 0)
+		if (Menu.trigger.source == MENU_TRIGGER_CH1)
 		{ // CH1
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -528,12 +528,12 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CH_VIS)
 	{
-		if (Menu.akt_setting == SETTING_CH1)
+		if (Menu.Setting == SETTING_CH1)
 		{ // CH1
 			if (Menu.ch1.visible < max - 1)
 				Menu.ch1.visible++;
 		}
-		else if (Menu.akt_setting == SETTING_CH2)
+		else if (Menu.Setting == SETTING_CH2)
 		{ // CH2
 			if (Menu.ch2.visible < max - 1)
 				Menu.ch2.visible++;
@@ -541,7 +541,7 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CH_POS)
 	{
-		if (Menu.akt_setting == SETTING_CH1)
+		if (Menu.Setting == SETTING_CH1)
 		{ // CH1
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -553,7 +553,7 @@ MENU_Status_t p_gui_inc_menu(void)
 			}
 			Menu.ch1.position = ivalue;
 		}
-		else if (Menu.akt_setting == SETTING_CH2)
+		else if (Menu.Setting == SETTING_CH2)
 		{ // CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -574,8 +574,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CUR_P1)
 	{
-		if (Menu.cursor.mode == 3)
-		{ // TIME
+		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		{	// TIME
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = dec_uintval(Menu.cursor.t1, 1);
@@ -587,8 +587,8 @@ MENU_Status_t p_gui_inc_menu(void)
 			Menu.cursor.t1 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == 1) || (Menu.cursor.mode == 2))
-		{ // CH1+CH2
+		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		{	// CH1+CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = dec_uintval(Menu.cursor.p1, 10);
@@ -600,8 +600,8 @@ MENU_Status_t p_gui_inc_menu(void)
 			Menu.cursor.p1 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if (Menu.cursor.mode == 4)
-		{ // FFT
+		else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
+		{	// FFT
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = dec_uintval(Menu.cursor.f1, 1);
@@ -616,8 +616,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CUR_P2)
 	{
-		if (Menu.cursor.mode == 3)
-		{ // TIME
+		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		{	// TIME
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = dec_uintval(Menu.cursor.t2, 1);
@@ -629,7 +629,7 @@ MENU_Status_t p_gui_inc_menu(void)
 			Menu.cursor.t2 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == 1) || (Menu.cursor.mode == 2))
+		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
 		{ // CH1+CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -713,12 +713,12 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_SETTING)
 	{
-		if (Menu.akt_setting > 0)
-			Menu.akt_setting--;
+		if (Menu.Setting > 0)
+			Menu.Setting--;
 	}
 	else if (GUI.akt_menu == MM_TRG_SOURCE)
 	{
-		if (Menu.trigger.source > 0)
+		if (Menu.trigger.source > MENU_TRIGGER_CH1)
 			Menu.trigger.source--;
 	}
 	else if (GUI.akt_menu == MM_TRG_EDGE)
@@ -734,7 +734,7 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_TRG_VAL)
 	{
-		if (Menu.trigger.source == 0)
+		if (Menu.trigger.source == MENU_TRIGGER_CH1)
 		{ // CH1
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -781,12 +781,12 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CH_VIS)
 	{
-		if (Menu.akt_setting == SETTING_CH1)
+		if (Menu.Setting == SETTING_CH1)
 		{ // CH1
 			if (Menu.ch1.visible > 0)
 				Menu.ch1.visible--;
 		}
-		else if (Menu.akt_setting == SETTING_CH2)
+		else if (Menu.Setting == SETTING_CH2)
 		{ // CH2
 			if (Menu.ch2.visible > 0)
 				Menu.ch2.visible--;
@@ -794,7 +794,7 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CH_POS)
 	{
-		if (Menu.akt_setting == SETTING_CH1)
+		if (Menu.Setting == SETTING_CH1)
 		{ // CH1
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -806,7 +806,7 @@ MENU_Status_t p_gui_dec_menu(void)
 			}
 			Menu.ch1.position = ivalue;
 		}
-		else if (Menu.akt_setting == SETTING_CH2)
+		else if (Menu.Setting == SETTING_CH2)
 		{ // CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
@@ -822,13 +822,13 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CUR_MODE)
 	{
-		if (Menu.cursor.mode > 0)
+		if (Menu.cursor.mode > MENU_CURSOR_MODE_OFF)
 			Menu.cursor.mode--;
 	}
 	else if (GUI.akt_menu == MM_CUR_P1)
 	{
-		if (Menu.cursor.mode == 3)
-		{ // TIME
+		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		{	// TIME
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = inc_uintval(Menu.cursor.t1, 1);
@@ -840,8 +840,8 @@ MENU_Status_t p_gui_dec_menu(void)
 			Menu.cursor.t1 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == 1) || (Menu.cursor.mode == 2))
-		{ // CH1+CH2
+		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		{	// CH1+CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = inc_uintval(Menu.cursor.p1, 10);
@@ -853,8 +853,8 @@ MENU_Status_t p_gui_dec_menu(void)
 			Menu.cursor.p1 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if (Menu.cursor.mode == 4)
-		{ // FFT
+		else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
+		{	// FFT
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = inc_uintval(Menu.cursor.f1, 1);
@@ -869,8 +869,8 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (GUI.akt_menu == MM_CUR_P2)
 	{
-		if (Menu.cursor.mode == 3)
-		{ // TIME
+		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		{	// TIME
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = inc_uintval(Menu.cursor.t2, 1);
@@ -882,8 +882,8 @@ MENU_Status_t p_gui_dec_menu(void)
 			Menu.cursor.t2 = value;
 			ret_wert = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == 1) || (Menu.cursor.mode == 2))
-		{ // CH1+CH2
+		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		{	// CH1+CH2
 			if (GUI.old_button != GUI.akt_button)
 			{
 				value = inc_uintval(Menu.cursor.p2, 10);
@@ -950,12 +950,12 @@ MENU_Status_t p_make_GUI_changes(void)
 			// Bottom-Cursor
 			if (GUI.akt_menu == MM_CUR_P1)
 			{
-				if (Menu.cursor.mode != 4)
+				if (Menu.cursor.mode != MENU_CURSOR_MODE_FFT)
 					GUI.akt_menu = MM_CUR_P2;
 			}
 			if (GUI.akt_menu == MM_CUR_MODE)
 			{
-				if (Menu.cursor.mode > 0)
+				if (Menu.cursor.mode > MENU_CURSOR_MODE_OFF)
 					GUI.akt_menu = MM_CUR_P1;
 			}
 
@@ -968,17 +968,17 @@ MENU_Status_t p_make_GUI_changes(void)
 			// TOP (last Entry)
 			if (GUI.akt_menu == MM_SETTING)
 			{
-				if (Menu.akt_setting == SETTING_TRIGGER)
+				if (Menu.Setting == SETTING_TRIGGER)
 					GUI.akt_menu = MM_TRG_SOURCE;
-				if (Menu.akt_setting == SETTING_CH1)
+				if (Menu.Setting == SETTING_CH1)
 					GUI.akt_menu = MM_CH_VIS;
-				if (Menu.akt_setting == SETTING_CH2)
+				if (Menu.Setting == SETTING_CH2)
 					GUI.akt_menu = MM_CH_VIS;
-				if (Menu.akt_setting == SETTING_CURSOR)
+				if (Menu.Setting == SETTING_CURSOR)
 					GUI.akt_menu = MM_CUR_MODE;
-				if (Menu.akt_setting == SETTING_FFT)
+				if (Menu.Setting == SETTING_FFT)
 					GUI.akt_menu = MM_FFT_MODE;
-				if (Menu.akt_setting == SETTING_SEND)
+				if (Menu.Setting == SETTING_SEND)
 					GUI.akt_menu = MM_SEND_MODE;
 			}
 
@@ -1181,13 +1181,13 @@ MENU_Status_t menu_check_touch(void)
 				{
 					// auf gewaehltes Menu umschalten
 					if (Menu.send.screen == 0)
-						Menu.akt_setting = SETTING_TRIGGER;
+						Menu.Setting = SETTING_TRIGGER;
 					if (Menu.send.screen == 1)
-						Menu.akt_setting = SETTING_CURSOR;
+						Menu.Setting = SETTING_CURSOR;
 				}
 				else
 				{
-					Menu.akt_setting = SETTING_SEND;
+					Menu.Setting = SETTING_SEND;
 				}
 			}
 		}
@@ -1210,7 +1210,7 @@ MENU_Status_t menu_check_touch(void)
 //--------------------------------------------------------------
 // zeichnet einen TOP-Menupunkt
 //--------------------------------------------------------------
-void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr)
+void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint16_t um_nr)
 {
 	sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, um[um_nr].stxt);
 	if (GUI.akt_menu == mm_nr)
@@ -1240,12 +1240,12 @@ void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr,
 	else if (mode == 1)
 	{
 		// Sondermenupunkt : "Trigger Value"
-		if (Menu.trigger.source == 0)
+		if (Menu.trigger.source == MENU_TRIGGER_CH1)
 		{
 			P_FloatToDezStr(FAKTOR_ADC * Menu.trigger.value_ch1);
 			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
 		}
-		if (Menu.trigger.source == 1)
+		if (Menu.trigger.source == MENU_TRIGGER_CH2)
 		{
 			P_FloatToDezStr(FAKTOR_ADC * Menu.trigger.value_ch2);
 			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
@@ -1254,13 +1254,13 @@ void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr,
 	else if (mode == 2)
 	{
 		// Sondermenupunkt : "Channel position"
-		if (Menu.akt_setting == SETTING_CH1)
+		if (Menu.Setting == SETTING_CH1)
 		{
 			P_FloatToDezStr(
 					P_Volt_to_Float(Menu.ch1.faktor, Menu.ch1.position));
 			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
 		}
-		if (Menu.akt_setting == SETTING_CH2)
+		if (Menu.Setting == SETTING_CH2)
 		{
 			P_FloatToDezStr(
 					P_Volt_to_Float(Menu.ch2.faktor, Menu.ch2.position));
@@ -1360,7 +1360,7 @@ void p_menu_draw_BOT_CUR(void)
 	uint16_t delta;
 
 	p_menu_draw_BOT(MM_CUR_MODE, UM_09, Menu.cursor.mode, 0);
-	if ((Menu.cursor.mode == 1) || (Menu.cursor.mode == 2))
+	if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
 	{
 		// Cursor = CH1/CH2
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 3);
@@ -1378,7 +1378,7 @@ void p_menu_draw_BOT_CUR(void)
 		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL,
 				MENU_BG_COL);
 	}
-	else if (Menu.cursor.mode == 3)
+	else if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
 	{
 		// Cursor = TIME
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 5);
@@ -1408,7 +1408,7 @@ void p_menu_draw_BOT_CUR(void)
 		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL,
 				MENU_BG_COL);
 	}
-	else if (Menu.cursor.mode == 4)
+	else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
 	{
 		// Cursor = FFT
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 8);

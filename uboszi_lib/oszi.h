@@ -40,14 +40,14 @@
 #define  SCALE_ANZ_Y        9    // dont change
 #define  SCALE_ANZ_X        13   // dont change
 
-#define  SCALE_W            SCALE_SPACE*(SCALE_ANZ_X-1)
-#define  SCALE_H            SCALE_SPACE*(SCALE_ANZ_Y-1)
+#define  SCALE_W            SCALE_SPACE * (SCALE_ANZ_X - 1)
+#define  SCALE_H            SCALE_SPACE * (SCALE_ANZ_Y - 1)
 
-#define  SCALE_MX_PIXEL     SCALE_START_X+SCALE_H
-#define  SCALE_MY_PIXEL     SCALE_START_Y+SCALE_W
+#define  SCALE_MX_PIXEL     SCALE_START_X + SCALE_H
+#define  SCALE_MY_PIXEL     SCALE_START_Y + SCALE_W
 
-#define  SCALE_X_MITTE      SCALE_W/2
-#define  SCALE_Y_MITTE      SCALE_H/2
+#define  SCALE_X_MITTE      SCALE_W / 2
+#define  SCALE_Y_MITTE      SCALE_H / 2
 
 
 
@@ -102,9 +102,7 @@
 // Globale Funktionen
 //--------------------------------------------------------------
 void oszi_init(void);
-void oszi_start(void);
-
-
+void oszi_start(void) __attribute__((noreturn));
 
 //--------------------------------------------------------------
 #endif // __STM32F4_UB_OSZI_H
