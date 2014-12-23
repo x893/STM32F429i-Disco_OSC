@@ -406,28 +406,18 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>oszi</GroupName>
-          <Files>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>startup_stm32f429xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\cmsis_boot\startup\arm\startup_stm32f429xx.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\cmsis_boot\system_stm32f4xx.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>uboszi_lib</GroupName>
           <Files>
+            <File>
+              <FileName>oszi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uboszi_lib\oszi.c</FilePath>
+            </File>
+            <File>
+              <FileName>menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uboszi_lib\menu.c</FilePath>
+            </File>
             <File>
               <FileName>adc.c</FileName>
               <FileType>1</FileType>
@@ -437,16 +427,6 @@
               <FileName>fft.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\uboszi_lib\fft.c</FilePath>
-            </File>
-            <File>
-              <FileName>menu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\uboszi_lib\menu.c</FilePath>
-            </File>
-            <File>
-              <FileName>oszi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\uboszi_lib\oszi.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -637,6 +617,21 @@
               <FileName>arm_rfft_init_f32.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\fft_lib\arm_rfft_init_f32.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>cmsis_boot</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32f429xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\cmsis_boot\startup\arm\startup_stm32f429xx.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cmsis_boot\system_stm32f4xx.c</FilePath>
             </File>
           </Files>
         </Group>

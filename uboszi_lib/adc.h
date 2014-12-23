@@ -45,9 +45,9 @@ typedef enum {
 // Jeder Buffer ist so groﬂ wie ein kompletter Oszi-Screen
 // (300 Pixel x 2 Kan‰le x 16bit)
 //--------------------------------------------------------------
-extern volatile uint16_t ADC_DMA_Buffer_A[ADC1d_LAST * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
-extern volatile uint16_t ADC_DMA_Buffer_B[ADC1d_LAST * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
-extern volatile uint16_t ADC_DMA_Buffer_C[ADC1d_LAST * ADC_ARRAY_LEN];  //  (C) sortierte Daten
+extern uint16_t ADC_DMA_Buffer_A[ADC1d_LAST * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
+extern uint16_t ADC_DMA_Buffer_B[ADC1d_LAST * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
+extern uint16_t ADC_DMA_Buffer_C[ADC1d_LAST * ADC_ARRAY_LEN];  //  (C) sortierte Daten
 
 
 //--------------------------------------------------------------
@@ -139,10 +139,10 @@ typedef enum {
 
 //--------------------------------------------------------------
 typedef struct {
-	uint32_t trigger_pos;
-	uint32_t trigger_quarter;
-	uint32_t dma_status;
-	ADC_Status_t status;
+	uint16_t TriggerPos;
+	uint16_t TriggerQuarter;
+	uint16_t DmaStatus;
+	ADC_Status_t Status;
 } ADC_t;
 extern ADC_t ADC_UB;
 
@@ -151,8 +151,8 @@ extern ADC_t ADC_UB;
 // Globale Funktionen
 //--------------------------------------------------------------
 void ADC_Init_ALL(void);
-void ADC_change_Frq(uint32_t n);
-void ADC_change_Mode(uint32_t n);
+void ADC_change_Frq(uint16_t n);
+void ADC_change_Mode(uint16_t n);
 
 
 

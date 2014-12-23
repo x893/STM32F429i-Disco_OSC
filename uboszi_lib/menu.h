@@ -163,42 +163,60 @@ typedef enum {
 #define SETTING_HELP     7
 
 typedef struct {
-	const char *txt;		// linke Seite vom Menu-Text
-	uint16_t yp;			// Ypos an die das Menu gezeichnet wird
-	uint16_t um_cnt;		// Anzahl der Menu-Unterpunkte
+	const char	*Text;		// linke Seite vom Menu-Text
+	uint16_t	YPos;		// Ypos to which the menu is drawn
+	uint16_t	um_cnt;		// Number of menu sub-items
 } MM_Item_t;
 
 typedef struct {
-	const char *stxt;		// Text
+	const char *Text;		// Text
 } SM_Item_t;
 
 
 typedef struct {
-  uint32_t faktor;		// aktueller Vorteiler (5V,2V,1V usw)
-  uint32_t visible;		// sichtbar (On, Off)
-  int16_t position;		// Y-Position
+  uint16_t	Factor;		// current prescaler (5V, 2V, 1V, etc)
+  uint16_t	Visible;	// visible (On, Off)
+  int16_t	Position;	// Y-position
 } Channel_t;
 
 typedef struct {
-	uint16_t value;		// Wert Timebase (5s,2s,1s,500ms usw)
+	uint16_t Value;		// Wert Timebase (5s,2s,1s,500ms usw)
 } Timebase_t;
 
-enum MenuTriggerSource_e {
-	MENU_TRIGGER_CH1 = 0,
-	MENU_TRIGGER_CH2 = 1,
-	MENU_TRIGGER_LAST
+enum MENU_TRIGGER_MODE_e {
+	MENU_TRIGGER_MODE_NORMAL	= 0,
+	MENU_TRIGGER_MODE_AUTO		= 1,
+	MENU_TRIGGER_MODE_SINGLE	= 2,
+	MENU_TRIGGER_MODE_LAST
+};
+
+enum MENU_CH_VISIBLE_e {
+	MENU_CH_VISIBLE_ON	= 0,
+	MENU_CH_VISIBLE_OFF	= 1,
+	MENU_CH_VISIBLE_LAST
+};
+
+enum MENU_SEND_MODE_e {
+	MENU_SEND_MODE_CH1			= 0,
+	MENU_SEND_MODE_CH1_FFT		= 1,
+	MENU_SEND_MODE_CH2			= 2,
+	MENU_SEND_MODE_CH2_FFT		= 3,
+	MENU_SEND_MODE_CH1_CH2		= 4,
+	MENU_SEND_MODE_CH1_CH2_FFT	= 5,
+	MENU_SEND_MODE_SCREEN		= 6,
+	MENU_SEND_MODE_LAST
 };
 
 typedef struct {
-	uint16_t source;	// aktuelle Source (CH1, CH2)
-	uint16_t edge;		// Trigger-Flanke (HI, LO)
-	uint16_t mode;		// Mode (Normal, Auto, Single)
-	uint16_t single;	// Single-Status
-	uint16_t value_ch1;	// Trigger-Value (CH1)
-	uint16_t value_ch2;	// Trigger-Value (CH2)
+	uint16_t Source;	// aktuelle Source (CH1, CH2)
+	uint16_t Edge;		// Trigger-Flanke (HI, LO)
+	uint16_t Mode;		// Mode (Normal, Auto, Single)
+	uint16_t Single;	// Single-Status
+	uint16_t ValueCh1;	// Trigger-Value (CH1)
+	uint16_t ValueCh2;	// Trigger-Value (CH2)
 } Trigger_t;
 
-enum  MenuCursorMode_e {
+enum  MENU_CURSOR_MODE_e {
 	MENU_CURSOR_MODE_OFF	= 0,
 	MENU_CURSOR_MODE_CH1	= 1,
 	MENU_CURSOR_MODE_CH2	= 2,
@@ -207,44 +225,54 @@ enum  MenuCursorMode_e {
 	MENU_CURSOR_MODE_LAST
 };
 
+enum MENU_TRIGGER_SOURCE_e {
+	MENU_TRIGGER_SOURCE_CH1	= 0,
+	MENU_TRIGGER_SOURCE_CH2	= 1,
+	MENU_TRIGGER_SOURCE_LAST
+};
+
 typedef struct {
-	uint16_t mode;	// aktueller Mode (Off, CH1, CH2, Time)
-	uint16_t p1;		// Wert Cursor-A (bei CH1 oder CH2)
-	uint16_t p2;		// Wert Cursor-B (bei CH1 oder CH2)
-	uint16_t t1;		// Wert Cursor-A (bei Time)
-	uint16_t t2;		// Wert Cursor-B (bei Time)
-	uint16_t f1;		// Wert Cursor-A (bei FFT)
+	uint16_t Mode;	// aktueller Mode (Off, CH1, CH2, Time)
+	uint16_t P1;		// Wert Cursor-A (bei CH1 oder CH2)
+	uint16_t P2;		// Wert Cursor-B (bei CH1 oder CH2)
+	uint16_t T1;		// Wert Cursor-A (bei Time)
+	uint16_t T2;		// Wert Cursor-B (bei Time)
+	uint16_t F1;		// Wert Cursor-A (bei FFT)
 } Cursor_t;
 
 typedef struct {
-	uint16_t mode;		// Mode (CH1,CH2,CH1+CH2)
-	uint16_t screen;	// Screen
-	uint16_t data;		// Datamode (Offline, Start)
+	uint16_t Mode;		// Mode (CH1,CH2,CH1+CH2)
+	uint16_t Screen;	// Screen
+	uint16_t Data;		// Datamode (Offline, Start)
 } Send_t;
 
 typedef struct {
-	uint16_t mode;		// Mode (Off,CH1,CH2)
+	uint16_t Mode;		// Mode (Off,CH1,CH2)
 } FFT_t;
 
 typedef struct {
-	uint16_t Transparency;	// aktuelle Transparenz
+	uint16_t Transparency;		// aktuelle Transparenz
 	uint16_t Setting;			// Active Setting
-	Channel_t ch1;				// Daten "Channel-1"
-	Channel_t ch2;				// Daten "Channel-2"
-	Timebase_t timebase;		// Daten "Timebase"
-	Trigger_t trigger;			// Daten "Trigger"
-	Cursor_t cursor;			// Daten "Cursor"
-	Send_t send;				// Daten "Send"
-	FFT_t fft;					// Daten "FFT"
+	uint16_t OldX;
+	uint16_t OldY;
+	uint16_t GuiChanged;
+
+	Channel_t	Ch1;			// Daten "Channel-1"
+	Channel_t	Ch2;			// Daten "Channel-2"
+	Timebase_t	Timebase;		// Daten "Timebase"
+	Trigger_t	Trigger;		// Daten "Trigger"
+	Cursor_t	Cursor;			// Daten "Cursor"
+	Send_t		Send;			// Daten "Send"
+	FFT_t		FFT;			// Daten "FFT"
 } Menu_t;
 extern Menu_t Menu;
 
 typedef struct {
-	uint32_t gui_xpos;
-	MM_Akt_Item_t akt_menu;
-	MM_Akt_Item_t old_menu;
-	GUI_Button_t akt_button;
-	GUI_Button_t old_button;
+	MM_Akt_Item_t	MenuActive;
+	MM_Akt_Item_t	MenuOld;
+	GUI_Button_t	ButtonActive;
+	GUI_Button_t	ButtonOld;
+	uint16_t		GuiXPpos;
 } GUI_t;
 extern GUI_t GUI;
 

@@ -17,17 +17,14 @@
 // "STM32F429_439xx" , "__ASSEMBLY__" , "USE_STDPERIPH_DRIVER"
 //--------------------------------------------------------------
 
+/*
 #include "main.h"
 #include "oszi.h"
 
 int main(void)
 {
-	SystemInit(); // Quarz Einstellungen aktivieren
-
-	// init funktion
+	SystemInit();
 	oszi_init();
-
-	// main function (endless)
 	oszi_start();
 }
-
+*/

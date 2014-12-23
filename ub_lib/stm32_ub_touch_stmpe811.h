@@ -16,8 +16,8 @@
 
 // Touch-Status
 typedef enum {
-	TOUCH_PRESSED = 0,   // Touch ist betaetigt
-	TOUCH_RELEASED = 1	// Touch ist nicht betaetigt
+	TOUCH_PRESSED	= 0,   // Touch ist betaetigt
+	TOUCH_RELEASED	= 1	// Touch ist nicht betaetigt
 } Touch_Status_t;
 
 
@@ -25,18 +25,17 @@ typedef enum {
 // Globale Struktur der Touch-Daten
 //-----------------------------------------
 typedef struct {
-	Touch_Status_t status;
-	uint16_t xp;
-	uint16_t yp;
+	uint16_t XPos;
+	uint16_t YPos;
+	uint16_t XOld;
+	uint16_t YOld;
+	Touch_Status_t Status;
 } Touch_Data_t;
 extern Touch_Data_t Touch_Data;
-
-
 
 #define IOE_ADC_FCT                0x01
 #define IOE_TP_FCT                 0x02
 #define IOE_IO_FCT                 0x04
-
 
 //--------------------------------------------------------------
 // Defines vom STMPE811

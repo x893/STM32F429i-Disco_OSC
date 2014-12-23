@@ -38,6 +38,7 @@ const BUTTON_t BUTTON[] = {
 	{ BTN_USER, GPIOA, GPIO_Pin_0, RCC_AHB1Periph_GPIOA, GPIO_PuPd_NOPULL },
 };
 uint8_t BUTTON_State[] = { Bit_RESET };
+uint8_t BUTTON_StateOld[] = { Bit_RESET };
 
 //--------------------------------------------------------------
 // Init aller Buttons
@@ -60,9 +61,7 @@ void UB_Button_Init(void)
 	}
 
 #if BUTTON_USE_TIMER == 1
-	// Init vom Timer
 	P_Button_InitTIM();
-	// Init vom NVIC
 	P_Button_InitNVIC();
 #endif
 }
@@ -98,16 +97,15 @@ bool UB_Button_OnPressed(BUTTON_NAME_t btn_name)
 
 //--------------------------------------------------------------
 // Button OnClick Auswertung (entprellt)
-// ret_wert, ist nur einmal true wenn der Button betätigt wurde
+// is only one true when the button is pressed
 //--------------------------------------------------------------
 bool UB_Button_OnClick(BUTTON_NAME_t btn_name)
 {
 	uint8_t state, old;
-	static uint8_t old_state[BUTTON_LAST];
 
+	old = BUTTON_StateOld[btn_name];
 	state = BUTTON_State[btn_name];
-	old = old_state[btn_name];
-	old_state[btn_name] = state;
+	BUTTON_StateOld[btn_name] = state;
 
 	if (state == Bit_RESET || old != Bit_RESET)
 		return false;
@@ -117,16 +115,15 @@ bool UB_Button_OnClick(BUTTON_NAME_t btn_name)
 #if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
 // Button OnRelease Auswertung (entprellt)
-// ret_wert, ist nur einmal true wenn der Button losgelassen wurde
+// is only one true when the button is released
 //--------------------------------------------------------------
 bool UB_Button_OnRelease(BUTTON_NAME_t btn_name)
 {
 	uint8_t state, old;
-	static uint8_t old_state[BUTTON_LAST];
 
 	state = BUTTON_State[btn_name];
-	old = old_state[btn_name];
-	old_state[btn_name] = state;
+	old = BUTTON_StateOld[btn_name];
+	BUTTON_StateOld[btn_name] = state;
 
 	if (state != Bit_RESET || old == Bit_RESET)
 		return false;
@@ -163,19 +160,18 @@ void P_Button_InitTIM(void)
 
 #if BUTTON_USE_TIMER == 1
 //--------------------------------------------------------------
-// interne Funktion
-// init vom NVIC
+// Init NVIC
 //--------------------------------------------------------------
 void P_Button_InitNVIC(void)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 
 	//---------------------------------------------
-	// init vom Timer Interrupt
+	// Init Timer Interrupt
 	//---------------------------------------------
 	TIM_ITConfig(UB_BUTTON_TIM, TIM_IT_Update, ENABLE);
 
-	// NVIC konfig
+	// NVIC Config
 	NVIC_InitStructure.NVIC_IRQChannel = UB_BUTTON_TIM_IRQ;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
@@ -191,14 +187,11 @@ void P_Button_InitNVIC(void)
 //--------------------------------------------------------------
 void UB_BUTTON_TIM_ISR_HANDLER(void)
 {
-	BUTTON_NAME_t btn_name;
-	// es gibt hier nur eine Interrupt Quelle
+	register BUTTON_NAME_t btn_name;
 	TIM_ClearITPendingBit(UB_BUTTON_TIM, TIM_IT_Update);
 
-	// alle Buttons einlesen
+	// Read all the buttons
 	for (btn_name = BUTTON_FIRST; btn_name < BUTTON_LAST; btn_name++)
-	{
 		BUTTON_State[btn_name] = GPIO_ReadInputDataBit(BUTTON[btn_name].BUTTON_PORT, BUTTON[btn_name].BUTTON_PIN);
-	}
 }
 #endif

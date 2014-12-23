@@ -1,5 +1,5 @@
 //--------------------------------------------------------------
-// File     : menu.c
+// File     : menu->c
 // Datum    : 24.03.2014
 // Version  : 1.6
 // Autor    : UB
@@ -15,15 +15,15 @@
 //--------------------------------------------------------------
 // Includes
 //--------------------------------------------------------------
-#include "menu.h"
+#include "Menu.h"
 
 Menu_t Menu;
 GUI_t GUI;
 
 //--------------------------------------------------------------
-// interne Funktionen
+// Private functions
 //--------------------------------------------------------------
-void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr, uint32_t mode);
+void p_menu_draw_BOT(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr, uint16_t mode);
 void p_menu_draw_BOT_TRG(void);
 void p_menu_draw_BOT_CH1(void);
 void p_menu_draw_BOT_CH2(void);
@@ -39,7 +39,7 @@ float P_FFT_to_Float(uint32_t faktor, uint16_t pos);
 uint16_t LINE(uint16_t n);
 uint16_t GET_LINE(uint16_t xp);
 void p_menu_draw_GUI(void);
-void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint16_t um_nr);
+void p_gui_draw_TOP(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr);
 void p_get_GUI_button(uint16_t x, uint16_t y);
 MENU_Status_t p_make_GUI_changes(void);
 MENU_Status_t p_gui_inc_menu(void);
@@ -50,7 +50,7 @@ int16_t inc_intval(int16_t wert, uint16_t startwert);
 int16_t dec_intval(int16_t wert, uint16_t startwert);
 
 //--------------------------------------------------------------
-// Globale Buffer (for printf)
+// Global Buffers (for printf)
 //--------------------------------------------------------------
 char buf[30];
 char bval[10];
@@ -67,17 +67,17 @@ const MM_Item_t MM_ITEM[] =
 	{ "CH2=",	11 * FONT_W,	 6 }, // CH2            [UM_01]
 	{ "T=",		21 * FONT_W,	17 }, // TIME           [UM_02]
 	{ "Menu=",	31 * FONT_W,	 8 }, // Menu           [UM_03]
-	{ "S=",		 1 * FONT_W,	MENU_TRIGGER_LAST		}, // TRG Source     [UM_04]
+	{ "S=",		 1 * FONT_W,	MENU_TRIGGER_SOURCE_LAST	}, // TRG Source     [UM_04]
 	{ "E=",		 8 * FONT_W,	 2 }, // TRG Edge       [UM_05]
-	{ "M=",		14 * FONT_W,	 3 }, // TRG Mode       [UM_06]
+	{ "M=",		14 * FONT_W,	MENU_TRIGGER_MODE_LAST		}, // TRG Mode       [UM_06]
 	{ "V=",		24 * FONT_W,	 1 }, // TRG Value      [UM_07]
 	{ "",		35 * FONT_W,	 1 }, // TRG Reset      [UM_10]
-	{ "V=",		 1 * FONT_W,	 2 }, // CH Visible     [UM_08]
+	{ "V=",		 1 * FONT_W,	MENU_CH_VISIBLE_LAST		}, // CH Visible     [UM_08]
 	{ "P=",		 8 * FONT_W,	 1 }, // CH Position    [UM_07]
-	{ "M=",		 1 * FONT_W,	 MENU_CURSOR_MODE_LAST	}, // CUR Mode       [UM_09]
+	{ "M=",		 1 * FONT_W,	MENU_CURSOR_MODE_LAST		}, // CUR Mode       [UM_09]
 	{ "A=",		 9 * FONT_W,	 1 }, // CUR A Position [UM_07]
 	{ "B=",		21 * FONT_W,	 1 }, // CUR B Position [UM_07]
-	{ "M=",		 1 * FONT_W,	 7 }, // SEND Mode      [UM_11]
+	{ "M=",		 1 * FONT_W,	MENU_SEND_MODE_LAST			}, // SEND Mode      [UM_11]
 	{ "S=",		16 * FONT_W,	 2 }, // SEND Screen    [UM_14]
 	{ "",		28 * FONT_W,	 2 }, // SEND Data      [UM_12]
 	{ "FFT=",	 1 * FONT_W,	 3 }, // FFT Mode       [UM_13]
@@ -136,7 +136,7 @@ const SM_Item_t UM_03[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-4 : TRG Source
+// Submenu-4 : TRG Source
 //--------------------------------------------------------------
 const SM_Item_t UM_04[] =
 {
@@ -145,7 +145,7 @@ const SM_Item_t UM_04[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-5 : TRG Edge
+// Submenu-5 : TRG Edge
 //--------------------------------------------------------------
 const SM_Item_t UM_05[] =
 {
@@ -154,7 +154,7 @@ const SM_Item_t UM_05[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-6 : TRG Mode
+// Submenu-6 : TRG Mode
 //--------------------------------------------------------------
 const SM_Item_t UM_06[] =
 {
@@ -164,7 +164,7 @@ const SM_Item_t UM_06[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-7 (dummy)
+// Submenu-7 (dummy)
 //--------------------------------------------------------------
 const SM_Item_t UM_07[] =
 {
@@ -172,7 +172,7 @@ const SM_Item_t UM_07[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-8 : CH Visible
+// Submenu-8 : CH Visible
 //--------------------------------------------------------------
 const SM_Item_t UM_08[] =
 {
@@ -181,7 +181,7 @@ const SM_Item_t UM_08[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-9 : CUR Mode
+// Submenu-9 : CUR Mode
 //--------------------------------------------------------------
 const SM_Item_t UM_09[] =
 {
@@ -193,7 +193,7 @@ const SM_Item_t UM_09[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-10 : TRG Reset
+// Submenu-10 : TRG Reset
 //--------------------------------------------------------------
 const SM_Item_t UM_10[] =
 {
@@ -206,7 +206,7 @@ const SM_Item_t UM_10[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-11 : SEND Mode
+// Submenu-11 : SEND Mode
 //--------------------------------------------------------------
 const SM_Item_t UM_11[] =
 {
@@ -220,7 +220,7 @@ const SM_Item_t UM_11[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-12 : SEND Data
+// Submenu-12 : SEND Data
 //--------------------------------------------------------------
 const SM_Item_t UM_12[] =
 {
@@ -229,7 +229,7 @@ const SM_Item_t UM_12[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-13 : FFT Mode
+// Submenu-13 : FFT Mode
 //--------------------------------------------------------------
 const SM_Item_t UM_13[] =
 {
@@ -239,7 +239,7 @@ const SM_Item_t UM_13[] =
 };
 
 //--------------------------------------------------------------
-// Untermenu-14 : SEND Screen
+// Submenu-14 : SEND Screen
 //--------------------------------------------------------------
 const SM_Item_t UM_14[] =
 {
@@ -248,65 +248,67 @@ const SM_Item_t UM_14[] =
 };
 
 //--------------------------------------------------------------
-// zeichnet das komplette Menu
-// (alle TOP und alle BOTTOM Menu-Punkte und die GUI)
+// Records the complete Menu
+// (all TOP BOTTOM and all menu items and the GUI)
 //--------------------------------------------------------------
 void menu_draw_all(void)
 {
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
+
 	//---------------------------------
-	// obere Menu-Leiste
+	// upper menu bar
 	//---------------------------------
-	// Hintergrundbalken
+	// Background bar
 	UB_Graphic2D_DrawFullRectDMA(
 			LCD_MAXX - FONT_H - 2, 0,
 			LCD_MAXY, FONT_H + 2,
 			MENU_BG_COL);
-	// TOP-Menus
-	p_gui_draw_TOP(MM_CH1, UM_01, Menu.ch1.faktor);
-	p_gui_draw_TOP(MM_CH2, UM_01, Menu.ch2.faktor);
-	p_gui_draw_TOP(MM_TIME, UM_02, Menu.timebase.value);
+	// TOP-Menu
+	p_gui_draw_TOP(MM_CH1, UM_01, menu->Ch1.Factor);
+	p_gui_draw_TOP(MM_CH2, UM_01, menu->Ch2.Factor);
+	p_gui_draw_TOP(MM_TIME, UM_02, menu->Timebase.Value);
 
-	if (Menu.send.data == 0)
+	if (menu->Send.Data == 0)
 	{
-		p_gui_draw_TOP(MM_SETTING, UM_03, Menu.Setting);
+		p_gui_draw_TOP(MM_SETTING, UM_03, menu->Setting);
 	}
 	else
 	{
-		UB_Font_DrawString(LINE(1), MM_ITEM[MM_SETTING].yp, "please wait",
-				&Arial_7x10, MENU_VG_COL, MENU_AK_COL);
+		UB_Font_DrawString(LINE(1), MM_ITEM[MM_SETTING].YPos, "please wait", &Arial_7x10, MENU_VG_COL, MENU_AK_COL);
 	}
 
 	//---------------------------------
-	// untere Menu-Leiste
+	// lower menu bar
 	//---------------------------------
-	// Hintergrundbalken
+	// Background bar
 	UB_Graphic2D_DrawFullRectDMA(0, 0, LCD_MAXY, FONT_H + 2, MENU_BG_COL);
 
-	// Bottom-Menus
-	if (Menu.Setting == SETTING_TRIGGER)
+	// Bottom-Menu
+	if (menu->Setting == SETTING_TRIGGER)
 		p_menu_draw_BOT_TRG();
-	else if (Menu.Setting == SETTING_CH1)
+	else if (menu->Setting == SETTING_CH1)
 		p_menu_draw_BOT_CH1();
-	else if (Menu.Setting == SETTING_CH2)
+	else if (menu->Setting == SETTING_CH2)
 		p_menu_draw_BOT_CH2();
-	else if (Menu.Setting == SETTING_CURSOR)
+	else if (menu->Setting == SETTING_CURSOR)
 		p_menu_draw_BOT_CUR();
-	else if (Menu.Setting == SETTING_FFT)
+	else if (menu->Setting == SETTING_FFT)
 		p_menu_draw_BOT_FFT();
-	else if (Menu.Setting == SETTING_SEND)
+	else if (menu->Setting == SETTING_SEND)
 		p_menu_draw_BOT_SEND();
-	else if (Menu.Setting == SETTING_VERSION)
+	else if (menu->Setting == SETTING_VERSION)
 		p_menu_draw_BOT_VERSION();
-	else if (Menu.Setting == SETTING_HELP)
+	else if (menu->Setting == SETTING_HELP)
 		p_menu_draw_BOT_HELP();
 
-	if (GUI.gui_xpos == GUI_XPOS_OFF)
+	if (gui->GuiXPpos == GUI_XPOS_OFF)
 	{
-		Menu.Transparency = 100;
+		menu->Transparency = 100;
 	}
 	else
 	{
-		Menu.Transparency = 200;
+		menu->Transparency = 200;
 		//--------------------------
 		// GUI
 		//--------------------------
@@ -315,63 +317,64 @@ void menu_draw_all(void)
 }
 
 //--------------------------------------------------------------
-// zeichnet die GUI
-// (zeichnet auch den betaetigten Button)
+// Draws the GUI
+// (also records the actuated button)
 //--------------------------------------------------------------
 void p_menu_draw_GUI(void)
 {
+	register GUI_t *gui = &GUI;
 	DMA2D_Coord coord;
 
 	//--------------------------
-	// leere GUI zeichnen
+	// Draw blank GUI
 	//--------------------------
 	coord.SrcX = 0;
 	coord.SrcY = 0;
 	coord.Width = GUI1.width;
 	coord.Height = GUI1.height;
 	coord.DstX = GUI_YPOS;
-	coord.DstY = GUI.gui_xpos;
+	coord.DstY = gui->GuiXPpos;
 
 	UB_Graphic2D_CopyImgDMA(&GUI1, &coord);
 
 	//--------------------------
 	// Draw-operated button
 	//--------------------------
-	if (GUI.akt_button == GUI_BTN_RIGHT)
+	if (gui->ButtonActive == GUI_BTN_RIGHT)
 	{
 		coord.SrcX = GUI1.width / 2;
 		coord.SrcY = GUI1.height / 2;
 		coord.Width = GUI1.width / 2;
 		coord.Height = GUI1.height / 2;
 		coord.DstX = GUI_YPOS + (GUI1.width / 2);
-		coord.DstY = GUI.gui_xpos + (GUI1.height / 2);
+		coord.DstY = gui->GuiXPpos + (GUI1.height / 2);
 	}
-	else if (GUI.akt_button == GUI_BTN_LEFT)
+	else if (gui->ButtonActive == GUI_BTN_LEFT)
 	{
 		coord.SrcX = GUI1.width / 2;
 		coord.SrcY = 0;
 		coord.Width = GUI1.width / 2;
 		coord.Height = GUI1.height / 2;
 		coord.DstX = GUI_YPOS + (GUI1.width / 2);
-		coord.DstY = GUI.gui_xpos;
+		coord.DstY = gui->GuiXPpos;
 	}
-	else if (GUI.akt_button == GUI_BTN_UP)
+	else if (gui->ButtonActive == GUI_BTN_UP)
 	{
 		coord.SrcX = GUI1.width / 4;
 		coord.SrcY = 0;
 		coord.Width = GUI1.width / 4;
 		coord.Height = GUI1.height;
 		coord.DstX = GUI_YPOS + (GUI1.width / 4);
-		coord.DstY = GUI.gui_xpos;
+		coord.DstY = gui->GuiXPpos;
 	}
-	else if (GUI.akt_button == GUI_BTN_DOWN)
+	else if (gui->ButtonActive == GUI_BTN_DOWN)
 	{
 		coord.SrcX = 0;
 		coord.SrcY = 0;
 		coord.Width = GUI1.width / 4;
 		coord.Height = GUI1.height;
 		coord.DstX = GUI_YPOS;
-		coord.DstY = GUI.gui_xpos;
+		coord.DstY = gui->GuiXPpos;
 	}
 	else
 		return;
@@ -380,21 +383,22 @@ void p_menu_draw_GUI(void)
 }
 
 //--------------------------------------------------------------
-// test welcher der vier Buttons der GUI betaetigt ist
-// y,x = Touch-Position
+// Test which is engaged the four buttons in the GUI
+// x, y = Touch-Position
 //--------------------------------------------------------------
 void p_get_GUI_button(uint16_t x, uint16_t y)
 {
+	register GUI_t *gui = &GUI;
 	if (x > (GUI_YPOS + (GUI1.width / 2)))
 	{
 		// left/right
-		if (y > (GUI.gui_xpos + (GUI1.height / 2)))
+		if (y > (gui->GuiXPpos + (GUI1.height / 2)))
 		{
-			GUI.akt_button = GUI_BTN_RIGHT;
+			gui->ButtonActive = GUI_BTN_RIGHT;
 		}
 		else
 		{
-			GUI.akt_button = GUI_BTN_LEFT;
+			gui->ButtonActive = GUI_BTN_LEFT;
 		}
 	}
 	else
@@ -402,270 +406,226 @@ void p_get_GUI_button(uint16_t x, uint16_t y)
 		// up/down
 		if (x > (GUI_YPOS + (GUI1.width / 4)))
 		{
-			GUI.akt_button = GUI_BTN_UP;
+			gui->ButtonActive = GUI_BTN_UP;
 		}
 		else
 		{
-			GUI.akt_button = GUI_BTN_DOWN;
+			gui->ButtonActive = GUI_BTN_DOWN;
 		}
 	}
 }
 
 //--------------------------------------------------------------
-// incrementiert den gerade aktuellen Menupunkt
+// Incremented the currently active menu item
 //--------------------------------------------------------------
 MENU_Status_t p_gui_inc_menu(void)
 {
-	MENU_Status_t ret_wert = MENU_NO_CHANGE;
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
+
+	MENU_Status_t status = MENU_NO_CHANGE;
 	uint32_t max;
-	uint16_t value;
-	int16_t ivalue;
 
-	if (GUI.akt_menu == MM_NONE)
-		return (ret_wert);
+	if (gui->MenuActive == MM_NONE)
+		return (status);
 
-	// alle "normalen" Menupunkte koennen nur einmal betaetigt werden
-	if ((GUI.akt_menu != MM_TRG_VAL) && (GUI.akt_menu != MM_CH_POS)
-			&& (GUI.akt_menu != MM_CUR_P1) && (GUI.akt_menu != MM_CUR_P2))
+	// All the "normal" menu items can be activated only once
+	if (gui->MenuActive != MM_TRG_VAL
+	&&	gui->MenuActive != MM_CH_POS
+	&&	gui->MenuActive != MM_CUR_P1
+	&&	gui->MenuActive != MM_CUR_P2
+		)
 	{
-		// wenn schon mal betaetigt
-		if (GUI.old_button == GUI.akt_button)
+		// If pressed before
+		if (gui->ButtonOld == gui->ButtonActive)
 		{
-			// verlassen ohne was zu aendern
-			return (ret_wert);
+			// Exit without changing anything
+			return (status);
 		}
 	}
 
 	// Maxumum-Value des Menupunktes
-	max = MM_ITEM[GUI.akt_menu].um_cnt;
+	max = MM_ITEM[gui->MenuActive].um_cnt;
 
 	// default returnwert
-	ret_wert = MENU_CHANGE_NORMAL;
+	status = MENU_CHANGE_NORMAL;
 
-	if (GUI.akt_menu == MM_CH1)
+	if (gui->MenuActive == MM_CH1)
 	{
-		if (Menu.ch1.faktor < max - 1)
-			Menu.ch1.faktor++;
+		if (menu->Ch1.Factor < max - 1)
+			menu->Ch1.Factor++;
 	}
-	else if (GUI.akt_menu == MM_CH2)
+	else if (gui->MenuActive == MM_CH2)
 	{
-		if (Menu.ch2.faktor < max - 1)
-			Menu.ch2.faktor++;
+		if (menu->Ch2.Factor < max - 1)
+			menu->Ch2.Factor++;
 	}
-	else if (GUI.akt_menu == MM_TIME)
+	else if (gui->MenuActive == MM_TIME)
 	{
-		if (Menu.timebase.value < max - 1)
-			Menu.timebase.value++;
-		ret_wert = MENU_CHANGE_FRQ;
+		if (menu->Timebase.Value < max - 1)
+			menu->Timebase.Value++;
+		status = MENU_CHANGE_FRQ;
 	}
-	else if (GUI.akt_menu == MM_SETTING)
+	else if (gui->MenuActive == MM_SETTING)
 	{
-		if (Menu.Setting < max - 1)
-			Menu.Setting++;
+		if (menu->Setting < max - 1)
+			menu->Setting++;
 	}
-	else if (GUI.akt_menu == MM_TRG_SOURCE)
+	else if (gui->MenuActive == MM_TRG_SOURCE)
 	{
-		if (Menu.trigger.source < max - 1)
-			Menu.trigger.source++;
+		if (menu->Trigger.Source < max - 1)
+			menu->Trigger.Source++;
 	}
-	else if (GUI.akt_menu == MM_TRG_EDGE)
+	else if (gui->MenuActive == MM_TRG_EDGE)
 	{
-		if (Menu.trigger.edge < max - 1)
-			Menu.trigger.edge++;
+		if (menu->Trigger.Edge < max - 1)
+			menu->Trigger.Edge++;
 	}
-	else if (GUI.akt_menu == MM_TRG_MODE)
+	else if (gui->MenuActive == MM_TRG_MODE)
 	{
-		if (Menu.trigger.mode < max - 1)
-			Menu.trigger.mode++;
-		ret_wert = MENU_CHANGE_MODE;
+		if (menu->Trigger.Mode < max - 1)
+			menu->Trigger.Mode++;
+		status = MENU_CHANGE_MODE;
 	}
-	else if (GUI.akt_menu == MM_TRG_VAL)
+	else if (gui->MenuActive == MM_TRG_VAL)
 	{
-		if (Menu.trigger.source == MENU_TRIGGER_CH1)
-		{ // CH1
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.trigger.value_ch1, 10);
-			}
-			else
-			{
-				value = dec_uintval(Menu.trigger.value_ch1, 0);
-			}
-			Menu.trigger.value_ch1 = value;
+		if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
+		{	// CH1
+			menu->Trigger.ValueCh1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Trigger.ValueCh1, 10)
+				: dec_uintval(menu->Trigger.ValueCh1, 0);
 		}
 		else
-		{ // CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.trigger.value_ch2, 10);
-			}
-			else
-			{
-				value = dec_uintval(Menu.trigger.value_ch2, 0);
-			}
-			Menu.trigger.value_ch2 = value;
+		{	// CH2
+			menu->Trigger.ValueCh2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Trigger.ValueCh2, 10)
+				: dec_uintval(menu->Trigger.ValueCh2, 0);
 		}
-		ret_wert = MENU_CHANGE_VALUE;
+		status = MENU_CHANGE_VALUE;
 	}
-	else if (GUI.akt_menu == MM_TRG_RESET)
+	else if (gui->MenuActive == MM_TRG_RESET)
 	{
-		if (Menu.trigger.mode == 2)
-		{ // "single"
-			if (Menu.trigger.single == 4)
-				Menu.trigger.single = 5; // von "Ready" auf "Stop"
+		if (menu->Trigger.Mode == MENU_TRIGGER_MODE_SINGLE)
+		{	// "Single"
+			if (menu->Trigger.Single == 4)
+				menu->Trigger.Single = 5; // "Ready" to "Stop"
 		}
 		else
-		{ // "normal" oder "auto"
-			if (Menu.trigger.single == 0)
-			{
-				Menu.trigger.single = 1; // von "Run" auf "Stop"
-			}
-			else if (Menu.trigger.single == 1)
-			{
-				Menu.trigger.single = 2; // von "Stop" auf "Weiter"
-			}
+		{	// "Normal" oder "Auto"
+			if (menu->Trigger.Single == 0)
+				menu->Trigger.Single = 1; // "Run" to "Stop"
+			else if (menu->Trigger.Single == 1)
+				menu->Trigger.Single = 2; // "Stop" on "Next"
 		}
 	}
-	else if (GUI.akt_menu == MM_CH_VIS)
+	else if (gui->MenuActive == MM_CH_VIS)
 	{
-		if (Menu.Setting == SETTING_CH1)
-		{ // CH1
-			if (Menu.ch1.visible < max - 1)
-				Menu.ch1.visible++;
+		if (menu->Setting == SETTING_CH1)
+		{	// CH1
+			if (menu->Ch1.Visible < max - 1)
+				menu->Ch1.Visible++;
 		}
-		else if (Menu.Setting == SETTING_CH2)
-		{ // CH2
-			if (Menu.ch2.visible < max - 1)
-				Menu.ch2.visible++;
+		else if (menu->Setting == SETTING_CH2)
+		{	// CH2
+			if (menu->Ch2.Visible < max - 1)
+				menu->Ch2.Visible++;
 		}
 	}
-	else if (GUI.akt_menu == MM_CH_POS)
+	else if (gui->MenuActive == MM_CH_POS)
 	{
-		if (Menu.Setting == SETTING_CH1)
-		{ // CH1
-			if (GUI.old_button != GUI.akt_button)
-			{
-				ivalue = dec_intval(Menu.ch1.position, 1);
-			}
-			else
-			{
-				ivalue = dec_intval(Menu.ch1.position, 0);
-			}
-			Menu.ch1.position = ivalue;
+		if (menu->Setting == SETTING_CH1)
+		{	// CH1
+			menu->Ch1.Position =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_intval(menu->Ch1.Position, 1)
+				: dec_intval(menu->Ch1.Position, 0);
+			
 		}
-		else if (Menu.Setting == SETTING_CH2)
-		{ // CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				ivalue = dec_intval(Menu.ch2.position, 1);
-			}
-			else
-			{
-				ivalue = dec_intval(Menu.ch2.position, 0);
-			}
-			Menu.ch2.position = ivalue;
+		else if (menu->Setting == SETTING_CH2)
+		{	// CH2
+			menu->Ch2.Position =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_intval(menu->Ch2.Position, 1)
+				: dec_intval(menu->Ch2.Position, 0);
 		}
-		ret_wert = MENU_CHANGE_VALUE;
+		status = MENU_CHANGE_VALUE;
 	}
-	else if (GUI.akt_menu == MM_CUR_MODE)
+	else if (gui->MenuActive == MM_CUR_MODE)
 	{
-		if (Menu.cursor.mode < max - 1)
-			Menu.cursor.mode++;
+		if (menu->Cursor.Mode < max - 1)
+			menu->Cursor.Mode++;
 	}
-	else if (GUI.akt_menu == MM_CUR_P1)
+	else if (gui->MenuActive == MM_CUR_P1)
 	{
-		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 		{	// TIME
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.cursor.t1, 1);
-			}
-			else
-			{
-				value = dec_uintval(Menu.cursor.t1, 0);
-			}
-			Menu.cursor.t1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.T1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Cursor.T1, 1)
+				: dec_uintval(menu->Cursor.T1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		else if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
 		{	// CH1+CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.cursor.p1, 10);
-			}
-			else
-			{
-				value = dec_uintval(Menu.cursor.p1, 0);
-			}
-			Menu.cursor.p1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.P1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Cursor.P1, 10)
+				: dec_uintval(menu->Cursor.P1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
+		else if (menu->Cursor.Mode == MENU_CURSOR_MODE_FFT)
 		{	// FFT
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.cursor.f1, 1);
-			}
-			else
-			{
-				value = dec_uintval(Menu.cursor.f1, 0);
-			}
-			Menu.cursor.f1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.F1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Cursor.F1, 1)
+				: dec_uintval(menu->Cursor.F1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
 	}
-	else if (GUI.akt_menu == MM_CUR_P2)
+	else if (gui->MenuActive == MM_CUR_P2)
 	{
-		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 		{	// TIME
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.cursor.t2, 1);
-			}
-			else
-			{
-				value = dec_uintval(Menu.cursor.t2, 0);
-			}
-			Menu.cursor.t2 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.T2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Cursor.T2, 1)
+				: dec_uintval(menu->Cursor.T2, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		else if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
 		{ // CH1+CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = dec_uintval(Menu.cursor.p2, 10);
-			}
-			else
-			{
-				value = dec_uintval(Menu.cursor.p2, 0);
-			}
-			Menu.cursor.p2 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.P2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? dec_uintval(menu->Cursor.P2, 10)
+				: dec_uintval(menu->Cursor.P2, 0);
+			status = MENU_CHANGE_VALUE;
 		}
 	}
-	else if (GUI.akt_menu == MM_FFT_MODE)
+	else if (gui->MenuActive == MM_FFT_MODE)
 	{
-		if (Menu.fft.mode < max - 1)
-			Menu.fft.mode++;
+		if (menu->FFT.Mode < max - 1)
+			menu->FFT.Mode++;
 	}
-	else if (GUI.akt_menu == MM_SEND_MODE)
+	else if (gui->MenuActive == MM_SEND_MODE)
 	{
-		if (Menu.send.mode < max - 1)
-			Menu.send.mode++;
+		if (menu->Send.Mode < max - 1)
+			menu->Send.Mode++;
 	}
-	else if (GUI.akt_menu == MM_SEND_SCREEN)
+	else if (gui->MenuActive == MM_SEND_SCREEN)
 	{
-		if (Menu.send.screen < max - 1)
-			Menu.send.screen++;
+		if (menu->Send.Screen < max - 1)
+			menu->Send.Screen++;
 	}
-	else if (GUI.akt_menu == MM_SEND_DATA)
+	else if (gui->MenuActive == MM_SEND_DATA)
 	{
-		if (Menu.send.data == 0)
-			Menu.send.data = 1;
-		ret_wert = MENU_SEND_DATA;
+		if (menu->Send.Data == 0)
+			menu->Send.Data = 1;
+		status = MENU_SEND_DATA;
 	}
 
-	return (ret_wert);
+	return (status);
 }
 
 //--------------------------------------------------------------
@@ -673,252 +633,203 @@ MENU_Status_t p_gui_inc_menu(void)
 //--------------------------------------------------------------
 MENU_Status_t p_gui_dec_menu(void)
 {
-	MENU_Status_t ret_wert = MENU_NO_CHANGE;
-	uint16_t value;
-	int16_t ivalue;
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
+	MENU_Status_t status = MENU_NO_CHANGE;
 
-	if (GUI.akt_menu == MM_NONE)
-		return (ret_wert);
+	if (gui->MenuActive == MM_NONE)
+		return (status);
 
 	// alle "normalen" Menupunkte koennen nur einmal betaetigt werden
-	if ((GUI.akt_menu != MM_TRG_VAL) && (GUI.akt_menu != MM_CH_POS)
-			&& (GUI.akt_menu != MM_CUR_P1) && (GUI.akt_menu != MM_CUR_P2))
+	if ((gui->MenuActive != MM_TRG_VAL) && (gui->MenuActive != MM_CH_POS)
+			&& (gui->MenuActive != MM_CUR_P1) && (gui->MenuActive != MM_CUR_P2))
 	{
 		// wenn schon mal betaetigt
-		if (GUI.old_button == GUI.akt_button)
+		if (gui->ButtonOld == gui->ButtonActive)
 		{
 			// verlassen ohne was zu aendern
-			return (ret_wert);
+			return (status);
 		}
 	}
 
 	// default returnwert
-	ret_wert = MENU_CHANGE_NORMAL;
+	status = MENU_CHANGE_NORMAL;
 
-	if (GUI.akt_menu == MM_CH1)
+	if (gui->MenuActive == MM_CH1)
 	{
-		if (Menu.ch1.faktor > 0)
-			Menu.ch1.faktor--;
+		if (menu->Ch1.Factor > 0)
+			menu->Ch1.Factor--;
 	}
-	else if (GUI.akt_menu == MM_CH2)
+	else if (gui->MenuActive == MM_CH2)
 	{
-		if (Menu.ch2.faktor > 0)
-			Menu.ch2.faktor--;
+		if (menu->Ch2.Factor > 0)
+			menu->Ch2.Factor--;
 	}
-	else if (GUI.akt_menu == MM_TIME)
+	else if (gui->MenuActive == MM_TIME)
 	{
-		if (Menu.timebase.value > 0)
-			Menu.timebase.value--;
-		ret_wert = MENU_CHANGE_FRQ;
+		if (menu->Timebase.Value > 0)
+			menu->Timebase.Value--;
+		status = MENU_CHANGE_FRQ;
 	}
-	else if (GUI.akt_menu == MM_SETTING)
+	else if (gui->MenuActive == MM_SETTING)
 	{
-		if (Menu.Setting > 0)
-			Menu.Setting--;
+		if (menu->Setting > 0)
+			menu->Setting--;
 	}
-	else if (GUI.akt_menu == MM_TRG_SOURCE)
+	else if (gui->MenuActive == MM_TRG_SOURCE)
 	{
-		if (Menu.trigger.source > MENU_TRIGGER_CH1)
-			Menu.trigger.source--;
+		if (menu->Trigger.Source > MENU_TRIGGER_SOURCE_CH1)
+			menu->Trigger.Source--;
 	}
-	else if (GUI.akt_menu == MM_TRG_EDGE)
+	else if (gui->MenuActive == MM_TRG_EDGE)
 	{
-		if (Menu.trigger.edge > 0)
-			Menu.trigger.edge--;
+		if (menu->Trigger.Edge > 0)
+			menu->Trigger.Edge--;
 	}
-	else if (GUI.akt_menu == MM_TRG_MODE)
+	else if (gui->MenuActive == MM_TRG_MODE)
 	{
-		if (Menu.trigger.mode > 0)
-			Menu.trigger.mode--;
-		ret_wert = MENU_CHANGE_MODE;
+		if (menu->Trigger.Mode > 0)
+			menu->Trigger.Mode--;
+		status = MENU_CHANGE_MODE;
 	}
-	else if (GUI.akt_menu == MM_TRG_VAL)
+	else if (gui->MenuActive == MM_TRG_VAL)
 	{
-		if (Menu.trigger.source == MENU_TRIGGER_CH1)
+		if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
 		{ // CH1
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.trigger.value_ch1, 10);
-			}
-			else
-			{
-				value = inc_uintval(Menu.trigger.value_ch1, 0);
-			}
-			Menu.trigger.value_ch1 = value;
+			menu->Trigger.ValueCh1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Trigger.ValueCh1, 10)
+				: inc_uintval(menu->Trigger.ValueCh1, 0);
 		}
 		else
 		{ // CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.trigger.value_ch2, 10);
-			}
-			else
-			{
-				value = inc_uintval(Menu.trigger.value_ch2, 0);
-			}
-			Menu.trigger.value_ch2 = value;
+			menu->Trigger.ValueCh2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Trigger.ValueCh2, 10)
+				: inc_uintval(menu->Trigger.ValueCh2, 0);
 		}
-		ret_wert = MENU_CHANGE_VALUE;
+		status = MENU_CHANGE_VALUE;
 	}
-	else if (GUI.akt_menu == MM_TRG_RESET)
+	else if (gui->MenuActive == MM_TRG_RESET)
 	{
-		if (Menu.trigger.mode == 2)
-		{ // "single"
-			if (Menu.trigger.single == 4)
-				Menu.trigger.single = 5; // von "Ready" auf "Stop"
+		if (menu->Trigger.Mode == MENU_TRIGGER_MODE_SINGLE)
+		{	// "single"
+			if (menu->Trigger.Single == 4)
+				menu->Trigger.Single = 5; // "Ready" to "Stop"
 		}
 		else
-		{ // "normal" oder "auto"
-			if (Menu.trigger.single == 0)
-			{
-				Menu.trigger.single = 1; // von "Run" auf "Stop"
-			}
-			else if (Menu.trigger.single == 1)
-			{
-				Menu.trigger.single = 2; // von "Stop" auf "Weiter"
-			}
+		{	// "normal" oder "auto"
+			if (menu->Trigger.Single == 0)
+				menu->Trigger.Single = 1; // "Run" to "Stop"
+			else if (menu->Trigger.Single == 1)
+				menu->Trigger.Single = 2; // "Stop" to "Weiter"
 		}
 	}
-	else if (GUI.akt_menu == MM_CH_VIS)
+	else if (gui->MenuActive == MM_CH_VIS)
 	{
-		if (Menu.Setting == SETTING_CH1)
+		if (menu->Setting == SETTING_CH1)
 		{ // CH1
-			if (Menu.ch1.visible > 0)
-				Menu.ch1.visible--;
+			if (menu->Ch1.Visible > MENU_CH_VISIBLE_ON)
+				menu->Ch1.Visible--;
 		}
-		else if (Menu.Setting == SETTING_CH2)
+		else if (menu->Setting == SETTING_CH2)
 		{ // CH2
-			if (Menu.ch2.visible > 0)
-				Menu.ch2.visible--;
+			if (menu->Ch2.Visible > MENU_CH_VISIBLE_ON)
+				menu->Ch2.Visible--;
 		}
 	}
-	else if (GUI.akt_menu == MM_CH_POS)
+	else if (gui->MenuActive == MM_CH_POS)
 	{
-		if (Menu.Setting == SETTING_CH1)
+		if (menu->Setting == SETTING_CH1)
 		{ // CH1
-			if (GUI.old_button != GUI.akt_button)
-			{
-				ivalue = inc_intval(Menu.ch1.position, 1);
-			}
-			else
-			{
-				ivalue = inc_intval(Menu.ch1.position, 0);
-			}
-			Menu.ch1.position = ivalue;
+			menu->Ch1.Position =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_intval(menu->Ch1.Position, 1)
+				: inc_intval(menu->Ch1.Position, 0);
 		}
-		else if (Menu.Setting == SETTING_CH2)
+		else if (menu->Setting == SETTING_CH2)
 		{ // CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				ivalue = inc_intval(Menu.ch2.position, 1);
-			}
-			else
-			{
-				ivalue = inc_intval(Menu.ch2.position, 0);
-			}
-			Menu.ch2.position = ivalue;
+			menu->Ch2.Position =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_intval(menu->Ch2.Position, 1)
+				: inc_intval(menu->Ch2.Position, 0);
 		}
-		ret_wert = MENU_CHANGE_VALUE;
+		status = MENU_CHANGE_VALUE;
 	}
-	else if (GUI.akt_menu == MM_CUR_MODE)
+	else if (gui->MenuActive == MM_CUR_MODE)
 	{
-		if (Menu.cursor.mode > MENU_CURSOR_MODE_OFF)
-			Menu.cursor.mode--;
+		if (menu->Cursor.Mode > MENU_CURSOR_MODE_OFF)
+			menu->Cursor.Mode--;
 	}
-	else if (GUI.akt_menu == MM_CUR_P1)
+	else if (gui->MenuActive == MM_CUR_P1)
 	{
-		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 		{	// TIME
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.cursor.t1, 1);
-			}
-			else
-			{
-				value = inc_uintval(Menu.cursor.t1, 0);
-			}
-			Menu.cursor.t1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.T1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Cursor.T1, 1)
+				: inc_uintval(menu->Cursor.T1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		else if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
 		{	// CH1+CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.cursor.p1, 10);
-			}
-			else
-			{
-				value = inc_uintval(Menu.cursor.p1, 0);
-			}
-			Menu.cursor.p1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.P1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Cursor.P1, 10)
+				: inc_uintval(menu->Cursor.P1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
+		else if (menu->Cursor.Mode == MENU_CURSOR_MODE_FFT)
 		{	// FFT
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.cursor.f1, 1);
-			}
-			else
-			{
-				value = inc_uintval(Menu.cursor.f1, 0);
-			}
-			Menu.cursor.f1 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.F1 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Cursor.F1, 1)
+				: inc_uintval(menu->Cursor.F1, 0);
+			status = MENU_CHANGE_VALUE;
 		}
 	}
-	else if (GUI.akt_menu == MM_CUR_P2)
+	else if (gui->MenuActive == MM_CUR_P2)
 	{
-		if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+		if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 		{	// TIME
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.cursor.t2, 1);
-			}
-			else
-			{
-				value = inc_uintval(Menu.cursor.t2, 0);
-			}
-			Menu.cursor.t2 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.T2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Cursor.T2, 1)
+				: inc_uintval(menu->Cursor.T2, 0);
+			status = MENU_CHANGE_VALUE;
 		}
-		else if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+		else if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
 		{	// CH1+CH2
-			if (GUI.old_button != GUI.akt_button)
-			{
-				value = inc_uintval(Menu.cursor.p2, 10);
-			}
-			else
-			{
-				value = inc_uintval(Menu.cursor.p2, 0);
-			}
-			Menu.cursor.p2 = value;
-			ret_wert = MENU_CHANGE_VALUE;
+			menu->Cursor.P2 =
+				(gui->ButtonOld != gui->ButtonActive)
+				? inc_uintval(menu->Cursor.P2, 10)
+				: inc_uintval(menu->Cursor.P2, 0);
+			status = MENU_CHANGE_VALUE;
 		}
 	}
-	else if (GUI.akt_menu == MM_FFT_MODE)
+	else if (gui->MenuActive == MM_FFT_MODE)
 	{
-		if (Menu.fft.mode > 0)
-			Menu.fft.mode--;
+		if (menu->FFT.Mode > 0)
+			menu->FFT.Mode--;
 	}
-	else if (GUI.akt_menu == MM_SEND_MODE)
+	else if (gui->MenuActive == MM_SEND_MODE)
 	{
-		if (Menu.send.mode > 0)
-			Menu.send.mode--;
+		if (menu->Send.Mode > MENU_SEND_MODE_CH1)
+			menu->Send.Mode--;
 	}
-	else if (GUI.akt_menu == MM_SEND_SCREEN)
+	else if (gui->MenuActive == MM_SEND_SCREEN)
 	{
-		if (Menu.send.screen > 0)
-			Menu.send.screen--;
+		if (menu->Send.Screen > 0)
+			menu->Send.Screen--;
 	}
-	else if (GUI.akt_menu == MM_SEND_DATA)
+	else if (gui->MenuActive == MM_SEND_DATA)
 	{
-		if (Menu.send.data == 0)
-			Menu.send.data = 1;
-		ret_wert = MENU_SEND_DATA;
+		if (menu->Send.Data == 0)
+			menu->Send.Data = 1;
+		status = MENU_SEND_DATA;
 	}
 
-	return (ret_wert);
+	return (status);
 }
 
 //--------------------------------------------------------------
@@ -926,539 +837,514 @@ MENU_Status_t p_gui_dec_menu(void)
 //--------------------------------------------------------------
 MENU_Status_t p_make_GUI_changes(void)
 {
-	MENU_Status_t ret_wert = MENU_NO_CHANGE;
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
+	MENU_Status_t status = MENU_NO_CHANGE;
 
-	if (GUI.akt_button == GUI_BTN_RIGHT)
+	if (gui->ButtonActive == GUI_BTN_RIGHT)
 	{
-		if (GUI.old_button != GUI.akt_button)
+		if (gui->ButtonOld != gui->ButtonActive)
 		{
-			ret_wert = MENU_CHANGE_GUI;
+			status = MENU_CHANGE_GUI;
 			// Bottom-Trigger
-			if (GUI.akt_menu == MM_TRG_VAL)
-				GUI.akt_menu = MM_TRG_RESET;
-			if (GUI.akt_menu == MM_TRG_MODE)
-				GUI.akt_menu = MM_TRG_VAL;
-			if (GUI.akt_menu == MM_TRG_EDGE)
-				GUI.akt_menu = MM_TRG_MODE;
-			if (GUI.akt_menu == MM_TRG_SOURCE)
-				GUI.akt_menu = MM_TRG_EDGE;
+			if (gui->MenuActive == MM_TRG_VAL)
+				gui->MenuActive = MM_TRG_RESET;
+			if (gui->MenuActive == MM_TRG_MODE)
+				gui->MenuActive = MM_TRG_VAL;
+			if (gui->MenuActive == MM_TRG_EDGE)
+				gui->MenuActive = MM_TRG_MODE;
+			if (gui->MenuActive == MM_TRG_SOURCE)
+				gui->MenuActive = MM_TRG_EDGE;
 
 			// Bottom-CH
-			if (GUI.akt_menu == MM_CH_VIS)
-				GUI.akt_menu = MM_CH_POS;
+			if (gui->MenuActive == MM_CH_VIS)
+				gui->MenuActive = MM_CH_POS;
 
 			// Bottom-Cursor
-			if (GUI.akt_menu == MM_CUR_P1)
+			if (gui->MenuActive == MM_CUR_P1)
 			{
-				if (Menu.cursor.mode != MENU_CURSOR_MODE_FFT)
-					GUI.akt_menu = MM_CUR_P2;
+				if (menu->Cursor.Mode != MENU_CURSOR_MODE_FFT)
+					gui->MenuActive = MM_CUR_P2;
 			}
-			if (GUI.akt_menu == MM_CUR_MODE)
+			if (gui->MenuActive == MM_CUR_MODE)
 			{
-				if (Menu.cursor.mode > MENU_CURSOR_MODE_OFF)
-					GUI.akt_menu = MM_CUR_P1;
+				if (menu->Cursor.Mode > MENU_CURSOR_MODE_OFF)
+					gui->MenuActive = MM_CUR_P1;
 			}
 
 			// Bottom-Send
-			if (GUI.akt_menu == MM_SEND_SCREEN)
-				GUI.akt_menu = MM_SEND_DATA;
-			if (GUI.akt_menu == MM_SEND_MODE)
-				GUI.akt_menu = MM_SEND_SCREEN;
+			if (gui->MenuActive == MM_SEND_SCREEN)
+				gui->MenuActive = MM_SEND_DATA;
+			if (gui->MenuActive == MM_SEND_MODE)
+				gui->MenuActive = MM_SEND_SCREEN;
 
 			// TOP (last Entry)
-			if (GUI.akt_menu == MM_SETTING)
+			if (gui->MenuActive == MM_SETTING)
 			{
-				if (Menu.Setting == SETTING_TRIGGER)
-					GUI.akt_menu = MM_TRG_SOURCE;
-				if (Menu.Setting == SETTING_CH1)
-					GUI.akt_menu = MM_CH_VIS;
-				if (Menu.Setting == SETTING_CH2)
-					GUI.akt_menu = MM_CH_VIS;
-				if (Menu.Setting == SETTING_CURSOR)
-					GUI.akt_menu = MM_CUR_MODE;
-				if (Menu.Setting == SETTING_FFT)
-					GUI.akt_menu = MM_FFT_MODE;
-				if (Menu.Setting == SETTING_SEND)
-					GUI.akt_menu = MM_SEND_MODE;
+				if (menu->Setting == SETTING_TRIGGER)
+					gui->MenuActive = MM_TRG_SOURCE;
+				if (menu->Setting == SETTING_CH1)
+					gui->MenuActive = MM_CH_VIS;
+				if (menu->Setting == SETTING_CH2)
+					gui->MenuActive = MM_CH_VIS;
+				if (menu->Setting == SETTING_CURSOR)
+					gui->MenuActive = MM_CUR_MODE;
+				if (menu->Setting == SETTING_FFT)
+					gui->MenuActive = MM_FFT_MODE;
+				if (menu->Setting == SETTING_SEND)
+					gui->MenuActive = MM_SEND_MODE;
 			}
 
 			// TOP
-			if (GUI.akt_menu == MM_TIME)
-				GUI.akt_menu = MM_SETTING;
-			if (GUI.akt_menu == MM_CH2)
-				GUI.akt_menu = MM_TIME;
-			if (GUI.akt_menu == MM_CH1)
-				GUI.akt_menu = MM_CH2;
+			if (gui->MenuActive == MM_TIME)
+				gui->MenuActive = MM_SETTING;
+			if (gui->MenuActive == MM_CH2)
+				gui->MenuActive = MM_TIME;
+			if (gui->MenuActive == MM_CH1)
+				gui->MenuActive = MM_CH2;
 		}
 	}
-	else if (GUI.akt_button == GUI_BTN_LEFT)
+	else if (gui->ButtonActive == GUI_BTN_LEFT)
 	{
-		if (GUI.old_button != GUI.akt_button)
+		if (gui->ButtonOld != gui->ButtonActive)
 		{
-			ret_wert = MENU_CHANGE_GUI;
+			status = MENU_CHANGE_GUI;
 			// TOP
-			if (GUI.akt_menu == MM_CH2)
-				GUI.akt_menu = MM_CH1;
-			if (GUI.akt_menu == MM_TIME)
-				GUI.akt_menu = MM_CH2;
-			if (GUI.akt_menu == MM_SETTING)
-				GUI.akt_menu = MM_TIME;
+			if (gui->MenuActive == MM_CH2)
+				gui->MenuActive = MM_CH1;
+			if (gui->MenuActive == MM_TIME)
+				gui->MenuActive = MM_CH2;
+			if (gui->MenuActive == MM_SETTING)
+				gui->MenuActive = MM_TIME;
 
 			// Bottom-Trigger
-			if (GUI.akt_menu == MM_TRG_SOURCE)
-				GUI.akt_menu = MM_SETTING;
-			if (GUI.akt_menu == MM_TRG_EDGE)
-				GUI.akt_menu = MM_TRG_SOURCE;
-			if (GUI.akt_menu == MM_TRG_MODE)
-				GUI.akt_menu = MM_TRG_EDGE;
-			if (GUI.akt_menu == MM_TRG_VAL)
-				GUI.akt_menu = MM_TRG_MODE;
-			if (GUI.akt_menu == MM_TRG_RESET)
-				GUI.akt_menu = MM_TRG_VAL;
+			if (gui->MenuActive == MM_TRG_SOURCE)
+				gui->MenuActive = MM_SETTING;
+			if (gui->MenuActive == MM_TRG_EDGE)
+				gui->MenuActive = MM_TRG_SOURCE;
+			if (gui->MenuActive == MM_TRG_MODE)
+				gui->MenuActive = MM_TRG_EDGE;
+			if (gui->MenuActive == MM_TRG_VAL)
+				gui->MenuActive = MM_TRG_MODE;
+			if (gui->MenuActive == MM_TRG_RESET)
+				gui->MenuActive = MM_TRG_VAL;
 
 			// Bottom-CH
-			if (GUI.akt_menu == MM_CH_VIS)
-				GUI.akt_menu = MM_SETTING;
-			if (GUI.akt_menu == MM_CH_POS)
-				GUI.akt_menu = MM_CH_VIS;
+			if (gui->MenuActive == MM_CH_VIS)
+				gui->MenuActive = MM_SETTING;
+			if (gui->MenuActive == MM_CH_POS)
+				gui->MenuActive = MM_CH_VIS;
 
 			// Bottom-Cursor
-			if (GUI.akt_menu == MM_CUR_MODE)
-				GUI.akt_menu = MM_SETTING;
-			if (GUI.akt_menu == MM_CUR_P1)
-				GUI.akt_menu = MM_CUR_MODE;
-			if (GUI.akt_menu == MM_CUR_P2)
-				GUI.akt_menu = MM_CUR_P1;
+			if (gui->MenuActive == MM_CUR_MODE)
+				gui->MenuActive = MM_SETTING;
+			if (gui->MenuActive == MM_CUR_P1)
+				gui->MenuActive = MM_CUR_MODE;
+			if (gui->MenuActive == MM_CUR_P2)
+				gui->MenuActive = MM_CUR_P1;
 
 			// Bottom-FFT
-			if (GUI.akt_menu == MM_FFT_MODE)
-				GUI.akt_menu = MM_SETTING;
+			if (gui->MenuActive == MM_FFT_MODE)
+				gui->MenuActive = MM_SETTING;
 
 			// Bottom-Send
-			if (GUI.akt_menu == MM_SEND_MODE)
-				GUI.akt_menu = MM_SETTING;
-			if (GUI.akt_menu == MM_SEND_SCREEN)
-				GUI.akt_menu = MM_SEND_MODE;
-			if (GUI.akt_menu == MM_SEND_DATA)
-				GUI.akt_menu = MM_SEND_SCREEN;
+			if (gui->MenuActive == MM_SEND_MODE)
+				gui->MenuActive = MM_SETTING;
+			if (gui->MenuActive == MM_SEND_SCREEN)
+				gui->MenuActive = MM_SEND_MODE;
+			if (gui->MenuActive == MM_SEND_DATA)
+				gui->MenuActive = MM_SEND_SCREEN;
 		}
 	}
-	else if (GUI.akt_button == GUI_BTN_DOWN)
+	else if (gui->ButtonActive == GUI_BTN_DOWN)
 	{
-		ret_wert = p_gui_inc_menu();
+		status = p_gui_inc_menu();
 	}
-	else if (GUI.akt_button == GUI_BTN_UP)
+	else if (gui->ButtonActive == GUI_BTN_UP)
 	{
-		ret_wert = p_gui_dec_menu();
+		status = p_gui_dec_menu();
 	}
 
-	GUI.old_button = GUI.akt_button;
+	gui->ButtonOld = gui->ButtonActive;
 
-	return (ret_wert);
+	return status;
 }
 
 //--------------------------------------------------------------
-// prüft und aktuallisiert die GUI
-// GUI ein- oder ausblenden
-// oder einen aktiven Menupunkt aendern
+// checks and updates the GUI
+// GUI to display or hide
+// change or an active menu item
 //--------------------------------------------------------------
 MENU_Status_t menu_check_touch(void)
 {
-	MENU_Status_t ret_wert = MENU_NO_CHANGE;
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
+	MENU_Status_t status = MENU_NO_CHANGE;
 	uint16_t x, y;
-	static uint16_t x_old = 999, y_old = 999;
-	static uint16_t gui_changed = 0;
 
 	//------------------------
-	// Touch auslesen
+	// Touch reading
 	//------------------------
 	UB_Touch_Read();
-	if (Touch_Data.status == TOUCH_PRESSED)
+	if (Touch_Data.Status == TOUCH_PRESSED)
 	{
-		// Touch ist betätigt
-		x = Touch_Data.xp;
-		y = Touch_Data.yp;
+		// Touch is operated
+		x = Touch_Data.XPos;
+		y = Touch_Data.YPos;
 
-		if ((x != x_old) || (y != y_old))
+		if (x != menu->OldX || y != menu->OldY)
 		{
-			x_old = x;
-			y_old = y;
+			menu->OldX = x;
+			menu->OldY = y;
 		}
 		else
 		{
-			if (GUI.gui_xpos == GUI_XPOS_OFF)
+			if (gui->GuiXPpos == GUI_XPOS_OFF)
 			{
-				// GUI ist im Moment noch AUS
-				if (gui_changed == 0)
-				{
-					// GUI einschalten (an einer von 3 positionen)
-					GUI.gui_xpos = GUI_XPOS_RIGHT;
+				// GUI is at the moment OFF
+				if (menu->GuiChanged == 0)
+				{	// GUI on (at a 3 Positions)
+					gui->GuiXPpos = GUI_XPOS_RIGHT;
 					if (y < GUI_XPOS_RIGHT)
-						GUI.gui_xpos = GUI_XPOS_MID;
+						gui->GuiXPpos = GUI_XPOS_MID;
 					if (y < GUI_XPOS_MID)
-						GUI.gui_xpos = GUI_XPOS_LEFT;
-					GUI.akt_menu = GUI.old_menu;
-					gui_changed = 1;
-					ret_wert = MENU_CHANGE_GUI;
+						gui->GuiXPpos = GUI_XPOS_LEFT;
+					gui->MenuActive = gui->MenuOld;
+					menu->GuiChanged = 1;
+					status = MENU_CHANGE_GUI;
 				}
 			}
-			else if (GUI.gui_xpos == GUI_XPOS_RIGHT)
+			else if (gui->GuiXPpos == GUI_XPOS_RIGHT)
 			{
-				// GUI-rechts ist aktiv
-				if (gui_changed == 0)
+				// GUI right is active
+				if (menu->GuiChanged == 0)
 				{
 					if (y < GUI_XPOS_RIGHT)
 					{
-						// GUI ausschalten
-						GUI.gui_xpos = GUI_XPOS_OFF;
-						GUI.old_menu = GUI.akt_menu;
-						GUI.akt_menu = MM_NONE;
-						gui_changed = 1;
-						ret_wert = MENU_CHANGE_GUI;
+						// GUI off
+						gui->GuiXPpos = GUI_XPOS_OFF;
+						gui->MenuOld = gui->MenuActive;
+						gui->MenuActive = MM_NONE;
+						menu->GuiChanged = 1;
+						status = MENU_CHANGE_GUI;
 					}
 					else
 					{
 						// GUI check
 						p_get_GUI_button(x, y);
-						ret_wert = p_make_GUI_changes();
+						status = p_make_GUI_changes();
 					}
 				}
 			}
-			else if (GUI.gui_xpos == GUI_XPOS_LEFT)
+			else if (gui->GuiXPpos == GUI_XPOS_LEFT)
 			{
-				// GUI-links ist aktiv
-				if (gui_changed == 0)
+				// GUI left is active
+				if (menu->GuiChanged == 0)
 				{
 					if (y > GUI_XPOS_MID)
 					{
-						// GUI ausschalten
-						GUI.gui_xpos = GUI_XPOS_OFF;
-						GUI.old_menu = GUI.akt_menu;
-						GUI.akt_menu = MM_NONE;
-						gui_changed = 1;
-						ret_wert = MENU_CHANGE_GUI;
+						// GUI off
+						gui->GuiXPpos = GUI_XPOS_OFF;
+						gui->MenuOld = gui->MenuActive;
+						gui->MenuActive = MM_NONE;
+						menu->GuiChanged = 1;
+						status = MENU_CHANGE_GUI;
 					}
 					else
 					{
 						// GUI check
 						p_get_GUI_button(x, y);
-						ret_wert = p_make_GUI_changes();
+						status = p_make_GUI_changes();
 					}
 				}
 			}
 			else
 			{
-				// GUI-mitte ist aktiv
-				if (gui_changed == 0)
+				// GUI center is active
+				if (menu->GuiChanged == 0)
 				{
 					if ((y < GUI_XPOS_MID) || (y > GUI_XPOS_RIGHT))
 					{
-						// GUI ausschalten
-						GUI.gui_xpos = GUI_XPOS_OFF;
-						GUI.old_menu = GUI.akt_menu;
-						GUI.akt_menu = MM_NONE;
-						gui_changed = 1;
-						ret_wert = MENU_CHANGE_GUI;
+						// GUI off
+						gui->GuiXPpos = GUI_XPOS_OFF;
+						gui->MenuOld = gui->MenuActive;
+						gui->MenuActive = MM_NONE;
+						menu->GuiChanged = 1;
+						status = MENU_CHANGE_GUI;
 					}
 					else
 					{
 						// GUI check
 						p_get_GUI_button(x, y);
-						ret_wert = p_make_GUI_changes();
+						status = p_make_GUI_changes();
 					}
 				}
 			}
 
-			// beim senden von Daten die GUI abschalten
-			if (ret_wert == MENU_SEND_DATA)
+			// Send the data from the GUI off
+			if (status == MENU_SEND_DATA)
 			{
-				// GUI ausschalten
-				GUI.gui_xpos = GUI_XPOS_OFF;
-				GUI.old_menu = MM_SETTING;
-				GUI.akt_menu = MM_NONE;
-				gui_changed = 1;
-				if (Menu.send.mode == 6)
+				// GUI off
+				gui->GuiXPpos = GUI_XPOS_OFF;
+				gui->MenuOld = MM_SETTING;
+				gui->MenuActive = MM_NONE;
+				menu->GuiChanged = 1;
+				if (menu->Send.Mode == MENU_SEND_MODE_SCREEN)
 				{
-					// auf gewaehltes Menu umschalten
-					if (Menu.send.screen == 0)
-						Menu.Setting = SETTING_TRIGGER;
-					if (Menu.send.screen == 1)
-						Menu.Setting = SETTING_CURSOR;
+					// Switch on Selected Menu
+					if (menu->Send.Screen == 0)
+						menu->Setting = SETTING_TRIGGER;
+					if (menu->Send.Screen == 1)
+						menu->Setting = SETTING_CURSOR;
 				}
 				else
 				{
-					Menu.Setting = SETTING_SEND;
+					menu->Setting = SETTING_SEND;
 				}
 			}
 		}
 	}
 	else
 	{
-		// Touch ist nicht betätigt
-		gui_changed = 0;
-		if (GUI.old_button != GUI_BTN_NONE)
+		// Touch is not operated
+		menu->GuiChanged = 0;
+		if (gui->ButtonOld != GUI_BTN_NONE)
 		{
-			ret_wert = MENU_CHANGE_GUI;
+			status = MENU_CHANGE_GUI;
 		}
-		GUI.akt_button = GUI_BTN_NONE;
-		GUI.old_button = GUI_BTN_NONE;
+		gui->ButtonActive = GUI_BTN_NONE;
+		gui->ButtonOld = GUI_BTN_NONE;
 	}
 
-	return (ret_wert);
+	return status;
 }
 
 //--------------------------------------------------------------
-// zeichnet einen TOP-Menupunkt
+// Draws a TOP-menu item
 //--------------------------------------------------------------
-void p_gui_draw_TOP(uint32_t mm_nr, const SM_Item_t um[], uint16_t um_nr)
+void p_gui_draw_TOP(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr)
 {
-	sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, um[um_nr].stxt);
-	if (GUI.akt_menu == mm_nr)
-	{
-		UB_Font_DrawString(LINE(1), MM_ITEM[mm_nr].yp, buf, &Arial_7x10,
-				MENU_VG_COL, MENU_AK_COL);
-	}
-	else
-	{
-		UB_Font_DrawString(LINE(1), MM_ITEM[mm_nr].yp, buf, &Arial_7x10,
-				MENU_VG_COL, MENU_BG_COL);
-	}
+	sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, um[um_nr].Text);
+	UB_Font_DrawString(LINE(1), MM_ITEM[mm_nr].YPos, buf, &Arial_7x10, MENU_VG_COL,
+		(GUI.MenuActive == mm_nr)
+		? MENU_AK_COL
+		: MENU_BG_COL
+	);
 }
 
 //--------------------------------------------------------------
-// zeichnet einen BOTTOM-Menu-Punkt
+// Draws a BOTTOM-menu item
 //--------------------------------------------------------------
-void p_menu_draw_BOT(uint32_t mm_nr, const SM_Item_t um[], uint32_t um_nr,
-		uint32_t mode)
+void p_menu_draw_BOT(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr, uint16_t mode)
 {
+	register GUI_t *gui = &GUI;
+	register Menu_t *menu = &Menu;
 
-	if (mode == 0)
+	switch (mode)
 	{
-		// standard Menupunkt
-		sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, um[um_nr].stxt);
+		case 0:
+			// Standard menu item
+			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, um[um_nr].Text);
+			break;
+		case 1:
+			// Menu item: "Trigger Value"
+			if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
+			{
+				P_FloatToDezStr(FAKTOR_ADC * menu->Trigger.ValueCh1);
+				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			}
+			if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH2)
+			{
+				P_FloatToDezStr(FAKTOR_ADC * menu->Trigger.ValueCh2);
+				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			}
+			break;
+		case 2:
+			// Menu item: "Channel position"
+			if (menu->Setting == SETTING_CH1)
+			{
+				P_FloatToDezStr(
+						P_Volt_to_Float(menu->Ch1.Factor, menu->Ch1.Position));
+				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			}
+			if (menu->Setting == SETTING_CH2)
+			{
+				P_FloatToDezStr(
+						P_Volt_to_Float(menu->Ch2.Factor, menu->Ch2.Position));
+				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			}
+			break;
+		case 3:
+			// Menu item: "CH1/CH2 Cursor-A position"
+			P_FloatToDezStr(FAKTOR_ADC * menu->Cursor.P1);
+			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			break;
+		case 4:
+			// Menu item: "CH1/CH2 Cursor-B position"
+			P_FloatToDezStr(FAKTOR_ADC * menu->Cursor.P2);
+			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
+			break;
+		case 5:
+			// Menu item: "TIME Cursor-A position"
+			P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, menu->Cursor.T1));
+			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, bval);
+			break;
+		case 6:
+			// Menu item: "TIME Cursor-B position"
+			P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, menu->Cursor.T2));
+			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, bval);
+			break;
+		case 7:
+			// Menu item: "Trigger Reset"
+			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, um[um_nr].Text);
+			break;
+		case 8:
+			// Menu item: "FFT Cursor-A position"
+			P_FloatToDezStr(P_FFT_to_Float(menu->Timebase.Value, menu->Cursor.F1));
+			if (menu->Timebase.Value <= 12)
+				sprintf(buf, "%s%sHz", MM_ITEM[mm_nr].Text, bval);
+			else
+				sprintf(buf, "%s%skHz", MM_ITEM[mm_nr].Text, bval);
+			break;
 	}
-	else if (mode == 1)
-	{
-		// Sondermenupunkt : "Trigger Value"
-		if (Menu.trigger.source == MENU_TRIGGER_CH1)
-		{
-			P_FloatToDezStr(FAKTOR_ADC * Menu.trigger.value_ch1);
-			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-		}
-		if (Menu.trigger.source == MENU_TRIGGER_CH2)
-		{
-			P_FloatToDezStr(FAKTOR_ADC * Menu.trigger.value_ch2);
-			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-		}
-	}
-	else if (mode == 2)
-	{
-		// Sondermenupunkt : "Channel position"
-		if (Menu.Setting == SETTING_CH1)
-		{
-			P_FloatToDezStr(
-					P_Volt_to_Float(Menu.ch1.faktor, Menu.ch1.position));
-			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-		}
-		if (Menu.Setting == SETTING_CH2)
-		{
-			P_FloatToDezStr(
-					P_Volt_to_Float(Menu.ch2.faktor, Menu.ch2.position));
-			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-		}
-	}
-	else if (mode == 3)
-	{
-		// Sondermenupunkt : "CH1/CH2 Cursor-A position"
-		P_FloatToDezStr(FAKTOR_ADC * Menu.cursor.p1);
-		sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-	}
-	else if (mode == 4)
-	{
-		// Sondermenupunkt : "CH1/CH2 Cursor-B position"
-		P_FloatToDezStr(FAKTOR_ADC * Menu.cursor.p2);
-		sprintf(buf, "%s%sV", MM_ITEM[mm_nr].txt, bval);
-	}
-	else if (mode == 5)
-	{
-		// Sondermenupunkt : "TIME Cursor-A position"
-		P_FloatToDezStr(P_Time_to_Float(Menu.timebase.value, Menu.cursor.t1));
-		sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, bval);
-	}
-	else if (mode == 6)
-	{
-		// Sondermenupunkt : "TIME Cursor-B position"
-		P_FloatToDezStr(P_Time_to_Float(Menu.timebase.value, Menu.cursor.t2));
-		sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, bval);
-	}
-	else if (mode == 7)
-	{
-		// Sondermenupunkt : "Trigger Reset"
-		sprintf(buf, "%s%s", MM_ITEM[mm_nr].txt, um[um_nr].stxt);
-	}
-	else if (mode == 8)
-	{
-		// Sondermenupunkt : "FFT Cursor-A position"
-		P_FloatToDezStr(P_FFT_to_Float(Menu.timebase.value, Menu.cursor.f1));
-		if (Menu.timebase.value <= 12)
-		{
-			sprintf(buf, "%s%sHz", MM_ITEM[mm_nr].txt, bval);
-		}
-		else
-		{
-			sprintf(buf, "%s%skHz", MM_ITEM[mm_nr].txt, bval);
-		}
-	}
-
-	if (GUI.akt_menu == mm_nr)
-	{
-		UB_Font_DrawString(LINE(24), MM_ITEM[mm_nr].yp, buf, &Arial_7x10,
-				MENU_VG_COL, MENU_AK_COL);
-	}
-	else
-	{
-		UB_Font_DrawString(LINE(24), MM_ITEM[mm_nr].yp, buf, &Arial_7x10,
-				MENU_VG_COL, MENU_BG_COL);
-	}
+	UB_Font_DrawString(LINE(24), MM_ITEM[mm_nr].YPos, buf, &Arial_7x10, MENU_VG_COL,
+		(gui->MenuActive == mm_nr)
+		? MENU_AK_COL
+		: MENU_BG_COL
+	);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "Trigger"
+// Submenu: "Trigger"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_TRG(void)
 {
-	p_menu_draw_BOT(MM_TRG_SOURCE, UM_04, Menu.trigger.source, 0);
-	p_menu_draw_BOT(MM_TRG_EDGE, UM_05, Menu.trigger.edge, 0);
-	p_menu_draw_BOT(MM_TRG_MODE, UM_06, Menu.trigger.mode, 0);
+	register Menu_t *menu = &Menu;
+	p_menu_draw_BOT(MM_TRG_SOURCE, UM_04, menu->Trigger.Source, 0);
+	p_menu_draw_BOT(MM_TRG_EDGE, UM_05, menu->Trigger.Edge, 0);
+	p_menu_draw_BOT(MM_TRG_MODE, UM_06, menu->Trigger.Mode, 0);
 	p_menu_draw_BOT(MM_TRG_VAL, UM_07, 0, 1);
-	p_menu_draw_BOT(MM_TRG_RESET, UM_10, Menu.trigger.single, 7);
+	p_menu_draw_BOT(MM_TRG_RESET, UM_10, menu->Trigger.Single, 7);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "CH1"
+// Submenu: "CH1"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_CH1(void)
 {
-	p_menu_draw_BOT(MM_CH_VIS, UM_08, Menu.ch1.visible, 0);
+	p_menu_draw_BOT(MM_CH_VIS, UM_08, Menu.Ch1.Visible, 0);
 	p_menu_draw_BOT(MM_CH_POS, UM_07, 0, 2);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "CH2"
+// Submenu: "CH2"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_CH2(void)
 {
-	p_menu_draw_BOT(MM_CH_VIS, UM_08, Menu.ch2.visible, 0);
+	p_menu_draw_BOT(MM_CH_VIS, UM_08, Menu.Ch2.Visible, 0);
 	p_menu_draw_BOT(MM_CH_POS, UM_07, 0, 2);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "CURSOR"
+// Submenu: "CURSOR"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_CUR(void)
 {
-	uint16_t delta;
+	register Menu_t *menu = &Menu;
+	register uint16_t delta;
 
-	p_menu_draw_BOT(MM_CUR_MODE, UM_09, Menu.cursor.mode, 0);
-	if ((Menu.cursor.mode == MENU_CURSOR_MODE_CH1) || (Menu.cursor.mode == MENU_CURSOR_MODE_CH2))
+	p_menu_draw_BOT(MM_CUR_MODE, UM_09, menu->Cursor.Mode, 0);
+	if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
 	{
 		// Cursor = CH1/CH2
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 3);
 		p_menu_draw_BOT(MM_CUR_P2, UM_07, 0, 4);
-		if (Menu.cursor.p1 >= Menu.cursor.p2)
-		{
-			delta = Menu.cursor.p1 - Menu.cursor.p2;
-		}
+		if (menu->Cursor.P1 >= menu->Cursor.P2)
+			delta = menu->Cursor.P1 - menu->Cursor.P2;
 		else
-		{
-			delta = Menu.cursor.p2 - Menu.cursor.p1;
-		}
+			delta = menu->Cursor.P2 - menu->Cursor.P1;
+
 		P_FloatToDezStr(FAKTOR_ADC * delta);
 		sprintf(buf, "~=%sV", bval);
 		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL,
 				MENU_BG_COL);
 	}
-	else if (Menu.cursor.mode == MENU_CURSOR_MODE_TIME)
+	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 	{
 		// Cursor = TIME
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 5);
 		p_menu_draw_BOT(MM_CUR_P2, UM_07, 0, 6);
-		if (Menu.cursor.t1 >= Menu.cursor.t2)
-		{
-			delta = Menu.cursor.t1 - Menu.cursor.t2;
-		}
+		if (menu->Cursor.T1 >= menu->Cursor.T2)
+			delta = menu->Cursor.T1 - menu->Cursor.T2;
 		else
-		{
-			delta = Menu.cursor.t2 - Menu.cursor.t1;
-		}
-		P_FloatToDezStr(P_Time_to_Float(Menu.timebase.value, (delta + 2048)));
-		if (Menu.timebase.value < 3)
-		{
-			sprintf(buf, "~=%ss", bval);
-		}
-		else if (Menu.timebase.value < 12)
-		{
-			sprintf(buf, "~=%sms", bval);
-		}
-		else
-		{
-			sprintf(buf, "~=%sus", bval);
-		}
+			delta = menu->Cursor.T2 - menu->Cursor.T1;
 
-		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL,
-				MENU_BG_COL);
+		P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, (delta + 2048)));
+		if (menu->Timebase.Value < 3)
+			sprintf(buf, "~=%ss", bval);
+		else if (menu->Timebase.Value < 12)
+			sprintf(buf, "~=%sms", bval);
+		else
+			sprintf(buf, "~=%sus", bval);
+
+		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL, MENU_BG_COL);
 	}
-	else if (Menu.cursor.mode == MENU_CURSOR_MODE_FFT)
-	{
-		// Cursor = FFT
+	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_FFT)
+	{	// Cursor = FFT
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 8);
 	}
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "FFT"
+// Submenu: "FFT"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_FFT(void)
 {
-	p_menu_draw_BOT(MM_FFT_MODE, UM_13, Menu.fft.mode, 0);
+	p_menu_draw_BOT(MM_FFT_MODE, UM_13, Menu.FFT.Mode, 0);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "SEND"
+// Submenu: "SEND"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_SEND(void)
 {
-	p_menu_draw_BOT(MM_SEND_MODE, UM_11, Menu.send.mode, 0);
-	p_menu_draw_BOT(MM_SEND_SCREEN, UM_14, Menu.send.screen, 0);
-	p_menu_draw_BOT(MM_SEND_DATA, UM_12, Menu.send.data, 0);
+	register Menu_t *menu = &Menu;
+	p_menu_draw_BOT(MM_SEND_MODE, UM_11, menu->Send.Mode, 0);
+	p_menu_draw_BOT(MM_SEND_SCREEN, UM_14, menu->Send.Screen, 0);
+	p_menu_draw_BOT(MM_SEND_DATA, UM_12, menu->Send.Data, 0);
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "VERSION"
+// Submenu : "VERSION" or "HELP"
+//--------------------------------------------------------------
+void p_menu_draw_BOT_Text(const char *msg)
+{
+	UB_Font_DrawString(LINE(24), 10, msg, &Arial_7x10, MENU_VG_COL, MENU_BG_COL);
+}
+
+//--------------------------------------------------------------
+// Submenu : "VERSION"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_VERSION(void)
 {
-	UB_Font_DrawString(LINE(24), 10, "STM32F429-Oszi | UB | V:1.6 | 24.03.2014",
-			&Arial_7x10, MENU_VG_COL, MENU_BG_COL);
+	p_menu_draw_BOT_Text("STM32F429-Oszi | UB | V:1.6 | 24.03.2014");
 }
 
 //--------------------------------------------------------------
-// zeichnet Untermenu : "HELP"
+// Submenu: "HELP"
 //--------------------------------------------------------------
 void p_menu_draw_BOT_HELP(void)
 {
-	UB_Font_DrawString(LINE(24), 10, "CH1=PA5 | CH2=PA7 | TX=PA9 | 500Hz=PB2",
-			&Arial_7x10, MENU_VG_COL, MENU_BG_COL);
+	p_menu_draw_BOT_Text("CH1=PA5 | CH2=PA7 | TX=PA9 | 500Hz=PB2");
 }
 
 //--------------------------------------------------------------
-// Valueänderung (incrementieren ohne Vorzeichen)
-// Wertebereich : 0 bis 4095
-// erhoeht automatisch die schrittweite
+// Value Change (Increment without sign)
+// Range: 0 to 4095
+// automatically increases the step size
 //--------------------------------------------------------------
 uint16_t inc_uintval(uint16_t wert, uint16_t startwert)
 {
-	uint16_t ret_wert = 0;
 	int16_t signed_int_wert;
 	static uint16_t inc_delay = 0, inc_val = 1;
 
@@ -1482,19 +1368,17 @@ uint16_t inc_uintval(uint16_t wert, uint16_t startwert)
 
 	if (signed_int_wert > 4095)
 		signed_int_wert = 4095;
-	ret_wert = (uint16_t)(signed_int_wert);
 
-	return (ret_wert);
+	return (uint16_t)(signed_int_wert);
 }
 
 //--------------------------------------------------------------
-// Valueänderung (decrementieren ohne Vorzeichen)
-// Wertebereich : 0 bis 4095
-// erhoeht automatisch die schrittweite
+// Value Change (Decrement without sign)
+// Range: 0 to 4095
+// automatically increases the step size
 //--------------------------------------------------------------
 uint16_t dec_uintval(uint16_t wert, uint16_t startwert)
 {
-	uint16_t ret_wert = 0;
 	int16_t signed_int_wert;
 	static uint16_t dec_delay = 0, dec_val = 1;
 
@@ -1518,19 +1402,17 @@ uint16_t dec_uintval(uint16_t wert, uint16_t startwert)
 
 	if (signed_int_wert < 0)
 		signed_int_wert = 0;
-	ret_wert = (uint16_t)(signed_int_wert);
 
-	return (ret_wert);
+	return (uint16_t)(signed_int_wert);
 }
 
 //--------------------------------------------------------------
-// Valueänderung (incrementieren mit Vorzeichen)
-// Wertebereich : -200 bis +200
-// erhoeht automatisch die schrittweite
+// Value Change (Increment with sign)
+// Range: -200 to +200
+// automatically increases the step size
 //--------------------------------------------------------------
 int16_t inc_intval(int16_t wert, uint16_t startwert)
 {
-	int16_t ret_wert = 0;
 	int16_t signed_int_wert;
 	static uint16_t inc_delay = 0, inc_val = 1;
 
@@ -1554,19 +1436,17 @@ int16_t inc_intval(int16_t wert, uint16_t startwert)
 
 	if (signed_int_wert > 200)
 		signed_int_wert = 200;
-	ret_wert = (int16_t)(signed_int_wert);
 
-	return (ret_wert);
+	return (int16_t)(signed_int_wert);
 }
 
 //--------------------------------------------------------------
-// Valueänderung (decrementieren mit Vorzeichen)
-// Wertebereich : -200 bis +200
-// erhoeht automatisch die schrittweite
+// Value Change (Decrement with sign)
+// Range: -200 to +200
+// automatically increases the step size
 //--------------------------------------------------------------
 int16_t dec_intval(int16_t wert, uint16_t startwert)
 {
-	int16_t ret_wert = 0;
 	int16_t signed_int_wert;
 	static uint16_t dec_delay = 0, dec_val = 1;
 
@@ -1590,241 +1470,108 @@ int16_t dec_intval(int16_t wert, uint16_t startwert)
 
 	if (signed_int_wert < -200)
 		signed_int_wert = -200;
-	ret_wert = (int16_t)(signed_int_wert);
 
-	return (ret_wert);
+	return (int16_t)(signed_int_wert);
 }
 
 //--------------------------------------------------------------
-// Umwandlung : Floatzahl in einen String
+// Conversion: Float number to a string
 //--------------------------------------------------------------
-void P_FloatToDezStr(float wert)
+void P_FloatToDezStr(float value)
 {
-	int16_t vorkomma;
-	uint16_t nachkomma;
+	int16_t int_part;
+	uint16_t dec_part;
 	float rest;
 
-	if ((wert > 32767) || (wert < -32767))
+	if ((value > 32767) || (value < -32767))
 	{
-		// zahl zu groß oder zu klein
+		// Number too large or too small
 		sprintf(bval, "%s", "OVF");
 		return;
 	}
 
-	vorkomma = (int16_t)(wert);
-	if (wert >= 0.0f)
+	int_part = (int16_t)(value);
+	if (value >= 0.0f)
 	{
-		rest = wert - (float) (vorkomma);
-		nachkomma = (uint16_t)(rest * (float) (STRING_FLOAT_FAKTOR) + 0.5f);
-		sprintf(bval, STRING_FLOAT_FORMAT, vorkomma, nachkomma);
+		rest = value - (float) (int_part);
+		dec_part = (uint16_t)(rest * (float) (STRING_FLOAT_FAKTOR) + 0.5f);
+		sprintf(bval, STRING_FLOAT_FORMAT, int_part, dec_part);
 	}
 	else
 	{
-		rest = (float) (vorkomma) - wert;
-		nachkomma = (uint16_t)(rest * (float) (STRING_FLOAT_FAKTOR) + 0.5f);
-		if (wert <= -1.0)
-		{
-			sprintf(bval, STRING_FLOAT_FORMAT, vorkomma, nachkomma);
-		}
+		rest = (float) (int_part) - value;
+		dec_part = (uint16_t)(rest * (float) (STRING_FLOAT_FAKTOR) + 0.5f);
+		if (value <= -1.0)
+			sprintf(bval, STRING_FLOAT_FORMAT, int_part, dec_part);
 		else
-		{
-			sprintf(bval, STRING_FLOAT_FORMAT2, vorkomma, nachkomma);
-		}
+			sprintf(bval, STRING_FLOAT_FORMAT2, int_part, dec_part);
 	}
 }
 
 //--------------------------------------------------------------
-// Umrechnung : Wert in Volt (je nach Vorteiler)
+// Conversion: value in volts (depending on prescaler)
 //--------------------------------------------------------------
-float P_Volt_to_Float(uint32_t faktor, int16_t pos)
+const float Volt_Factors[] = {
+	VFAKTOR_5V, VFAKTOR_2V, VFAKTOR_1V, VFAKTOR_0V5, VFAKTOR_0V2, VFAKTOR_0V1
+};
+
+float P_Volt_to_Float(uint32_t factor, int16_t pos)
 {
-	float ret_wert = 0.0;
-
-	switch (faktor)
-	{
-	case 0:
-		ret_wert = pos * VFAKTOR_5V;
-		break;
-	case 1:
-		ret_wert = pos * VFAKTOR_2V;
-		break;
-	case 2:
-		ret_wert = pos * VFAKTOR_1V;
-		break;
-	case 3:
-		ret_wert = pos * VFAKTOR_0V5;
-		break;
-	case 4:
-		ret_wert = pos * VFAKTOR_0V2;
-		break;
-	case 5:
-		ret_wert = pos * VFAKTOR_0V1;
-		break;
-	}
-
-	return (ret_wert);
+	if (factor <= 5)
+		return (((float)pos) * Volt_Factors[factor]);
+	return 0.0f;
 }
 
 //--------------------------------------------------------------
-// Umrechnung : Wert in Zeit (je nach Timebase)
+// Conversion: value in time (depending on the time base)
 //--------------------------------------------------------------
-float P_Time_to_Float(uint32_t faktor, uint16_t pos)
+const float Time_Factors[] = {
+	TFAKTOR_5, TFAKTOR_2, TFAKTOR_1,
+	TFAKTOR_500, TFAKTOR_200, TFAKTOR_100,
+	TFAKTOR_50, TFAKTOR_20, TFAKTOR_10,
+	TFAKTOR_5, TFAKTOR_2, TFAKTOR_1,
+	TFAKTOR_500,TFAKTOR_200, TFAKTOR_100,
+	TFAKTOR_50, TFAKTOR_25
+};
+float P_Time_to_Float(uint32_t factor, uint16_t pos)
 {
-	float ret_wert = 0.0;
-	int16_t signed_wert = 0;
-
-	signed_wert = pos - 2048;
-
-	switch (faktor)
-	{
-	case 0:
-		ret_wert = (float) (signed_wert) * TFAKTOR_5;
-		break;
-	case 1:
-		ret_wert = (float) (signed_wert) * TFAKTOR_2;
-		break;
-	case 2:
-		ret_wert = (float) (signed_wert) * TFAKTOR_1;
-		break;
-	case 3:
-		ret_wert = (float) (signed_wert) * TFAKTOR_500;
-		break;
-	case 4:
-		ret_wert = (float) (signed_wert) * TFAKTOR_200;
-		break;
-	case 5:
-		ret_wert = (float) (signed_wert) * TFAKTOR_100;
-		break;
-	case 6:
-		ret_wert = (float) (signed_wert) * TFAKTOR_50;
-		break;
-	case 7:
-		ret_wert = (float) (signed_wert) * TFAKTOR_20;
-		break;
-	case 8:
-		ret_wert = (float) (signed_wert) * TFAKTOR_10;
-		break;
-	case 9:
-		ret_wert = (float) (signed_wert) * TFAKTOR_5;
-		break;
-	case 10:
-		ret_wert = (float) (signed_wert) * TFAKTOR_2;
-		break;
-	case 11:
-		ret_wert = (float) (signed_wert) * TFAKTOR_1;
-		break;
-	case 12:
-		ret_wert = (float) (signed_wert) * TFAKTOR_500;
-		break;
-	case 13:
-		ret_wert = (float) (signed_wert) * TFAKTOR_200;
-		break;
-	case 14:
-		ret_wert = (float) (signed_wert) * TFAKTOR_100;
-		break;
-	case 15:
-		ret_wert = (float) (signed_wert) * TFAKTOR_50;
-		break;
-	case 16:
-		ret_wert = (float) (signed_wert) * TFAKTOR_25;
-		break;
-	}
-
-	return (ret_wert);
+	if (factor <= 16)
+		return ((float)((int16_t)(pos - 2048)) * Time_Factors[factor]);
+	return 0.0f;
 }
 
 //--------------------------------------------------------------
-// Umrechnung : Wert in FFT (je nach Timebase)
+// Conversion: value in FFT (depending on the time base)
 //--------------------------------------------------------------
+const float FFT_Factors[] = {
+	FFAKTOR_5s, FFAKTOR_2s, FFAKTOR_1s,
+	FFAKTOR_500m, FFAKTOR_200m, FFAKTOR_100m,
+	FFAKTOR_50m, FFAKTOR_20m, FFAKTOR_10m,
+	FFAKTOR_5m, FFAKTOR_2m, FFAKTOR_1m,
+	FFAKTOR_500u, FFAKTOR_200u, FFAKTOR_100u,
+	FFAKTOR_50u, FFAKTOR_25u
+};
 float P_FFT_to_Float(uint32_t faktor, uint16_t pos)
 {
-	float ret_wert = 0.0;
-	int16_t signed_wert = 0;
-
-	signed_wert = pos;
-
-	switch (faktor)
-	{
-	case 0:
-		ret_wert = (float) (signed_wert) * FFAKTOR_5s;
-		break;
-	case 1:
-		ret_wert = (float) (signed_wert) * FFAKTOR_2s;
-		break;
-	case 2:
-		ret_wert = (float) (signed_wert) * FFAKTOR_1s;
-		break;
-	case 3:
-		ret_wert = (float) (signed_wert) * FFAKTOR_500m;
-		break;
-	case 4:
-		ret_wert = (float) (signed_wert) * FFAKTOR_200m;
-		break;
-	case 5:
-		ret_wert = (float) (signed_wert) * FFAKTOR_100m;
-		break;
-	case 6:
-		ret_wert = (float) (signed_wert) * FFAKTOR_50m;
-		break;
-	case 7:
-		ret_wert = (float) (signed_wert) * FFAKTOR_20m;
-		break;
-	case 8:
-		ret_wert = (float) (signed_wert) * FFAKTOR_10m;
-		break;
-	case 9:
-		ret_wert = (float) (signed_wert) * FFAKTOR_5m;
-		break;
-	case 10:
-		ret_wert = (float) (signed_wert) * FFAKTOR_2m;
-		break;
-	case 11:
-		ret_wert = (float) (signed_wert) * FFAKTOR_1m;
-		break;
-	case 12:
-		ret_wert = (float) (signed_wert) * FFAKTOR_500u;
-		break;
-	case 13:
-		ret_wert = (float) (signed_wert) * FFAKTOR_200u;
-		break;
-	case 14:
-		ret_wert = (float) (signed_wert) * FFAKTOR_100u;
-		break;
-	case 15:
-		ret_wert = (float) (signed_wert) * FFAKTOR_50u;
-		break;
-	case 16:
-		ret_wert = (float) (signed_wert) * FFAKTOR_25u;
-		break;
-	}
-
-	return (ret_wert);
+	if (faktor <= 16)
+		return (float)((int16_t)pos) * FFT_Factors[faktor];
+	return 0.0f;
 }
 
 //--------------------------------------------------------------
-// zum Umrechnen von einer "Zeilen-Nummer"
-// in eine "Pixel-Position"
+// Convert from "line number" to "pixel position"
 // n : [1...24]
 //--------------------------------------------------------------
 uint16_t LINE(uint16_t n)
 {
-	uint16_t ret_wert = 0;
-
-	ret_wert = LCD_MAXX - (n * FONT_H) - 1;
-
-	return (ret_wert);
+	return (LCD_MAXX - (n * FONT_H) - 1);
 }
 
 //--------------------------------------------------------------
-// zum Umrechnen von einer "Pixel-Position"
-// in eine "Zeilen-Nummer"
+// Convert from "pixel position" to "row number"
 // xp : [0...249]
 //--------------------------------------------------------------
 uint16_t GET_LINE(uint16_t xp)
 {
-	uint16_t ret_wert = 0;
-
-	ret_wert = ((LCD_MAXX - xp) / FONT_H) + 1;
-
-	return (ret_wert);
+	return (((LCD_MAXX - xp) / FONT_H) + 1);
 }

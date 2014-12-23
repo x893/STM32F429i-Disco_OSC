@@ -14,9 +14,9 @@
 
 #include "adc.h"
 
-volatile uint16_t ADC_DMA_Buffer_A[ADC1d_LAST * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_B[ADC1d_LAST * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
-volatile uint16_t ADC_DMA_Buffer_C[ADC1d_LAST * ADC_ARRAY_LEN];  //  (C) sortierte Daten
+uint16_t ADC_DMA_Buffer_A[ADC1d_LAST * ADC_ARRAY_LEN];  //  (A) Roh-Daten per DMA
+uint16_t ADC_DMA_Buffer_B[ADC1d_LAST * ADC_ARRAY_LEN];  //  (B) Roh-Daten per DMA
+uint16_t ADC_DMA_Buffer_C[ADC1d_LAST * ADC_ARRAY_LEN];  //  (C) sortierte Daten
 
 ADC_t ADC_UB;
 
@@ -25,7 +25,7 @@ ADC_t ADC_UB;
 //--------------------------------------------------------------
 const ADC1d_t ADC1d[] =
 {
-	//NAME  ,PORT , PIN      , CLOCK              , Kanal
+	//	NAME	PORT	PIN			CLOCK					Channel
 	{ ADC_PA5, GPIOA, GPIO_Pin_5, RCC_AHB1Periph_GPIOA, ADC_Channel_5 }, // ADC an PA5 = ADC12_IN5
 	{ ADC_PA7, GPIOA, GPIO_Pin_7, RCC_AHB1Periph_GPIOA, ADC_Channel_7 }, // ADC an PA7 = ADC12_IN7
 };
@@ -37,21 +37,19 @@ void P_ADC_InitADC(void);
 void P_ADC_Start(void);
 void P_ADC_InitTimer2(void);
 void P_ADC_Clear(void);
-void ADC_searchTrigger_A1(void);
-void ADC_searchTrigger_B1(void);
-void ADC_searchTrigger_A2(void);
-void ADC_searchTrigger_B2(void);
 
 //--------------------------------------------------------------
 // Init ADC1 and ADC2 in DMA Mode and start the cyclic conversion
 //--------------------------------------------------------------
 void ADC_Init_ALL(void)
 {
+	register ADC_t *adc = &ADC_UB;
+
 	// Init all variables
-	ADC_UB.status = ADC_VORLAUF;
-	ADC_UB.trigger_pos = 0;
-	ADC_UB.trigger_quarter = 0;
-	ADC_UB.dma_status = 0;
+	adc->Status = ADC_VORLAUF;
+	adc->TriggerPos = 0;
+	adc->TriggerQuarter = 0;
+	adc->DmaStatus = 0;
 
 	P_ADC_Clear();
 	P_ADC_InitTimer2();
@@ -87,7 +85,7 @@ const uint16_t ADC_Freq_Table[] = {
 	20,		7,		// 50us  => 500kHz	= 2us
 	20,		3,		// 25us  => 1MHz	= 1us
 };
-void ADC_change_Frq(uint32_t n)
+void ADC_change_Frq(uint16_t freq)
 {
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	register uint32_t prescaler = OSZI_TIM2_PRESCALE;
@@ -95,10 +93,10 @@ void ADC_change_Frq(uint32_t n)
 
 	// Timer anhalten
 	TIM_Cmd(TIM2, DISABLE);
-	if (n <= 16)
+	if (freq <= 16)
 	{
-		prescaler = ADC_Freq_Table[n * 2];
-		period = ADC_Freq_Table[n * 2 + 1];
+		prescaler = ADC_Freq_Table[freq * 2];
+		period = ADC_Freq_Table[freq * 2 + 1];
 	}
 	
 	// Set the new values
@@ -109,7 +107,7 @@ void ADC_change_Frq(uint32_t n)
 	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
 
 	// Start timer again, if necessary
-	if (ADC_UB.status != ADC_READY)
+	if (ADC_UB.Status != ADC_READY)
 	{
 		// Timer2 enable
 		TIM_ARRPreloadConfig(TIM2, ENABLE);
@@ -122,12 +120,12 @@ void ADC_change_Frq(uint32_t n)
 // n != 1 => Double-Buffer-Mode
 // n = 1  => Single-Buffer-Mode
 //--------------------------------------------------------------
-void ADC_change_Mode(uint32_t n)
+void ADC_change_Mode(uint16_t trigger_mode)
 {
 	DMA_InitTypeDef DMA_InitStructure;
 
 	// Set flag
-	ADC_UB.dma_status = 1;
+	ADC_UB.DmaStatus = 1;
 
 	TIM_Cmd(TIM2, DISABLE);
 
@@ -155,7 +153,7 @@ void ADC_change_Mode(uint32_t n)
 	DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;
 	DMA_Init(ADC1_DMA_STREAM, &DMA_InitStructure);
 
-	if (n != 1)
+	if (trigger_mode != MENU_TRIGGER_MODE_AUTO)
 	{
 		// Double-Buffer-Mode
 		ADC1_DMA_STREAM->CR |= DMA_SxCR_DBM;
@@ -182,7 +180,7 @@ void ADC_change_Mode(uint32_t n)
 	P_ADC_InitNVIC();
 
 	// Start timer again, if necessary
-	if ((ADC_UB.status != ADC_READY) || (n == 1))
+	if (ADC_UB.Status != ADC_READY || trigger_mode == MENU_TRIGGER_MODE_AUTO)
 	{
 		// Timer2 enable
 		TIM_ARRPreloadConfig(TIM2, ENABLE);
@@ -190,7 +188,7 @@ void ADC_change_Mode(uint32_t n)
 	}
 
 	// Reset flag
-	ADC_UB.dma_status = 0;
+	ADC_UB.DmaStatus = 0;
 }
 
 //--------------------------------------------------------------
@@ -405,6 +403,100 @@ void P_ADC_InitTimer2(void)
 }
 
 //--------------------------------------------------------------
+// Examined trigger point
+//--------------------------------------------------------------
+void ADC_searchTrigger(register uint16_t * src, uint16_t offset, uint16_t quadrant)
+{
+	register ADC_t *adc = &ADC_UB;
+	register Menu_t *menu = &Menu;
+	register uint16_t n;
+	register uint16_t data;
+	register uint16_t trigger;
+
+	if (menu->Trigger.Mode == MENU_TRIGGER_MODE_AUTO)
+		return;
+
+	src += offset;
+	if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
+	{
+		trigger = menu->Trigger.ValueCh1;
+	}
+	else
+	{
+		trigger = menu->Trigger.ValueCh2;
+		src++;
+	}
+
+	for (n = 0; n < ADC_HALF_ARRAY_LEN; n++)
+	{
+		data = *src;
+		src += 2;
+		if (menu->Trigger.Edge == 0)
+		{
+			if (adc->Status == ADC_RUNNING)
+			{
+				if (data < trigger)
+					adc->Status = ADC_PRE_TRIGGER;
+			}
+			else if (data >= trigger)
+			{
+				adc->Status = ADC_TRIGGER_OK;
+				adc->TriggerPos = n + offset;
+				adc->TriggerQuarter = quadrant;
+				break;
+			}
+		}
+		else
+		{
+			if (adc->Status == ADC_RUNNING)
+			{
+				if (data > trigger)
+					adc->Status = ADC_PRE_TRIGGER;
+			}
+			else if (data <= trigger)
+			{
+				adc->Status = ADC_TRIGGER_OK;
+				adc->TriggerPos = n + offset;
+				adc->TriggerQuarter = quadrant;
+				break;
+			}
+		}
+	}
+}
+
+//--------------------------------------------------------------
+// Examined trigger point in quadrant 1
+//--------------------------------------------------------------
+void ADC_searchTrigger_A1(void)
+{
+	ADC_searchTrigger(ADC_DMA_Buffer_A, 0, 1);
+}
+
+//--------------------------------------------------------------
+// Examined trigger point in quadrant 2
+//--------------------------------------------------------------
+void ADC_searchTrigger_A2(void)
+{
+	ADC_searchTrigger(ADC_DMA_Buffer_A, ADC_HALF_ARRAY_LEN, 2);
+}
+
+//--------------------------------------------------------------
+// Examined trigger point in quadrant 3
+//--------------------------------------------------------------
+void ADC_searchTrigger_B1(void)
+{
+	ADC_searchTrigger(ADC_DMA_Buffer_B, 0, 3);
+}
+
+//--------------------------------------------------------------
+// Examined trigger point in quadrant 4
+//--------------------------------------------------------------
+void ADC_searchTrigger_B2(void)
+{
+	ADC_searchTrigger(ADC_DMA_Buffer_B, ADC_HALF_ARRAY_LEN, 4);
+}
+
+//--------------------------------------------------------------
 // Interrupt (ISR-Function)
 // is called when DMA interrupt
 //   (In Half Transfer Complete and TransferCompleteInterrupt)
@@ -412,15 +504,17 @@ void P_ADC_InitTimer2(void)
 //--------------------------------------------------------------
 void DMA2_Stream0_IRQHandler(void)
 {
+	register ADC_t *adc = &ADC_UB;
+
 	if (DMA_GetITStatus(DMA2_Stream0, DMA_IT_HTIF0))
 	{
 		// HalfTransferInterruptComplete interrupt from DMA2 occurred
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_HTIF0);
 
-		if (ADC_UB.dma_status == 0)
+		if (adc->DmaStatus == 0)
 		{
-			if (ADC_UB.status == ADC_RUNNING
-			||	ADC_UB.status == ADC_PRE_TRIGGER
+			if (adc->Status == ADC_RUNNING
+			||	adc->Status == ADC_PRE_TRIGGER
 				)
 			{
 				if ((ADC1_DMA_STREAM->CR & DMA_SxCR_CT) == 0)
@@ -439,15 +533,15 @@ void DMA2_Stream0_IRQHandler(void)
 		// TransferInterruptComplete interrupt from DMA2 occurred
 		DMA_ClearITPendingBit(DMA2_Stream0, DMA_IT_TCIF0);
 
-		if (ADC_UB.dma_status == 0)
+		if (adc->DmaStatus == 0)
 		{
 			TIM_Cmd(TIM2, DISABLE);
 
-			if (ADC_UB.status != ADC_VORLAUF)
+			if (adc->Status != ADC_VORLAUF)
 			{
-				if (ADC_UB.status == ADC_TRIGGER_OK)
+				if (adc->Status == ADC_TRIGGER_OK)
 				{
-					ADC_UB.status = ADC_READY;
+					adc->Status = ADC_READY;
 				}
 				else
 				{
@@ -465,297 +559,9 @@ void DMA2_Stream0_IRQHandler(void)
 			else
 			{
 				TIM_Cmd(TIM2, ENABLE);
-				ADC_UB.status = ADC_RUNNING;
+				adc->Status = ADC_RUNNING;
 			}
 		}
 		UB_Led_Toggle(LED_GREEN);
-	}
-}
-
-//--------------------------------------------------------------
-// Examined trigger point in quadrant 1
-//--------------------------------------------------------------
-void ADC_searchTrigger_A1(void)
-{
-	uint32_t n, ch;
-	uint16_t wert, trigger;
-
-	if (Menu.trigger.mode == 1)
-		return;
-
-	if (Menu.trigger.source == MENU_TRIGGER_CH1)
-	{
-		ch = 0;
-		trigger = Menu.trigger.value_ch1;
-	}
-	else
-	{
-		ch = 1;
-		trigger = Menu.trigger.value_ch2;
-	}
-
-	if (Menu.trigger.edge == 0)
-	{
-		for (n = 0; n < ADC_HALF_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_A[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert < trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert >= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 1;
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		for (n = 0; n < ADC_HALF_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_A[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert > trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert <= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 1;
-					break;
-				}
-			}
-		}
-	}
-}
-
-//--------------------------------------------------------------
-// Examined trigger point in quadrant 2
-//--------------------------------------------------------------
-void ADC_searchTrigger_A2(void)
-{
-	uint32_t n, ch;
-	uint16_t value, trigger;
-
-	if (Menu.trigger.mode == 1)
-		return;
-
-	if (Menu.trigger.source == MENU_TRIGGER_CH1)
-	{
-		ch = 0;
-		trigger = Menu.trigger.value_ch1;
-	}
-	else
-	{
-		ch = 1;
-		trigger = Menu.trigger.value_ch2;
-	}
-
-	if (Menu.trigger.edge == 0)
-	{
-		for (n = ADC_HALF_ARRAY_LEN; n < ADC_ARRAY_LEN; n++)
-		{
-			value = ADC_DMA_Buffer_A[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (value < trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (value >= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 2;
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		for (n = ADC_HALF_ARRAY_LEN; n < ADC_ARRAY_LEN; n++)
-		{
-			value = ADC_DMA_Buffer_A[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (value > trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (value <= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 2;
-					break;
-				}
-			}
-		}
-	}
-}
-
-//--------------------------------------------------------------
-// Examined trigger point in quadrant 3
-//--------------------------------------------------------------
-void ADC_searchTrigger_B1(void)
-{
-	uint32_t n, ch;
-	uint16_t wert, trigger;
-
-	if (Menu.trigger.mode == 1)
-		return;
-
-	if (Menu.trigger.source == MENU_TRIGGER_CH1)
-	{
-		ch = 0;
-		trigger = Menu.trigger.value_ch1;
-	}
-	else
-	{
-		ch = 1;
-		trigger = Menu.trigger.value_ch2;
-	}
-
-	if (Menu.trigger.edge == 0)
-	{
-		for (n = 0; n < ADC_HALF_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_B[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert < trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert >= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 3;
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		for (n = 0; n < ADC_HALF_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_B[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert > trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert <= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 3;
-					break;
-				}
-			}
-		}
-	}
-}
-
-//--------------------------------------------------------------
-// Examined trigger point in quadrant 4
-//--------------------------------------------------------------
-void ADC_searchTrigger_B2(void)
-{
-	uint32_t n, ch;
-	uint16_t wert, trigger;
-
-	if (Menu.trigger.mode == 1)
-		return;
-
-	if (Menu.trigger.source == MENU_TRIGGER_CH1)
-	{
-		ch = 0;
-		trigger = Menu.trigger.value_ch1;
-	}
-	else
-	{
-		ch = 1;
-		trigger = Menu.trigger.value_ch2;
-	}
-
-	if (Menu.trigger.edge == 0)
-	{
-		for (n = ADC_HALF_ARRAY_LEN; n < ADC_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_B[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert < trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert >= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 4;
-					break;
-				}
-			}
-		}
-	}
-	else
-	{
-		for (n = ADC_HALF_ARRAY_LEN; n < ADC_ARRAY_LEN; n++)
-		{
-			wert = ADC_DMA_Buffer_B[(n * 2) + ch];
-			if (ADC_UB.status == ADC_RUNNING)
-			{
-				if (wert > trigger)
-				{
-					ADC_UB.status = ADC_PRE_TRIGGER;
-				}
-			}
-			else
-			{
-				if (wert <= trigger)
-				{
-					ADC_UB.status = ADC_TRIGGER_OK;
-					ADC_UB.trigger_pos = n;
-					ADC_UB.trigger_quarter = 4;
-					break;
-				}
-			}
-		}
 	}
 }
