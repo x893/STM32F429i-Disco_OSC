@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Project version="2G - 1.7.4" name="stm32f429">
   <Target name="stm32f429" isCurrent="1">
-    <Device manufacturerId="9" manufacturerName="ST" chipId="344" chipName="STM32F407VG" boardId="" boardName="" coreId="" coreName=""/>
+    <Device manufacturerId="9" manufacturerName="ST" chipId="344" chipName="STM32F407VG" boardId="" boardName=""/>
     <BuildOption>
       <Compile>
         <Option name="OptimizationLevel" value="0"/>
@@ -52,7 +52,7 @@
     <DebugOption>
       <Option name="org.coocox.codebugger.gdbjtag.core.adapter" value="ST-Link"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.debugMode" value="SWD"/>
-      <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="1M"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="2M"/>
       <Option name="org.coocox.codebugger.gdbjtag.corerunToMain" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.jlinkgdbserver" value=""/>
       <Option name="org.coocox.codebugger.gdbjtag.core.userDefineGDBScript" value=""/>
@@ -66,18 +66,11 @@
       <Option name="org.coocox.codebugger.gdbjtag.core.autoDownload" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.verify" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.downloadFuction" value="Erase Effected"/>
-      <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="coocox-flash/coide_stm32f4xx_2048k/stm32f4xx_2048.elf"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="./stm32f4xx_2048.elf"/>
     </DebugOption>
     <ExcludeFile/>
   </Target>
-  <Components path="./">
-    <Component id="30" name="C Library" path="" type="BasicComponet"/>
-    <Component id="31" name="Retarget printf" path="" type="BasicComponet"/>
-    <Component id="54" name="M4 CMSIS Core" path="" type="BasicComponet"/>
-    <Component id="500" name="CMSIS BOOT" path="" type="BasicComponet"/>
-    <Component id="501" name="RCC" path="" type="BasicComponet"/>
-  </Components>
-  <LocalComponents/>
+  <Components path="./"/>
   <Files>
     <File name="cmsis_lib/source/stm32f4xx_gpio.c" path="cmsis_lib/source/stm32f4xx_gpio.c" type="1"/>
     <File name="cmsis_lib/include/stm32f4xx_i2c.h" path="cmsis_lib/include/stm32f4xx_i2c.h" type="1"/>
@@ -91,9 +84,9 @@
     <File name="cmsis_lib/include/stm32f4xx_usart.h" path="cmsis_lib/include/stm32f4xx_usart.h" type="1"/>
     <File name="uboszi_lib/menu.h" path="uboszi_lib/menu.h" type="1"/>
     <File name="cmsis_lib/source/stm32f4xx_ltdc.c" path="cmsis_lib/source/stm32f4xx_ltdc.c" type="1"/>
+    <File name="cmsis_boot/stm32f4xx.h" path="cmsis_boot/stm32f4xx.h" type="1"/>
     <File name="cmsis/core_cm4_simd.h" path="cmsis/core_cm4_simd.h" type="1"/>
     <File name="cmsis_boot/startup" path="" type="2"/>
-    <File name="cmsis_boot/stm32f4xx.h" path="cmsis_boot/stm32f4xx.h" type="1"/>
     <File name="ub_lib/stm32_ub_sdram.h" path="ub_lib/stm32_ub_sdram.h" type="1"/>
     <File name="ub_lib/stm32_ub_touch_stmpe811.h" path="ub_lib/stm32_ub_touch_stmpe811.h" type="1"/>
     <File name="uboszi_lib/oszi.c" path="uboszi_lib/oszi.c" type="1"/>
@@ -104,13 +97,13 @@
     <File name="fft_lib" path="" type="2"/>
     <File name="fft_lib/arm_rfft_f32.c" path="fft_lib/arm_rfft_f32.c" type="1"/>
     <File name="cmsis_lib/source/misc.c" path="cmsis_lib/source/misc.c" type="1"/>
-    <File name="cmsis_lib/source/stm32f4xx_adc.c" path="cmsis_lib/source/stm32f4xx_adc.c" type="1"/>
     <File name="cmsis_lib/include/stm32f4xx_tim.h" path="cmsis_lib/include/stm32f4xx_tim.h" type="1"/>
+    <File name="cmsis_lib/source/stm32f4xx_adc.c" path="cmsis_lib/source/stm32f4xx_adc.c" type="1"/>
     <File name="fft_lib/arm_cfft_radix4_f32.c" path="fft_lib/arm_cfft_radix4_f32.c" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
     <File name="cmsis_lib/source/stm32f4xx_fmc.c" path="cmsis_lib/source/stm32f4xx_fmc.c" type="1"/>
-    <File name="fft_lib/arm_max_f32.c" path="fft_lib/arm_max_f32.c" type="1"/>
     <File name="cmsis_lib/source/stm32f4xx_i2c.c" path="cmsis_lib/source/stm32f4xx_i2c.c" type="1"/>
+    <File name="fft_lib/arm_max_f32.c" path="fft_lib/arm_max_f32.c" type="1"/>
     <File name="cmsis_lib/source" path="" type="2"/>
     <File name="fft_lib/arm_math.h" path="fft_lib/arm_math.h" type="1"/>
     <File name="fft_lib/arm_rfft_init_f32.c" path="fft_lib/arm_rfft_init_f32.c" type="1"/>
@@ -126,21 +119,21 @@
     <File name="fft_lib/arm_common_tables.c" path="fft_lib/arm_common_tables.c" type="1"/>
     <File name="ub_lib/stm32_ub_touch_stmpe811.c" path="ub_lib/stm32_ub_touch_stmpe811.c" type="1"/>
     <File name="uboszi_lib/oszi.h" path="uboszi_lib/oszi.h" type="1"/>
-    <File name="cmsis_boot/startup/startup_stm32f4xx.c" path="cmsis_boot/startup/startup_stm32f4xx.c" type="1"/>
     <File name="stdio" path="" type="2"/>
+    <File name="cmsis_boot/startup/startup_stm32f4xx.c" path="cmsis_boot/startup/startup_stm32f4xx.c" type="1"/>
     <File name="cmsis_lib/source/stm32f4xx_rcc.c" path="cmsis_lib/source/stm32f4xx_rcc.c" type="1"/>
     <File name="ub_lib/stm32_ub_systick.h" path="ub_lib/stm32_ub_systick.h" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
     <File name="ub_lib" path="" type="2"/>
     <File name="ub_lib/stm32_ub_graphic2d.c" path="ub_lib/stm32_ub_graphic2d.c" type="1"/>
     <File name="ub_lib/stm32_ub_lcd_ili9341.h" path="ub_lib/stm32_ub_lcd_ili9341.h" type="1"/>
+    <File name="cmsis_lib/include/stm32f4xx_adc.h" path="cmsis_lib/include/stm32f4xx_adc.h" type="1"/>
     <File name="ub_lib/stm32_ub_font.c" path="ub_lib/stm32_ub_font.c" type="1"/>
     <File name="uboszi_lib/fft.h" path="uboszi_lib/fft.h" type="1"/>
-    <File name="cmsis_lib/include/stm32f4xx_adc.h" path="cmsis_lib/include/stm32f4xx_adc.h" type="1"/>
-    <File name="uboszi_lib/adc.c" path="uboszi_lib/adc.c" type="1"/>
     <File name="ub_lib/stm32_ub_i2c3.h" path="ub_lib/stm32_ub_i2c3.h" type="1"/>
-    <File name="fft_lib/arm_common_tables.h" path="fft_lib/arm_common_tables.h" type="1"/>
+    <File name="uboszi_lib/adc.c" path="uboszi_lib/adc.c" type="1"/>
     <File name="cmsis_boot/system_stm32f4xx.c" path="cmsis_boot/system_stm32f4xx.c" type="1"/>
+    <File name="fft_lib/arm_common_tables.h" path="fft_lib/arm_common_tables.h" type="1"/>
     <File name="cmsis_lib/include/stm32f4xx_spi.h" path="cmsis_lib/include/stm32f4xx_spi.h" type="1"/>
     <File name="ub_lib/stm32_ub_uart.c" path="ub_lib/stm32_ub_uart.c" type="1"/>
     <File name="fft_lib/arm_cfft_radix4_init_f32.c" path="fft_lib/arm_cfft_radix4_init_f32.c" type="1"/>
@@ -166,10 +159,9 @@
     <File name="uboszi_lib" path="" type="2"/>
     <File name="ub_lib/stm32_ub_lcd_ili9341.c" path="ub_lib/stm32_ub_lcd_ili9341.c" type="1"/>
     <File name="main.c" path="main.c" type="1"/>
+    <File name="cmsis_lib/include/stm32f4xx_fmc.h" path="cmsis_lib/include/stm32f4xx_fmc.h" type="1"/>
     <File name="uboszi_lib/fft.c" path="uboszi_lib/fft.c" type="1"/>
     <File name="ub_lib/stm32_ub_font.h" path="ub_lib/stm32_ub_font.h" type="1"/>
-    <File name="cmsis_lib/include/stm32f4xx_fmc.h" path="cmsis_lib/include/stm32f4xx_fmc.h" type="1"/>
     <File name="ub_lib/stm32_ub_systick.c" path="ub_lib/stm32_ub_systick.c" type="1"/>
   </Files>
-  <Bookmarks/>
 </Project>

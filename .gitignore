@@ -54,3 +54,5 @@ build/
 *.uvopt
 *.uvoptx
 stm32f429/
+*.cogui
+*.comemgui

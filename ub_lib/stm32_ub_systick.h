@@ -23,10 +23,7 @@
 //#define  SYSTICK_RESOLUTION   1    // 1us Auflösung
 #define  SYSTICK_RESOLUTION   1000   // 1ms Auflösung
 
-
-
-extern uint32_t  GUI_Timer_ms;
-
+extern volatile uint32_t  GUI_Timer_ms;
 
 //--------------------------------------------------------------
 // Testpin-1 (PB2)

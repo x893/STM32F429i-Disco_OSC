@@ -18,7 +18,7 @@
 //--------------------------------------------------------------
 #include "stm32_ub_systick.h"
 
-uint32_t  GUI_Timer_ms;
+volatile uint32_t  GUI_Timer_ms;
 
 #if ((SYSTICK_RESOLUTION != 1) && (SYSTICK_RESOLUTION != 1000))
 	#error print WRONG SYSTICK RESOLUTION !
@@ -114,10 +114,6 @@ void UB_Systick_Pause_s(volatile uint32_t pause)
 	}
 }
 
-
-
-
-
 //--------------------------------------------------------------
 // Systic-Interrupt
 //--------------------------------------------------------------
@@ -126,16 +122,12 @@ void SysTick_Handler(void)
 	// Testpin-1 toggeln
 	GPIO_TST_1_PORT->ODR ^= GPIO_TST_1_PIN;
 
-	// Tick für Pause
+	// Tick for Pause
 	if (Systick_Delay != 0)
-	{
 		Systick_Delay--;
-	}
 
 	if (GUI_Timer_ms != 0)
-	{
 		GUI_Timer_ms--;
-	}
 }
 
 
