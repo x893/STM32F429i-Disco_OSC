@@ -63,8 +63,8 @@ static void P_SDRAM_delay(volatile uint32_t nCount);
 //--------------------------------------------------------------
 ErrorStatus UB_SDRAM_Init(void)
 {
-	register ErrorStatus result = ERROR;
-	register uint16_t old_value, new_value;
+	ErrorStatus result = ERROR;
+	uint16_t old_value, new_value;
 	static uint8_t init_ok = 0;
 
 	// Initialization may be made only once

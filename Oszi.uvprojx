@@ -529,6 +529,11 @@
               <FilePath>.\cmsis_lib\source\stm32f4xx_adc.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f4xx_dbgmcu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cmsis_lib\source\stm32f4xx_dbgmcu.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_dma.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\cmsis_lib\source\stm32f4xx_dma.c</FilePath>
@@ -581,6 +586,21 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>cmsis_boot</GroupName>
+          <Files>
+            <File>
+              <FileName>startup_stm32f429xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\cmsis_boot\startup\arm\startup_stm32f429xx.s</FilePath>
+            </File>
+            <File>
+              <FileName>system_stm32f4xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cmsis_boot\system_stm32f4xx.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>fft_lib</GroupName>
           <Files>
             <File>
@@ -617,21 +637,6 @@
               <FileName>arm_rfft_init_f32.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\fft_lib\arm_rfft_init_f32.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>cmsis_boot</GroupName>
-          <Files>
-            <File>
-              <FileName>startup_stm32f429xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\cmsis_boot\startup\arm\startup_stm32f429xx.s</FilePath>
-            </File>
-            <File>
-              <FileName>system_stm32f4xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\cmsis_boot\system_stm32f4xx.c</FilePath>
             </File>
           </Files>
         </Group>

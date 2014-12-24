@@ -38,7 +38,7 @@ UART_RX_t UART_RX[UART_LAST];
 //--------------------------------------------------------------
 // UARTs Definition
 //--------------------------------------------------------------
-const UART_t UART[1] = {
+const UART_t UART[] = {
 		// Name	Clock					AF-UART			UART	Baud	Interrupt
 	{
 		COM1,	RCC_APB2Periph_USART1,	GPIO_AF_USART1,	USART1,	115200, USART1_IRQn, // UART1 115200 Baud
@@ -53,9 +53,9 @@ const UART_t UART[1] = {
 //--------------------------------------------------------------
 void UB_RX_Clear(UART_NAME_t nr)
 {
-	UART_RX[nr].rx_buffer[0] = RX_END_CHR;
-	UART_RX[nr].wr_ptr = 0;
-	UART_RX[nr].status = RX_EMPTY;
+	UART_RX[nr].RxBuffer[0] = RX_END_CHR;
+	UART_RX[nr].Index = 0;
+	UART_RX[nr].Status = RX_EMPTY;
 }
 
 //--------------------------------------------------------------
@@ -67,28 +67,32 @@ void UB_Uart_Init(void)
 	USART_InitTypeDef USART_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
 	UART_NAME_t nr;
+	const UART_t *uart;
 
 	for (nr = UART_FIRST; nr < UART_LAST; nr++)
 	{
+		uart = &UART[nr];
+		UB_RX_Clear(nr);
+
 		// Clock enable for TX und RX Pins
-		RCC_AHB1PeriphClockCmd(UART[nr].TX.CLK, ENABLE);
-		RCC_AHB1PeriphClockCmd(UART[nr].RX.CLK, ENABLE);
+		RCC_AHB1PeriphClockCmd(uart->TX.CLK, ENABLE);
+		RCC_AHB1PeriphClockCmd(uart->RX.CLK, ENABLE);
 
 		// Clock enable for UART
-		if (UART[nr].UART == USART1
-		||	UART[nr].UART == USART6
+		if (uart->UART == USART1
+		||	uart->UART == USART6
 			)
 		{
-			RCC_APB2PeriphClockCmd(UART[nr].CLK, ENABLE);
+			RCC_APB2PeriphClockCmd(uart->CLK, ENABLE);
 		}
 		else
 		{
-			RCC_APB1PeriphClockCmd(UART[nr].CLK, ENABLE);
+			RCC_APB1PeriphClockCmd(uart->CLK, ENABLE);
 		}
 
 		// Connect UART alternative-function with the IO pins
-		GPIO_PinAFConfig(UART[nr].TX.PORT, UART[nr].TX.SOURCE, UART[nr].AF);
-		GPIO_PinAFConfig(UART[nr].RX.PORT, UART[nr].RX.SOURCE, UART[nr].AF);
+		GPIO_PinAFConfig(uart->TX.PORT, uart->TX.SOURCE, UART[nr].AF);
+		GPIO_PinAFConfig(uart->RX.PORT, uart->RX.SOURCE, UART[nr].AF);
 
 		// UART as an alternative function with push-pull
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
@@ -96,61 +100,59 @@ void UB_Uart_Init(void)
 		GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 		GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 		// TX-Pin
-		GPIO_InitStructure.GPIO_Pin = UART[nr].TX.PIN;
-		GPIO_Init(UART[nr].TX.PORT, &GPIO_InitStructure);
+		GPIO_InitStructure.GPIO_Pin = uart->TX.PIN;
+		GPIO_Init(uart->TX.PORT, &GPIO_InitStructure);
 		// RX-Pin
-		GPIO_InitStructure.GPIO_Pin = UART[nr].RX.PIN;
-		GPIO_Init(UART[nr].RX.PORT, &GPIO_InitStructure);
+		GPIO_InitStructure.GPIO_Pin = uart->RX.PIN;
+		GPIO_Init(uart->RX.PORT, &GPIO_InitStructure);
 
 		// Oversampling
-		USART_OverSampling8Cmd(UART[nr].UART, ENABLE);
+		USART_OverSampling8Cmd(uart->UART, ENABLE);
 
 		// Init baudrate, 8 Databits, 1 stop bit, no parity, no RTS + CTS
-		USART_InitStructure.USART_BaudRate = UART[nr].BAUD;
+		USART_InitStructure.USART_BaudRate = uart->BAUD;
 		USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 		USART_InitStructure.USART_StopBits = USART_StopBits_1;
 		USART_InitStructure.USART_Parity = USART_Parity_No;
 		USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 		USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-		USART_Init(UART[nr].UART, &USART_InitStructure);
+		USART_Init(uart->UART, &USART_InitStructure);
 
 		// UART enable
-		USART_Cmd(UART[nr].UART, ENABLE);
+		USART_Cmd(uart->UART, ENABLE);
 
 		// RX-Interrupt enable
-		USART_ITConfig(UART[nr].UART, USART_IT_RXNE, ENABLE);
+		USART_ITConfig(uart->UART, USART_IT_RXNE, ENABLE);
 
 		// Enable UART Interrupt-Vector
-		NVIC_InitStructure.NVIC_IRQChannel = UART[nr].INT;
+		NVIC_InitStructure.NVIC_IRQChannel = uart->INT;
 		NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 		NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 		NVIC_Init(&NVIC_InitStructure);
-
-		UB_RX_Clear(nr);
 	}
 }
 
 //--------------------------------------------------------------
 // Send a byte via UART
 //--------------------------------------------------------------
-void UB_Uart_SendByte(UART_NAME_t uart, uint16_t wert)
+void UB_Uart_SendByte(UART_NAME_t uart, uint16_t data)
 {
 	// Wait until TX buffer empty
 	while (USART_GetFlagStatus(UART[uart].UART, USART_FLAG_TXE) == RESET)
 	{ }
-	USART_SendData(UART[uart].UART, wert);
+	USART_SendData(UART[uart].UART, data);
 }
 
 //--------------------------------------------------------------
 // Send string via UART senden
 //--------------------------------------------------------------
-void UB_Uart_SendString(UART_NAME_t uart, const char *ptr, UART_LASTBYTE_t end_cmd)
+void UB_Uart_SendString(UART_NAME_t uart, const char *src, UART_LASTBYTE_t end_cmd)
 {
-	// sende kompletten String
-	while (*ptr != '\0')
+	// Send the complete string
+	while (*src != '\0')
 	{
-		UB_Uart_SendByte(uart, *ptr++);
+		UB_Uart_SendByte(uart, *src++);
 	}
 
 	// Try sending end identifier
@@ -188,13 +190,13 @@ UART_RXSTATUS_t UB_Uart_ReceiveString(UART_NAME_t uart, char *ptr)
 	UART_RXSTATUS_t result = RX_EMPTY;
 	uint8_t n, ch;
 
-	if (UART_RX[uart].status == RX_READY)
+	if (UART_RX[uart].Status == RX_READY)
 	{
 		result = RX_READY;
 		n = 0;
 		do
 		{
-			ch = UART_RX[uart].rx_buffer[n];
+			ch = UART_RX[uart].RxBuffer[n];
 			if (ch != RX_END_CHR)
 			{
 				ptr[n++] = ch;
@@ -205,7 +207,7 @@ UART_RXSTATUS_t UB_Uart_ReceiveString(UART_NAME_t uart, char *ptr)
 		ptr[n] = '\0';
 		UB_RX_Clear(uart);
 	}
-	else if (UART_RX[uart].status == RX_FULL)
+	else if (UART_RX[uart].Status == RX_FULL)
 	{
 		result = RX_FULL;
 		UB_RX_Clear(uart);
@@ -220,30 +222,30 @@ UART_RXSTATUS_t UB_Uart_ReceiveString(UART_NAME_t uart, char *ptr)
 //--------------------------------------------------------------
 void P_UART_Receive(UART_NAME_t uart, uint16_t ch)
 {
-	if (UART_RX[uart].wr_ptr < RX_BUF_SIZE)
+	if (UART_RX[uart].Index < RX_BUF_SIZE)
 	{
 		// If still space in the buffer
-		if (UART_RX[uart].status == RX_EMPTY)
+		if (UART_RX[uart].Status == RX_EMPTY)
 		{
 			// If no end code has been received
 			if ((ch >= RX_FIRST_CHR) && (ch <= RX_LAST_CHR))
 			{
 				// Save the byte in the buffer
-				UART_RX[uart].rx_buffer[UART_RX[uart].wr_ptr] = ch;
-				UART_RX[uart].wr_ptr++;
+				UART_RX[uart].RxBuffer[UART_RX[uart].Index] = ch;
+				UART_RX[uart].Index++;
 			}
 			if (ch == RX_END_CHR)
 			{
 				// If end identifier received
-				UART_RX[uart].rx_buffer[UART_RX[uart].wr_ptr] = ch;
-				UART_RX[uart].status = RX_READY;
+				UART_RX[uart].RxBuffer[UART_RX[uart].Index] = ch;
+				UART_RX[uart].Status = RX_READY;
 			}
 		}
 	}
 	else
 	{
 		// If the buffer is full
-		UART_RX[uart].status = RX_FULL;
+		UART_RX[uart].Status = RX_FULL;
 	}
 }
 
@@ -325,7 +327,8 @@ void UART4_IRQHandler(void)
 // UART5-Interrupt
 //--------------------------------------------------------------
 #ifdef USE_UART5
-void UART5_IRQHandler(void) {
+void UART5_IRQHandler(void)
+{
 	if (USART_GetITStatus(UART5, USART_IT_RXNE) == SET)
 	{
 		P_UART_RX_INT(UART5_IRQn, USART_ReceiveData(UART5));

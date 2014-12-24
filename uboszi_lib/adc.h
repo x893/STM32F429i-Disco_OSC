@@ -11,12 +11,6 @@
 // Includes
 //--------------------------------------------------------------
 #include "stm32f4xx.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_adc.h"
-#include "stm32f4xx_dma.h"
-#include "stm32f4xx_tim.h"
-#include "misc.h"
 #include "menu.h"
 #include "stm32_ub_led.h"
 
@@ -118,31 +112,34 @@ typedef struct {
 //--------------------------------------------------------------
 // Timer-2
 //
-// Grundfreq = 2*APB1 (APB1=42MHz @ Sysclock=168MHz) => TIM_CLK=84MHz
-//
-// ADC-FRQ = 84MHz / (PRESCALE+1) / (PERIODE+1)
+// Freq = 2 * APB1 (APB1 = 42 MHz @ SysClock = 168 MHz) => TIM CLK = 84 MHz
+// ADC-FRQ = 84MHz / (PRESCALE + 1) / (PERIOD + 1)
 //
 //--------------------------------------------------------------
-#define OSZI_TIM2_PERIODE      299
-#define OSZI_TIM2_PRESCALE     83
+#define OSZI_TIM2_PERIOD	299
+#define OSZI_TIM2_PRESCALE	83
 
 
 //--------------------------------------------------------------
 typedef enum {
-	ADC_VORLAUF = 0,
+	ADC_START = 0,
 	ADC_RUNNING,
 	ADC_PRE_TRIGGER,
 	ADC_TRIGGER_OK,
 	ADC_READY
 } ADC_Status_t;
 
+typedef enum {
+	ADC_DMA_RUN  = 0,
+	ADC_DMA_STOP = 1,
+} ADC_DMA_Status_t;
 
 //--------------------------------------------------------------
 typedef struct {
 	uint16_t TriggerPos;
 	uint16_t TriggerQuarter;
-	uint16_t DmaStatus;
-	ADC_Status_t Status;
+	ADC_DMA_Status_t	DmaStatus;
+	ADC_Status_t		Status;
 } ADC_t;
 extern ADC_t ADC_UB;
 

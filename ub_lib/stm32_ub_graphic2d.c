@@ -343,10 +343,10 @@ void UB_Graphic2D_DrawCircleNormal(uint16_t xp, uint16_t yp, uint16_t r, uint16_
 //--------------------------------------------------------------
 void UB_Graphic2D_DrawFullCircleDMA(uint16_t xp, uint16_t yp, uint16_t r, uint16_t c)
 {
-	register int32_t  D;
-	register uint32_t  CurX;
-	register uint32_t  CurY;
-	register int16_t x, y, l;
+	int32_t  D;
+	uint32_t  CurX;
+	uint32_t  CurY;
+	int16_t x, y, l;
 	LCD_DIR_t m = LCD_DIR_VERTICAL;
 
 	// Check limits

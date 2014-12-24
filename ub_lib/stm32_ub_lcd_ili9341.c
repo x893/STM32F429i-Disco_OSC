@@ -191,8 +191,8 @@ void UB_LCD_SetLayer_Back(void)
 //--------------------------------------------------------------
 void UB_LCD_FillLayer(uint16_t color)
 {
-	register uint32_t index = LCD_PIXEL;
-	register uint16_t *dst = (uint16_t*)LCD_Context.LCD_CurrentFrameBuffer;
+	uint32_t index = LCD_PIXEL;
+	uint16_t *dst = (uint16_t*)LCD_Context.LCD_CurrentFrameBuffer;
 	while (index != 0)
 	{
 		index--;
@@ -222,7 +222,7 @@ void UB_LCD_SetTransparency(uint8_t alpha)
 //--------------------------------------------------------------
 void UB_LCD_SetCursor2Draw(uint16_t xpos, uint16_t ypos)
 {
-	register LCD_Context_t *lcd = &LCD_Context;
+	LCD_Context_t *lcd = &LCD_Context;
 
 	lcd->aktCursorX = xpos;
 	lcd->aktCursorY = ypos;
@@ -235,7 +235,7 @@ void UB_LCD_SetCursor2Draw(uint16_t xpos, uint16_t ypos)
 //--------------------------------------------------------------
 void UB_LCD_DrawPixel(uint16_t color)
 {
-	register LCD_Context_t *lcd = &LCD_Context;
+	LCD_Context_t *lcd = &LCD_Context;
 
 	*(volatile uint16_t*)(lcd->aktCursorPos) = color;
 
@@ -308,9 +308,9 @@ void UB_LCD_Rotate_180(void)
 //--------------------------------------------------------------
 void UB_LCD_Copy_Layer1_to_Layer2(void)
 {
-	register uint32_t index = LCD_PIXEL;
-	register uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER);
-	register uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
+	uint32_t index = LCD_PIXEL;
+	uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER);
+	uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
 	
 	while (index != 0)
 	{
@@ -325,9 +325,9 @@ void UB_LCD_Copy_Layer1_to_Layer2(void)
 //--------------------------------------------------------------
 void UB_LCD_Copy_Layer2_to_Layer1(void)
 {
-	register uint32_t index = LCD_PIXEL;
-	register uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
-	register uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER);
+	uint32_t index = LCD_PIXEL;
+	uint16_t *src = (uint16_t *)(LCD_FRAME_BUFFER + LCD_FRAME_OFFSET);
+	uint16_t *dst = (uint16_t *)(LCD_FRAME_BUFFER);
 	
 	while (index != 0)
 	{

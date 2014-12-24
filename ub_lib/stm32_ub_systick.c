@@ -21,7 +21,7 @@
 volatile uint32_t  GUI_Timer_ms;
 
 #if ((SYSTICK_RESOLUTION != 1) && (SYSTICK_RESOLUTION != 1000))
-	#error print WRONG SYSTICK RESOLUTION !
+	#error "WRONG SYSTICK RESOLUTION !"
 #endif
 
 //--------------------------------------------------------------
@@ -30,26 +30,25 @@ volatile uint32_t  GUI_Timer_ms;
 static volatile uint32_t Systick_Delay;
 
 //--------------------------------------------------------------
-// Init vom System-Counter
-// entweder im 1us-Takt oder 1ms-Takt
+// Initialize System-Counter
+// either in 1us or 1ms clock
 //--------------------------------------------------------------
 void UB_Systick_Init(void)
 {
 	RCC_ClocksTypeDef RCC_Clocks;
 	GPIO_InitTypeDef  GPIO_InitStructure;
 
-	// alle Variabeln zurücksetzen
+	// Reset all variables
 	Systick_Delay = 0;
 	GUI_Timer_ms = 0;
 
+	RCC_GetClocksFreq(&RCC_Clocks);
 
 #if SYSTICK_RESOLUTION == 1
-	// Timer auf 1us einstellen
-	RCC_GetClocksFreq(&RCC_Clocks);
+	// Setting the timer to 1us
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000000);
 #else
-	// Timer auf 1ms einstellen
-	RCC_GetClocksFreq(&RCC_Clocks);
+	// Setting the timer to 1 ms
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
 #endif
 
@@ -57,7 +56,7 @@ void UB_Systick_Init(void)
 	// Clock Enable
 	RCC_AHB1PeriphClockCmd(GPIO_TST_1_CLOCK, ENABLE);
 
-	// Config als Digital-Ausgang
+	// Config TST_1_PIN as digital output
 	GPIO_InitStructure.GPIO_Pin = GPIO_TST_1_PIN;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -66,11 +65,10 @@ void UB_Systick_Init(void)
 	GPIO_Init(GPIO_TST_1_PORT, &GPIO_InitStructure);
 }
 
-
 #if SYSTICK_RESOLUTION == 1
 //--------------------------------------------------------------
-// Pausenfunktion (in us)
-// die CPU wartet bis die Zeit abgelaufen ist
+// Pause function (in us)
+// the CPU waits until the time has expired
 //--------------------------------------------------------------
 void UB_Systick_Pause_us(volatile uint32_t pause)
 {
@@ -82,12 +80,12 @@ void UB_Systick_Pause_us(volatile uint32_t pause)
 
 
 //--------------------------------------------------------------
-// Pausenfunktion (in ms)
-// die CPU wartet bis die Zeit abgelaufen ist
+// Pause function (in ms)
+// the CPU waits until the time has expired
 //--------------------------------------------------------------
 void UB_Systick_Pause_ms(volatile uint32_t pause)
 {
-#if SYSTICK_RESOLUTION==1
+#if SYSTICK_RESOLUTION == 1
 	while (pause != 0)
 	{
 		UB_Systick_Pause_us(1000);
@@ -96,14 +94,13 @@ void UB_Systick_Pause_ms(volatile uint32_t pause)
 #else
 	Systick_Delay = pause;
 	while (Systick_Delay != 0)
-		;
+		__WFI();
 #endif
 }
 
-
 //--------------------------------------------------------------
-// Pausenfunktion (in s)
-// die CPU wartet bis die Zeit abgelaufen ist
+// Pause function (in s)
+// the CPU waits until the time has expired
 //--------------------------------------------------------------
 void UB_Systick_Pause_s(volatile uint32_t pause)
 {
@@ -115,11 +112,11 @@ void UB_Systick_Pause_s(volatile uint32_t pause)
 }
 
 //--------------------------------------------------------------
-// Systic-Interrupt
+// SysTick IRQ Handler
 //--------------------------------------------------------------
 void SysTick_Handler(void)
 {
-	// Testpin-1 toggeln
+	// Toggle TST_1_PIN
 	GPIO_TST_1_PORT->ODR ^= GPIO_TST_1_PIN;
 
 	// Tick for Pause
@@ -129,5 +126,3 @@ void SysTick_Handler(void)
 	if (GUI_Timer_ms != 0)
 		GUI_Timer_ms--;
 }
-
-

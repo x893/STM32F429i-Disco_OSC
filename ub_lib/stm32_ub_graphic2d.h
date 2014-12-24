@@ -12,7 +12,6 @@
 //--------------------------------------------------------------
 #include "stm32f4xx.h"
 #include "stm32_ub_lcd_ili9341.h"
-#include "stm32f4xx_dma2d.h"
 
 typedef enum {
 	LCD_DIR_HORIZONTAL = 0,

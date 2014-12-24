@@ -17,8 +17,43 @@
 //--------------------------------------------------------------
 #include "Menu.h"
 
-Menu_t Menu;
-GUI_t GUI;
+Menu_t Menu = {
+	100,
+	SETTING_TRIGGER,
+	999,
+	999,
+	0,
+	9,									// Timebase 5ms/div
+	MENU_FFT_MODE_CH1,
+	{	1,	MENU_CH_VISIBLE_ON,  25	},	// CH1
+	{	2,	MENU_CH_VISIBLE_ON, -75	},	// CH2
+
+	{	MENU_TRIGGER_SOURCE_CH1,		// Trigger
+		MENU_TRIGGER_EDGE_HI,
+		MENU_TRIGGER_MODE_AUTO,
+		0,
+		1024,
+		2048
+	},
+
+	{	MENU_CURSOR_MODE_CH1,			// Cursor
+		2048, 3072,
+		1700, 2300,
+		1000
+	},
+
+	{	MENU_SEND_MODE_CH1,				// Send
+		MENU_SEND_SCREEN_TRIGGER,
+		MENU_SEND_DATA_START
+	}
+};
+GUI_t GUI = {
+	GUI_XPOS_OFF,
+	MM_NONE,
+	MM_CH1,
+	GUI_BTN_NONE,
+	GUI_BTN_NONE
+};
 
 //--------------------------------------------------------------
 // Private functions
@@ -30,12 +65,10 @@ void p_menu_draw_BOT_CH2(void);
 void p_menu_draw_BOT_CUR(void);
 void p_menu_draw_BOT_FFT(void);
 void p_menu_draw_BOT_SEND(void);
-void p_menu_draw_BOT_VERSION(void);
-void p_menu_draw_BOT_HELP(void);
 void P_FloatToDezStr(float wert);
-float P_Volt_to_Float(uint32_t faktor, int16_t pos);
-float P_Time_to_Float(uint32_t faktor, uint16_t pos);
-float P_FFT_to_Float(uint32_t faktor, uint16_t pos);
+float P_Volt_to_Float(uint32_t factor, int16_t pos);
+float P_Time_to_Float(uint32_t factor, uint16_t pos);
+float P_FFT_to_Float(uint32_t factor, uint16_t pos);
 uint16_t LINE(uint16_t n);
 uint16_t GET_LINE(uint16_t xp);
 void p_menu_draw_GUI(void);
@@ -63,24 +96,24 @@ char bval[10];
 const MM_Item_t MM_ITEM[] =
 {
 	{ "",		 0 * FONT_W,	 0 },
-	{ "CH1=",	 1 * FONT_W,	 6 }, // CH1            [UM_01]
-	{ "CH2=",	11 * FONT_W,	 6 }, // CH2            [UM_01]
-	{ "T=",		21 * FONT_W,	17 }, // TIME           [UM_02]
-	{ "Menu=",	31 * FONT_W,	 8 }, // Menu           [UM_03]
-	{ "S=",		 1 * FONT_W,	MENU_TRIGGER_SOURCE_LAST	}, // TRG Source     [UM_04]
-	{ "E=",		 8 * FONT_W,	 2 }, // TRG Edge       [UM_05]
-	{ "M=",		14 * FONT_W,	MENU_TRIGGER_MODE_LAST		}, // TRG Mode       [UM_06]
-	{ "V=",		24 * FONT_W,	 1 }, // TRG Value      [UM_07]
-	{ "",		35 * FONT_W,	 1 }, // TRG Reset      [UM_10]
-	{ "V=",		 1 * FONT_W,	MENU_CH_VISIBLE_LAST		}, // CH Visible     [UM_08]
-	{ "P=",		 8 * FONT_W,	 1 }, // CH Position    [UM_07]
-	{ "M=",		 1 * FONT_W,	MENU_CURSOR_MODE_LAST		}, // CUR Mode       [UM_09]
-	{ "A=",		 9 * FONT_W,	 1 }, // CUR A Position [UM_07]
-	{ "B=",		21 * FONT_W,	 1 }, // CUR B Position [UM_07]
-	{ "M=",		 1 * FONT_W,	MENU_SEND_MODE_LAST			}, // SEND Mode      [UM_11]
-	{ "S=",		16 * FONT_W,	 2 }, // SEND Screen    [UM_14]
-	{ "",		28 * FONT_W,	 2 }, // SEND Data      [UM_12]
-	{ "FFT=",	 1 * FONT_W,	 3 }, // FFT Mode       [UM_13]
+	{ "CH1=",	 1 * FONT_W,	 6 },							// CH1            [UM_01]
+	{ "CH2=",	11 * FONT_W,	 6 },							// CH2            [UM_01]
+	{ "T=",		21 * FONT_W,	17 },							// TIME           [UM_02]
+	{ "Menu=",	31 * FONT_W,	 8 },							// Menu           [UM_03]
+	{ "S=",		 1 * FONT_W,	MENU_TRIGGER_SOURCE_LAST	},	// TRG Source     [UM_04]
+	{ "E=",		 8 * FONT_W,	MENU_TRIGGER_EDGE_LAST		},	// TRG Edge       [UM_05]
+	{ "M=",		14 * FONT_W,	MENU_TRIGGER_MODE_LAST		},	// TRG Mode       [UM_06]
+	{ "V=",		24 * FONT_W,	 1 },							// TRG Value      [UM_07]
+	{ "",		35 * FONT_W,	 1 },							// TRG Reset      [UM_10]
+	{ "V=",		 1 * FONT_W,	MENU_CH_VISIBLE_LAST		},	// CH Visible     [UM_08]
+	{ "P=",		 8 * FONT_W,	 1 },							// CH Position    [UM_07]
+	{ "M=",		 1 * FONT_W,	MENU_CURSOR_MODE_LAST		},	// CUR Mode       [UM_09]
+	{ "A=",		 9 * FONT_W,	 1 },							// CUR A Position [UM_07]
+	{ "B=",		21 * FONT_W,	 1 },							// CUR B Position [UM_07]
+	{ "M=",		 1 * FONT_W,	MENU_SEND_MODE_LAST			},	// SEND Mode      [UM_11]
+	{ "S=",		16 * FONT_W,	MENU_SEND_SCREEN_LAST		},	// SEND Screen    [UM_14]
+	{ "",		28 * FONT_W,	MENU_SEND_DATA_LAST			},	// SEND Data      [UM_12]
+	{ "FFT=",	 1 * FONT_W,	MENU_FFT_MODE_LAST			},	// FFT Mode       [UM_13]
 };
 
 //--------------------------------------------------------------
@@ -248,13 +281,21 @@ const SM_Item_t UM_14[] =
 };
 
 //--------------------------------------------------------------
+// Submenu : "VERSION" or "HELP"
+//--------------------------------------------------------------
+void p_menu_draw_BOT_Text(const char *msg)
+{
+	UB_Font_DrawString(LINE(24), 10, msg, &Arial_7x10, MENU_VG_COL, MENU_BG_COL);
+}
+
+//--------------------------------------------------------------
 // Records the complete Menu
 // (all TOP BOTTOM and all menu items and the GUI)
 //--------------------------------------------------------------
 void menu_draw_all(void)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 
 	//---------------------------------
 	// upper menu bar
@@ -267,9 +308,9 @@ void menu_draw_all(void)
 	// TOP-Menu
 	p_gui_draw_TOP(MM_CH1, UM_01, menu->Ch1.Factor);
 	p_gui_draw_TOP(MM_CH2, UM_01, menu->Ch2.Factor);
-	p_gui_draw_TOP(MM_TIME, UM_02, menu->Timebase.Value);
+	p_gui_draw_TOP(MM_TIME, UM_02, menu->Timebase);
 
-	if (menu->Send.Data == 0)
+	if (menu->Send.Data == MENU_SEND_DATA_START)
 	{
 		p_gui_draw_TOP(MM_SETTING, UM_03, menu->Setting);
 	}
@@ -298,9 +339,9 @@ void menu_draw_all(void)
 	else if (menu->Setting == SETTING_SEND)
 		p_menu_draw_BOT_SEND();
 	else if (menu->Setting == SETTING_VERSION)
-		p_menu_draw_BOT_VERSION();
+		p_menu_draw_BOT_Text("STM32F429-Oszi | UB | V:1.6 | 24.03.2014");
 	else if (menu->Setting == SETTING_HELP)
-		p_menu_draw_BOT_HELP();
+		p_menu_draw_BOT_Text("CH1=PA5 | CH2=PA7 | TX=PA9 | 500Hz=PB2");
 
 	if (gui->GuiXPpos == GUI_XPOS_OFF)
 	{
@@ -322,7 +363,7 @@ void menu_draw_all(void)
 //--------------------------------------------------------------
 void p_menu_draw_GUI(void)
 {
-	register GUI_t *gui = &GUI;
+	GUI_t *gui = &GUI;
 	DMA2D_Coord coord;
 
 	//--------------------------
@@ -388,30 +429,20 @@ void p_menu_draw_GUI(void)
 //--------------------------------------------------------------
 void p_get_GUI_button(uint16_t x, uint16_t y)
 {
-	register GUI_t *gui = &GUI;
+	GUI_t *gui = &GUI;
 	if (x > (GUI_YPOS + (GUI1.width / 2)))
-	{
-		// left/right
+	{	// left/right
 		if (y > (gui->GuiXPpos + (GUI1.height / 2)))
-		{
 			gui->ButtonActive = GUI_BTN_RIGHT;
-		}
 		else
-		{
 			gui->ButtonActive = GUI_BTN_LEFT;
-		}
 	}
 	else
-	{
-		// up/down
+	{	// up/down
 		if (x > (GUI_YPOS + (GUI1.width / 4)))
-		{
 			gui->ButtonActive = GUI_BTN_UP;
-		}
 		else
-		{
 			gui->ButtonActive = GUI_BTN_DOWN;
-		}
 	}
 }
 
@@ -420,8 +451,8 @@ void p_get_GUI_button(uint16_t x, uint16_t y)
 //--------------------------------------------------------------
 MENU_Status_t p_gui_inc_menu(void)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 
 	MENU_Status_t status = MENU_NO_CHANGE;
 	uint32_t max;
@@ -438,10 +469,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	{
 		// If pressed before
 		if (gui->ButtonOld == gui->ButtonActive)
-		{
 			// Exit without changing anything
 			return (status);
-		}
 	}
 
 	// Maxumum-Value des Menupunktes
@@ -462,8 +491,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (gui->MenuActive == MM_TIME)
 	{
-		if (menu->Timebase.Value < max - 1)
-			menu->Timebase.Value++;
+		if (menu->Timebase < max - 1)
+			menu->Timebase++;
 		status = MENU_CHANGE_FRQ;
 	}
 	else if (gui->MenuActive == MM_SETTING)
@@ -509,15 +538,15 @@ MENU_Status_t p_gui_inc_menu(void)
 	{
 		if (menu->Trigger.Mode == MENU_TRIGGER_MODE_SINGLE)
 		{	// "Single"
-			if (menu->Trigger.Single == 4)
-				menu->Trigger.Single = 5; // "Ready" to "Stop"
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_READY)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_WAIT5; // "Ready" to "Stop"
 		}
 		else
 		{	// "Normal" oder "Auto"
-			if (menu->Trigger.Single == 0)
-				menu->Trigger.Single = 1; // "Run" to "Stop"
-			else if (menu->Trigger.Single == 1)
-				menu->Trigger.Single = 2; // "Stop" on "Next"
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN0)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_STOP; // "Run" to "Stop"
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_STOP)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_RUN2; // "Stop" on "Next"
 		}
 	}
 	else if (gui->MenuActive == MM_CH_VIS)
@@ -605,8 +634,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (gui->MenuActive == MM_FFT_MODE)
 	{
-		if (menu->FFT.Mode < max - 1)
-			menu->FFT.Mode++;
+		if (menu->FFT < max - 1)
+			menu->FFT++;
 	}
 	else if (gui->MenuActive == MM_SEND_MODE)
 	{
@@ -620,8 +649,8 @@ MENU_Status_t p_gui_inc_menu(void)
 	}
 	else if (gui->MenuActive == MM_SEND_DATA)
 	{
-		if (menu->Send.Data == 0)
-			menu->Send.Data = 1;
+		if (menu->Send.Data == MENU_SEND_DATA_START)
+			menu->Send.Data = MENU_SEND_DATA_WAIT;
 		status = MENU_SEND_DATA;
 	}
 
@@ -633,8 +662,8 @@ MENU_Status_t p_gui_inc_menu(void)
 //--------------------------------------------------------------
 MENU_Status_t p_gui_dec_menu(void)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 	MENU_Status_t status = MENU_NO_CHANGE;
 
 	if (gui->MenuActive == MM_NONE)
@@ -644,12 +673,10 @@ MENU_Status_t p_gui_dec_menu(void)
 	if ((gui->MenuActive != MM_TRG_VAL) && (gui->MenuActive != MM_CH_POS)
 			&& (gui->MenuActive != MM_CUR_P1) && (gui->MenuActive != MM_CUR_P2))
 	{
-		// wenn schon mal betaetigt
+		// If pressed before
 		if (gui->ButtonOld == gui->ButtonActive)
-		{
-			// verlassen ohne was zu aendern
+			// Leave without Change
 			return (status);
-		}
 	}
 
 	// default returnwert
@@ -667,8 +694,8 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (gui->MenuActive == MM_TIME)
 	{
-		if (menu->Timebase.Value > 0)
-			menu->Timebase.Value--;
+		if (menu->Timebase > 0)
+			menu->Timebase--;
 		status = MENU_CHANGE_FRQ;
 	}
 	else if (gui->MenuActive == MM_SETTING)
@@ -683,7 +710,7 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (gui->MenuActive == MM_TRG_EDGE)
 	{
-		if (menu->Trigger.Edge > 0)
+		if (menu->Trigger.Edge > MENU_TRIGGER_EDGE_HI)
 			menu->Trigger.Edge--;
 	}
 	else if (gui->MenuActive == MM_TRG_MODE)
@@ -714,15 +741,15 @@ MENU_Status_t p_gui_dec_menu(void)
 	{
 		if (menu->Trigger.Mode == MENU_TRIGGER_MODE_SINGLE)
 		{	// "single"
-			if (menu->Trigger.Single == 4)
-				menu->Trigger.Single = 5; // "Ready" to "Stop"
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_READY)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_WAIT5; // "Ready" to "Stop"
 		}
 		else
 		{	// "normal" oder "auto"
-			if (menu->Trigger.Single == 0)
-				menu->Trigger.Single = 1; // "Run" to "Stop"
-			else if (menu->Trigger.Single == 1)
-				menu->Trigger.Single = 2; // "Stop" to "Weiter"
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN0)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_STOP; // "Run" to "Stop"
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_STOP)
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_RUN2; // "Stop" to "Weiter"
 		}
 	}
 	else if (gui->MenuActive == MM_CH_VIS)
@@ -809,8 +836,8 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (gui->MenuActive == MM_FFT_MODE)
 	{
-		if (menu->FFT.Mode > 0)
-			menu->FFT.Mode--;
+		if (menu->FFT > MENU_FFT_MODE_OFF)
+			menu->FFT--;
 	}
 	else if (gui->MenuActive == MM_SEND_MODE)
 	{
@@ -819,13 +846,13 @@ MENU_Status_t p_gui_dec_menu(void)
 	}
 	else if (gui->MenuActive == MM_SEND_SCREEN)
 	{
-		if (menu->Send.Screen > 0)
+		if (menu->Send.Screen > MENU_SEND_SCREEN_TRIGGER)
 			menu->Send.Screen--;
 	}
 	else if (gui->MenuActive == MM_SEND_DATA)
 	{
-		if (menu->Send.Data == 0)
-			menu->Send.Data = 1;
+		if (menu->Send.Data == MENU_SEND_DATA_START)
+			menu->Send.Data = MENU_SEND_DATA_WAIT;
 		status = MENU_SEND_DATA;
 	}
 
@@ -837,8 +864,8 @@ MENU_Status_t p_gui_dec_menu(void)
 //--------------------------------------------------------------
 MENU_Status_t p_make_GUI_changes(void)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 	MENU_Status_t status = MENU_NO_CHANGE;
 
 	if (gui->ButtonActive == GUI_BTN_RIGHT)
@@ -977,8 +1004,8 @@ MENU_Status_t p_make_GUI_changes(void)
 //--------------------------------------------------------------
 MENU_Status_t menu_check_touch(void)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 	MENU_Status_t status = MENU_NO_CHANGE;
 	uint16_t x, y;
 
@@ -1092,15 +1119,13 @@ MENU_Status_t menu_check_touch(void)
 				if (menu->Send.Mode == MENU_SEND_MODE_SCREEN)
 				{
 					// Switch on Selected Menu
-					if (menu->Send.Screen == 0)
+					if (menu->Send.Screen == MENU_SEND_SCREEN_TRIGGER)
 						menu->Setting = SETTING_TRIGGER;
-					if (menu->Send.Screen == 1)
+					if (menu->Send.Screen == MENU_SEND_SCREEN_CURSOR)
 						menu->Setting = SETTING_CURSOR;
 				}
 				else
-				{
 					menu->Setting = SETTING_SEND;
-				}
 			}
 		}
 	}
@@ -1109,9 +1134,8 @@ MENU_Status_t menu_check_touch(void)
 		// Touch is not operated
 		menu->GuiChanged = 0;
 		if (gui->ButtonOld != GUI_BTN_NONE)
-		{
 			status = MENU_CHANGE_GUI;
-		}
+
 		gui->ButtonActive = GUI_BTN_NONE;
 		gui->ButtonOld = GUI_BTN_NONE;
 	}
@@ -1137,17 +1161,15 @@ void p_gui_draw_TOP(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr)
 //--------------------------------------------------------------
 void p_menu_draw_BOT(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr, uint16_t mode)
 {
-	register GUI_t *gui = &GUI;
-	register Menu_t *menu = &Menu;
+	GUI_t *gui = &GUI;
+	Menu_t *menu = &Menu;
 
 	switch (mode)
 	{
-		case 0:
-			// Standard menu item
+		case 0:	// Standard menu item
 			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, um[um_nr].Text);
 			break;
-		case 1:
-			// Menu item: "Trigger Value"
+		case 1:	// Menu item: "Trigger Value"
 			if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
 			{
 				P_FloatToDezStr(FAKTOR_ADC * menu->Trigger.ValueCh1);
@@ -1159,54 +1181,46 @@ void p_menu_draw_BOT(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr, uint1
 				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
 			}
 			break;
-		case 2:
-			// Menu item: "Channel position"
+		case 2:	// Menu item: "Channel position"
 			if (menu->Setting == SETTING_CH1)
 			{
-				P_FloatToDezStr(
-						P_Volt_to_Float(menu->Ch1.Factor, menu->Ch1.Position));
+				P_FloatToDezStr(P_Volt_to_Float(menu->Ch1.Factor, menu->Ch1.Position));
 				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
 			}
 			if (menu->Setting == SETTING_CH2)
 			{
-				P_FloatToDezStr(
-						P_Volt_to_Float(menu->Ch2.Factor, menu->Ch2.Position));
+				P_FloatToDezStr(P_Volt_to_Float(menu->Ch2.Factor, menu->Ch2.Position));
 				sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
 			}
 			break;
-		case 3:
-			// Menu item: "CH1/CH2 Cursor-A position"
+		case 3:	// Menu item: "CH1/CH2 Cursor-A position"
 			P_FloatToDezStr(FAKTOR_ADC * menu->Cursor.P1);
 			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
 			break;
-		case 4:
-			// Menu item: "CH1/CH2 Cursor-B position"
+		case 4:	// Menu item: "CH1/CH2 Cursor-B position"
 			P_FloatToDezStr(FAKTOR_ADC * menu->Cursor.P2);
 			sprintf(buf, "%s%sV", MM_ITEM[mm_nr].Text, bval);
 			break;
-		case 5:
-			// Menu item: "TIME Cursor-A position"
-			P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, menu->Cursor.T1));
+		case 5:	// Menu item: "TIME Cursor-A position"
+			P_FloatToDezStr(P_Time_to_Float(menu->Timebase, menu->Cursor.T1));
 			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, bval);
 			break;
-		case 6:
-			// Menu item: "TIME Cursor-B position"
-			P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, menu->Cursor.T2));
+		case 6:	// Menu item: "TIME Cursor-B position"
+			P_FloatToDezStr(P_Time_to_Float(menu->Timebase, menu->Cursor.T2));
 			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, bval);
 			break;
-		case 7:
-			// Menu item: "Trigger Reset"
+		case 7:	// Menu item: "Trigger Reset"
 			sprintf(buf, "%s%s", MM_ITEM[mm_nr].Text, um[um_nr].Text);
 			break;
-		case 8:
-			// Menu item: "FFT Cursor-A position"
-			P_FloatToDezStr(P_FFT_to_Float(menu->Timebase.Value, menu->Cursor.F1));
-			if (menu->Timebase.Value <= 12)
+		case 8:	// Menu item: "FFT Cursor-A position"
+			P_FloatToDezStr(P_FFT_to_Float(menu->Timebase, menu->Cursor.F1));
+			if (menu->Timebase <= 12)
 				sprintf(buf, "%s%sHz", MM_ITEM[mm_nr].Text, bval);
 			else
 				sprintf(buf, "%s%skHz", MM_ITEM[mm_nr].Text, bval);
 			break;
 	}
+
 	UB_Font_DrawString(LINE(24), MM_ITEM[mm_nr].YPos, buf, &Arial_7x10, MENU_VG_COL,
 		(gui->MenuActive == mm_nr)
 		? MENU_AK_COL
@@ -1219,12 +1233,12 @@ void p_menu_draw_BOT(uint16_t mm_nr, const SM_Item_t um[], uint16_t um_nr, uint1
 //--------------------------------------------------------------
 void p_menu_draw_BOT_TRG(void)
 {
-	register Menu_t *menu = &Menu;
-	p_menu_draw_BOT(MM_TRG_SOURCE, UM_04, menu->Trigger.Source, 0);
-	p_menu_draw_BOT(MM_TRG_EDGE, UM_05, menu->Trigger.Edge, 0);
-	p_menu_draw_BOT(MM_TRG_MODE, UM_06, menu->Trigger.Mode, 0);
-	p_menu_draw_BOT(MM_TRG_VAL, UM_07, 0, 1);
-	p_menu_draw_BOT(MM_TRG_RESET, UM_10, menu->Trigger.Single, 7);
+	Menu_t *menu = &Menu;
+	p_menu_draw_BOT(MM_TRG_SOURCE,	UM_04, menu->Trigger.Source, 0);
+	p_menu_draw_BOT(MM_TRG_EDGE,	UM_05, menu->Trigger.Edge, 0);
+	p_menu_draw_BOT(MM_TRG_MODE,	UM_06, menu->Trigger.Mode, 0);
+	p_menu_draw_BOT(MM_TRG_VAL,		UM_07, 0, 1);
+	p_menu_draw_BOT(MM_TRG_RESET,	UM_10, menu->Trigger.Single, 7);
 }
 
 //--------------------------------------------------------------
@@ -1250,8 +1264,8 @@ void p_menu_draw_BOT_CH2(void)
 //--------------------------------------------------------------
 void p_menu_draw_BOT_CUR(void)
 {
-	register Menu_t *menu = &Menu;
-	register uint16_t delta;
+	Menu_t *menu = &Menu;
+	uint16_t delta;
 
 	p_menu_draw_BOT(MM_CUR_MODE, UM_09, menu->Cursor.Mode, 0);
 	if ((menu->Cursor.Mode == MENU_CURSOR_MODE_CH1) || (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2))
@@ -1279,10 +1293,10 @@ void p_menu_draw_BOT_CUR(void)
 		else
 			delta = menu->Cursor.T2 - menu->Cursor.T1;
 
-		P_FloatToDezStr(P_Time_to_Float(menu->Timebase.Value, (delta + 2048)));
-		if (menu->Timebase.Value < 3)
+		P_FloatToDezStr(P_Time_to_Float(menu->Timebase, (delta + 2048)));
+		if (menu->Timebase < 3)
 			sprintf(buf, "~=%ss", bval);
-		else if (menu->Timebase.Value < 12)
+		else if (menu->Timebase < 12)
 			sprintf(buf, "~=%sms", bval);
 		else
 			sprintf(buf, "~=%sus", bval);
@@ -1290,9 +1304,8 @@ void p_menu_draw_BOT_CUR(void)
 		UB_Font_DrawString(LINE(24), 33 * FONT_W, buf, &Arial_7x10, MENU_VG_COL, MENU_BG_COL);
 	}
 	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_FFT)
-	{	// Cursor = FFT
+		// Cursor = FFT
 		p_menu_draw_BOT(MM_CUR_P1, UM_07, 0, 8);
-	}
 }
 
 //--------------------------------------------------------------
@@ -1300,7 +1313,7 @@ void p_menu_draw_BOT_CUR(void)
 //--------------------------------------------------------------
 void p_menu_draw_BOT_FFT(void)
 {
-	p_menu_draw_BOT(MM_FFT_MODE, UM_13, Menu.FFT.Mode, 0);
+	p_menu_draw_BOT(MM_FFT_MODE, UM_13, Menu.FFT, 0);
 }
 
 //--------------------------------------------------------------
@@ -1308,34 +1321,10 @@ void p_menu_draw_BOT_FFT(void)
 //--------------------------------------------------------------
 void p_menu_draw_BOT_SEND(void)
 {
-	register Menu_t *menu = &Menu;
+	Menu_t *menu = &Menu;
 	p_menu_draw_BOT(MM_SEND_MODE, UM_11, menu->Send.Mode, 0);
 	p_menu_draw_BOT(MM_SEND_SCREEN, UM_14, menu->Send.Screen, 0);
 	p_menu_draw_BOT(MM_SEND_DATA, UM_12, menu->Send.Data, 0);
-}
-
-//--------------------------------------------------------------
-// Submenu : "VERSION" or "HELP"
-//--------------------------------------------------------------
-void p_menu_draw_BOT_Text(const char *msg)
-{
-	UB_Font_DrawString(LINE(24), 10, msg, &Arial_7x10, MENU_VG_COL, MENU_BG_COL);
-}
-
-//--------------------------------------------------------------
-// Submenu : "VERSION"
-//--------------------------------------------------------------
-void p_menu_draw_BOT_VERSION(void)
-{
-	p_menu_draw_BOT_Text("STM32F429-Oszi | UB | V:1.6 | 24.03.2014");
-}
-
-//--------------------------------------------------------------
-// Submenu: "HELP"
-//--------------------------------------------------------------
-void p_menu_draw_BOT_HELP(void)
-{
-	p_menu_draw_BOT_Text("CH1=PA5 | CH2=PA7 | TX=PA9 | 500Hz=PB2");
 }
 
 //--------------------------------------------------------------
@@ -1512,13 +1501,15 @@ void P_FloatToDezStr(float value)
 // Conversion: value in volts (depending on prescaler)
 //--------------------------------------------------------------
 const float Volt_Factors[] = {
-	VFAKTOR_5V, VFAKTOR_2V, VFAKTOR_1V, VFAKTOR_0V5, VFAKTOR_0V2, VFAKTOR_0V1
+//	VFAKTOR_5V, VFAKTOR_2V, VFAKTOR_1V, VFAKTOR_0V5, VFAKTOR_0V2, VFAKTOR_0V1
+	5.0f,		2.0f,		1.0f,		0.5f,		0.2f,			0.1f
 };
 
 float P_Volt_to_Float(uint32_t factor, int16_t pos)
 {
+	float value = (float)pos;
 	if (factor <= 5)
-		return (((float)pos) * Volt_Factors[factor]);
+		return (value * Volt_Factors[factor] / 25.0f);
 	return 0.0f;
 }
 
@@ -1536,7 +1527,7 @@ const float Time_Factors[] = {
 float P_Time_to_Float(uint32_t factor, uint16_t pos)
 {
 	if (factor <= 16)
-		return ((float)((int16_t)(pos - 2048)) * Time_Factors[factor]);
+		return (((float)(int16_t)(pos - 2048)) * Time_Factors[factor]);
 	return 0.0f;
 }
 
@@ -1551,10 +1542,10 @@ const float FFT_Factors[] = {
 	FFAKTOR_500u, FFAKTOR_200u, FFAKTOR_100u,
 	FFAKTOR_50u, FFAKTOR_25u
 };
-float P_FFT_to_Float(uint32_t faktor, uint16_t pos)
+float P_FFT_to_Float(uint32_t factor, uint16_t pos)
 {
-	if (faktor <= 16)
-		return (float)((int16_t)pos) * FFT_Factors[faktor];
+	if (factor <= 16)
+		return (float)((int16_t)pos) * FFT_Factors[factor];
 	return 0.0f;
 }
 

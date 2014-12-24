@@ -187,7 +187,7 @@ void P_Button_InitNVIC(void)
 //--------------------------------------------------------------
 void UB_BUTTON_TIM_ISR_HANDLER(void)
 {
-	register BUTTON_NAME_t btn_name;
+	BUTTON_NAME_t btn_name;
 	TIM_ClearITPendingBit(UB_BUTTON_TIM, TIM_IT_Update);
 
 	// Read all the buttons

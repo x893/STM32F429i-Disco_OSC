@@ -21,10 +21,8 @@ float32_t FFT_DATA_IN[FFT_LENGTH];
 uint16_t FFT_UINT_DATA[FFT_VISIBLE_LENGTH];
 
 //--------------------------------------------------------------
-// interne Funktionen
+// Private functions
 //--------------------------------------------------------------
-uint16_t p_oszi_hw_init(void);
-void p_oszi_sw_init(void);
 void p_oszi_clear_all(void);
 void p_oszi_draw_background(void);
 void p_oszi_draw_scale(void);
@@ -39,61 +37,70 @@ void p_oszi_send_uart(char *ptr);
 void p_oszi_send_screen(void);
 
 //--------------------------------------------------------------
-// Header fuer BMP-Transfer
-// (fix als einen kompletten Screen (320x240) im Landscape-Mode)
+// BMP-Transfer Header
+// (fixed as a full screen (320x240) in landscape mode)
 //--------------------------------------------------------------
 const uint8_t BMP_HEADER[] =
 {	0x42, 0x4D, 0x36, 0x84, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,	// ID=BM, Filsize=(240x320x3+54)
 	0x36, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00,				// Offset=54d, Headerlen=40d
 	0x40, 0x01, 0x00, 0x00, 0xF0, 0x00, 0x00, 0x00, 0x01, 0x00,	// W=320d, H=240d (landscape)
 	0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x84, 0x03, 0x00,	// 24bpp, unkomprimiert, Data=(240x320x3)
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,	// nc
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00	// nc
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,				// nc
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00				// nc
 };
+
+void oszi_error(const char *msg)
+{
+	UB_LCD_FillLayer(BACKGROUND_COL);
+	UB_Font_DrawString(10, 10, msg, &Arial_7x10, FONT_COL, BACKGROUND_COL);
+	UB_Led_On(LED_RED);
+	while (1)
+		__WFI();
+}
 
 //--------------------------------------------------------------
 // Init Oszi
 //--------------------------------------------------------------
 void oszi_init(void)
 {
-	uint16_t check;
+	SystemInit();
+	DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STOP | DBGMCU_STANDBY, ENABLE);
 
-	check = p_oszi_hw_init();
+	UB_Systick_Init();
+	UB_Led_Init();
+	UB_Button_Init();
+	UB_Uart_Init();
+
+	UB_LCD_Init();
+	UB_LCD_LayerInit_Fullscreen();
+	UB_LCD_SetMode(LANDSCAPE);
+
+	p_oszi_clear_all();
+
+	ADC_Init_ALL();
 
 	p_oszi_send_uart("OSZI 4 STM32F429 [UB]");
-	if (check != 0)
-	{
-		UB_LCD_FillLayer(BACKGROUND_COL);
-		if (check & 0x01)
-		{	// Touch init error
-			UB_Font_DrawString(10, 10, "Touch ERR", &Arial_7x10, FONT_COL, BACKGROUND_COL);
-		}
-		else if (check & 0x02)
-		{
-			// ADC array size definiton error
-			UB_Font_DrawString(10, 10, "Wrong ADC Array-LEN", &Arial_7x10, FONT_COL, BACKGROUND_COL);
-		}
-		UB_Led_On(LED_RED);
-		while (1)
-		{ }
-	}
+
+	if (UB_Touch_Init() != SUCCESS)
+		oszi_error("Touch ERR");
+
+	if (ADC_ARRAY_LEN != SCALE_W)
+		oszi_error("Wrong ADC Array-LEN");
 
 	fft_init();
-	p_oszi_sw_init();
 
-	ADC_change_Frq(Menu.Timebase.Value);
+	ADC_change_Frq(Menu.Timebase);
 }
 
 //--------------------------------------------------------------
-// Start from the oscilloscope (infinite loop)
+// Start oscilloscope (infinite loop)
 //--------------------------------------------------------------
+int main(void) __attribute__((noreturn));
 int main(void)
-// void oszi_start(void)
 {
-	register MENU_Status_t status;
-	register Menu_t *menu = &Menu;
+	MENU_Status_t status;
+	Menu_t *menu = &Menu;
 
-	SystemInit();
 	oszi_init();
 
 	p_oszi_draw_background();
@@ -104,35 +111,34 @@ int main(void)
 		//---------------------------------------------
 		// Wait until GUI timer expires
 		//---------------------------------------------
-		if (GUI_Timer_ms != 0)
-			continue;
-
+		while (GUI_Timer_ms != 0)
+			__WFI();
 		GUI_Timer_ms = GUI_INTERVALL_MS;
 
 		//--------------------------------------
 		// User Button Scan (for RUN / STOP)
 		//--------------------------------------
 		if (UB_Button_OnClick(BTN_USER))
-		{	// Button press
+		{	// Button pressed
 			status = MENU_NO_CHANGE;
 			if (menu->Trigger.Mode == MENU_TRIGGER_MODE_SINGLE)
 			{	// "single"
-				if (menu->Trigger.Single == 4)
+				if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_READY)
 				{
-					menu->Trigger.Single = 5;	// "Ready" to "Stop"
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_WAIT5;	// "Ready" to "Stop"
 					status = MENU_CHANGE_NORMAL;
 				}
 			}
 			else
 			{	// "normal" or "auto"
-				if (menu->Trigger.Single == 0)
+				if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN0)
 				{
-					menu->Trigger.Single = 1; // From "Run" to "Stop"
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_STOP; // From "Run" to "Stop"
 					status = MENU_CHANGE_NORMAL;
 				}
-				else if (menu->Trigger.Single == 1)
+				if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_STOP)
 				{
-					menu->Trigger.Single = 2; // "Stop" on "Next"
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_RUN2; // "Stop" on "Next"
 					status = MENU_CHANGE_NORMAL;
 				}
 			}
@@ -150,18 +156,18 @@ int main(void)
 			p_oszi_draw_background();
 
 			if (status == MENU_CHANGE_FRQ)
-				ADC_change_Frq(menu->Timebase.Value);
+				ADC_change_Frq(menu->Timebase);
 
 			if (status == MENU_CHANGE_MODE)
 			{
 				ADC_change_Mode(menu->Trigger.Mode);
 				if (menu->Trigger.Mode != MENU_TRIGGER_MODE_SINGLE)
-					menu->Trigger.Single = 0;
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_RUN0;
 				else
-					menu->Trigger.Single = 3;
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_WAIT3;
 
 				p_oszi_draw_background(); // Draw again, to update
-				ADC_UB.Status = ADC_VORLAUF;
+				ADC_UB.Status = ADC_START;
 				TIM_Cmd(TIM2, ENABLE);
 			}
 			if (status == MENU_SEND_DATA)
@@ -178,7 +184,7 @@ int main(void)
 			// Trigger-Mode = "AUTO"
 			// Always redraw Screen
 			//--------------------------------------
-			if (menu->Trigger.Single == 0)
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN0)
 			{
 				if ((ADC1_DMA_STREAM->CR & DMA_SxCR_CT) == 0)
 				{
@@ -192,24 +198,24 @@ int main(void)
 				}
 				p_oszi_sort_adc();
 				p_oszi_fill_fft();
-				if (menu->FFT.Mode != 0)
+				if (menu->FFT != MENU_FFT_MODE_OFF)
 					fft_calc();
 				p_oszi_draw_adc();
-				ADC_UB.Status = ADC_VORLAUF;
+				ADC_UB.Status = ADC_START;
 				UB_Led_Toggle(LED_RED);
 			}
-			else if (menu->Trigger.Single == 1)
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_STOP)
 			{
 				// Button "STOP" button was pressed
 				TIM_Cmd(TIM2, DISABLE);
 				if (status != MENU_NO_CHANGE)
 					p_oszi_draw_adc();
 			}
-			else if (menu->Trigger.Single == 2)
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN2)
 			{
 				// "START" button has been pressed
-				menu->Trigger.Single = 0;
-				ADC_UB.Status = ADC_VORLAUF;
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_RUN0;
+				ADC_UB.Status = ADC_START;
 				TIM_Cmd(TIM2, ENABLE);
 				if (status != MENU_NO_CHANGE)
 					p_oszi_draw_adc();
@@ -221,17 +227,17 @@ int main(void)
 			// Trigger-Mode = "NORMAL"
 			// Screen draw only after Trigger Event
 			//--------------------------------------
-			if (menu->Trigger.Single == 0)
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN0)
 			{
 				if (ADC_UB.Status == ADC_READY)
 				{
 					UB_Led_Toggle(LED_RED);
 					p_oszi_sort_adc();
 					p_oszi_fill_fft();
-					if (menu->FFT.Mode != 0)
+					if (menu->FFT != MENU_FFT_MODE_OFF)
 						fft_calc();
 					p_oszi_draw_adc();
-					ADC_UB.Status = ADC_VORLAUF;
+					ADC_UB.Status = ADC_START;
 					TIM_Cmd(TIM2, ENABLE);
 				}
 				else
@@ -241,18 +247,18 @@ int main(void)
 						p_oszi_draw_adc();
 				}
 			}
-			else if (menu->Trigger.Single == 1)
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_STOP)
 			{
 				// Button "STOP" button was pressed
 				TIM_Cmd(TIM2, DISABLE);
 				if (status != MENU_NO_CHANGE)
 					p_oszi_draw_adc();
 			}
-			else if (menu->Trigger.Single == 2)
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_RUN2)
 			{
 				// Button "START" button was pressed
 				menu->Trigger.Single = 0;
-				ADC_UB.Status = ADC_VORLAUF;
+				ADC_UB.Status = ADC_START;
 				TIM_Cmd(TIM2, ENABLE);
 				if (status != MENU_NO_CHANGE)
 					p_oszi_draw_adc();
@@ -264,16 +270,16 @@ int main(void)
 			// Trigger-Mode = "SINGLE"
 			// Screnn draw only once, after the trigger event
 			//--------------------------------------
-			if (menu->Trigger.Single == 3)
+			if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_WAIT3)
 			{
 				// Wait for trigger event
 				if (ADC_UB.Status == ADC_READY)
 				{
-					menu->Trigger.Single = 4;
+					menu->Trigger.Single = MENU_TRIGGER_SIGNLE_READY;
 					UB_Led_Toggle(LED_RED);
 					p_oszi_sort_adc();
 					p_oszi_fill_fft();
-					if (menu->FFT.Mode != 0)
+					if (menu->FFT != MENU_FFT_MODE_OFF)
 						fft_calc();
 					p_oszi_draw_adc();
 				}
@@ -284,12 +290,12 @@ int main(void)
 						p_oszi_draw_adc();
 				}
 			}
-			else if (menu->Trigger.Single == 5)
+			else if (menu->Trigger.Single == MENU_TRIGGER_SIGNLE_WAIT5)
 			{
 				// Button "Reset" button was pressed
-				menu->Trigger.Single = 3;
+				menu->Trigger.Single = MENU_TRIGGER_SIGNLE_WAIT3;
 				p_oszi_draw_adc();
-				ADC_UB.Status = ADC_VORLAUF;
+				ADC_UB.Status = ADC_START;
 				TIM_Cmd(TIM2, ENABLE);
 			}
 			else
@@ -313,100 +319,16 @@ int main(void)
 
 		UB_LCD_Refresh();
 
-		if (menu->Send.Data != 0)
+		if (menu->Send.Data != MENU_SEND_DATA_START)
 		{
 			p_oszi_send_data();
-			menu->Send.Data = 0;
+			menu->Send.Data = MENU_SEND_DATA_START;
 		}
 	}
 }
 
 //--------------------------------------------------------------
-// Init Hardware
-//--------------------------------------------------------------
-uint16_t p_oszi_hw_init(void)
-{
-	uint16_t result = 0;
-
-	// Initialize Touch
-	if (UB_Touch_Init() != SUCCESS)
-		result |= 0x01; // Touch error
-
-	// Check ADC Defines
-	if (ADC_ARRAY_LEN != SCALE_W)
-		result |= 0x02; // Define error
-
-	UB_Systick_Init();	// Init Systick
-	UB_Led_Init();		// Init LEDs
-	UB_Button_Init();	// Init Button
-	UB_Uart_Init();		// Init UART
-
-	UB_LCD_Init();		// Init LCD (and SD-RAM)
-	UB_LCD_LayerInit_Fullscreen();
-	UB_LCD_SetMode(LANDSCAPE);
-
-	p_oszi_clear_all();	// Clear all buffers
-	ADC_Init_ALL();		// Init ADC
-
-	return (result);
-}
-
-//--------------------------------------------------------------
-// init der Software
-//--------------------------------------------------------------
-void p_oszi_sw_init(void)
-{
-	register Menu_t *menu = &Menu;
-
-	//--------------------------------------
-	// Default Einstellungen
-	//--------------------------------------
-	menu->Transparency = 100;
-	menu->Setting = SETTING_TRIGGER;
-
-	menu->Ch1.Factor = 1;		// 2v/div
-	menu->Ch1.Visible = MENU_CH_VISIBLE_ON;
-	menu->Ch1.Position = 25;
-
-	menu->Ch2.Factor = 2;		// 1v/div
-	menu->Ch2.Visible = MENU_CH_VISIBLE_ON;
-	menu->Ch2.Position = -75;
-
-	menu->Timebase.Value = 9;	// 5ms/div
-
-	menu->Trigger.Source = MENU_TRIGGER_SOURCE_CH1;		// trigger = CH1
-	menu->Trigger.Edge = 0;		// hi-flanke
-	menu->Trigger.Mode = MENU_TRIGGER_MODE_AUTO;
-	menu->Trigger.Single = 0;
-	menu->Trigger.ValueCh1 = 1024;
-	menu->Trigger.ValueCh2 = 2048;
-
-	menu->Cursor.Mode = MENU_CURSOR_MODE_CH1;
-	menu->Cursor.P1 = 2048;
-	menu->Cursor.P2 = 3072;
-	menu->Cursor.T1 = 1700;
-	menu->Cursor.T2 = 2300;
-	menu->Cursor.F1 = 1000;
-
-	menu->Send.Mode = MENU_SEND_MODE_CH1;
-	menu->Send.Screen = SETTING_TRIGGER;
-	menu->Send.Data = 0;
-
-	menu->FFT.Mode = 1;				// FFT=CH1
-
-	GUI.GuiXPpos = GUI_XPOS_OFF;
-	GUI.MenuActive = MM_NONE;
-	GUI.MenuOld = MM_CH1;
-	GUI.ButtonActive = GUI_BTN_NONE;
-	GUI.ButtonOld = GUI_BTN_NONE;
-	
-	menu->OldX = 999;
-	menu->OldY = 999;
-	menu->GuiChanged = 0;
-}
-
-//--------------------------------------------------------------
-// löscht alle Speicher
+// Clear all memory
 //--------------------------------------------------------------
 void p_oszi_clear_all(void)
 {
@@ -422,7 +344,7 @@ void p_oszi_clear_all(void)
 }
 
 //--------------------------------------------------------------
-// draws the background of the oscilloscope
+// Draws the background of the oscilloscope
 // (scale, cursors, menus, etc)
 // Destination address in the SD-RAM = [MENU]
 //--------------------------------------------------------------
@@ -438,14 +360,14 @@ void p_oszi_draw_background(void)
 }
 
 //--------------------------------------------------------------
-// zeichnet die Skala und die Cursor vom Oszi
+// Records scale and cursor from oscilloscope
 //--------------------------------------------------------------
 void p_oszi_draw_scale(void)
 {
-	register Menu_t *menu = &Menu;
+	Menu_t *menu = &Menu;
 	uint32_t n, m;
 	uint16_t xs, ys;
-	int16_t signed_int;
+	int16_t xp;
 
 	xs = SCALE_START_X;
 	ys = SCALE_START_Y;
@@ -454,12 +376,8 @@ void p_oszi_draw_scale(void)
 	// Grid of individual dots
 	//---------------------------------------------
 	for (m = 0; m <= SCALE_H; m += SCALE_SPACE)
-	{
 		for (n = 0; n <= SCALE_W; n += SCALE_SPACE)
-		{
 			UB_Graphic2D_DrawPixelNormal(m + xs, n + ys, SCALE_COL);
-		}
-	}
 
 	// X-axis (horizontal middle line)
 	p_oszi_draw_line_h(SCALE_Y_MITTE + xs, SCALE_COL, 0);
@@ -469,6 +387,7 @@ void p_oszi_draw_scale(void)
 
 	//---------------------------------------------
 	// Border
+	//---------------------------------------------
 	UB_Graphic2D_DrawStraightDMA(xs - 1, ys - 1, SCALE_W + 2, LCD_DIR_HORIZONTAL, SCALE_COL);			// Bottom line
 	UB_Graphic2D_DrawStraightDMA(xs + SCALE_H + 1, ys - 1, SCALE_W + 2, LCD_DIR_HORIZONTAL, SCALE_COL);	// Top line
 	UB_Graphic2D_DrawStraightDMA(xs - 1, ys - 1, SCALE_H + 2, LCD_DIR_VERTICAL, SCALE_COL);				// Left line
@@ -479,27 +398,27 @@ void p_oszi_draw_scale(void)
 	//---------------------------------------------
 	if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH1)
 	{
-		signed_int = oszi_adc2pixel(menu->Trigger.ValueCh1, menu->Ch1.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Trigger.ValueCh1, menu->Ch1.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, ADC_CH1_COL, 1);
-		UB_Font_DrawString(signed_int - 3, 0, "T", &Arial_7x10, ADC_CH1_COL, BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, ADC_CH1_COL, 1);
+		UB_Font_DrawString(xp - 3, 0, "T", &Arial_7x10, ADC_CH1_COL, BACKGROUND_COL);
 	}
 	else if (menu->Trigger.Source == MENU_TRIGGER_SOURCE_CH2)
 	{
-		signed_int = oszi_adc2pixel(menu->Trigger.ValueCh2, menu->Ch2.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Trigger.ValueCh2, menu->Ch2.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, ADC_CH2_COL, 1);
-		UB_Font_DrawString(signed_int - 3, 0, "T", &Arial_7x10, ADC_CH2_COL, BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, ADC_CH2_COL, 1);
+		UB_Font_DrawString(xp - 3, 0, "T", &Arial_7x10, ADC_CH2_COL, BACKGROUND_COL);
 	}
 
 	//---------------------------------------------
@@ -510,96 +429,90 @@ void p_oszi_draw_scale(void)
 		//-------------------------------
 		// Cursor (CH1)
 		//-------------------------------
-		signed_int = oszi_adc2pixel(menu->Cursor.P1, menu->Ch1.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Cursor.P1, menu->Ch1.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(signed_int - 3, 312, "A", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(xp - 3, 312, "A", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 
-		signed_int = oszi_adc2pixel(menu->Cursor.P2, menu->Ch1.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Cursor.P2, menu->Ch1.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(signed_int - 3, 312, "B", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(xp - 3, 312, "B", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 	}
 	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_CH2)
 	{
 		//-------------------------------
 		// Cursor (CH2)
 		//-------------------------------
-		signed_int = oszi_adc2pixel(menu->Cursor.P1, menu->Ch2.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Cursor.P1, menu->Ch2.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(signed_int - 3, 312, "A", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(xp - 3, 312, "A", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 
-		signed_int = oszi_adc2pixel(menu->Cursor.P2, menu->Ch2.Factor);
-		signed_int += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
-		if (signed_int < SCALE_START_X)
-			signed_int = SCALE_START_X;
-		if (signed_int > SCALE_MX_PIXEL)
-			signed_int = SCALE_MX_PIXEL;
+		xp = oszi_adc2pixel(menu->Cursor.P2, menu->Ch2.Factor);
+		xp += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
+		if (xp < SCALE_START_X)
+			xp = SCALE_START_X;
+		if (xp > SCALE_MX_PIXEL)
+			xp = SCALE_MX_PIXEL;
 
-		p_oszi_draw_line_h(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(signed_int - 3, 312, "B", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_h(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(xp - 3, 312, "B", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 	}
 	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_TIME)
 	{
 		//-------------------------------
 		// Cursor (TIME)
 		//-------------------------------
-		signed_int = menu->Cursor.T1 * FAKTOR_T;
-		signed_int += SCALE_START_Y;
-		if (signed_int < SCALE_START_Y)
-			signed_int = SCALE_START_Y;
-		if (signed_int > SCALE_MY_PIXEL)
-			signed_int = SCALE_MY_PIXEL;
+		xp = menu->Cursor.T1 * FAKTOR_T;
+		xp += SCALE_START_Y;
+		if (xp < SCALE_START_Y)
+			xp = SCALE_START_Y;
+		if (xp > SCALE_MY_PIXEL)
+			xp = SCALE_MY_PIXEL;
 
-		p_oszi_draw_line_v(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(215, signed_int - 3, "A", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_v(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(215, xp - 3, "A", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 
-		signed_int = menu->Cursor.T2 * FAKTOR_T;
-		signed_int += SCALE_START_Y;
-		if (signed_int < SCALE_START_Y)
-			signed_int = SCALE_START_Y;
-		if (signed_int > SCALE_MY_PIXEL)
-			signed_int = SCALE_MY_PIXEL;
+		xp = menu->Cursor.T2 * FAKTOR_T;
+		xp += SCALE_START_Y;
+		if (xp < SCALE_START_Y)
+			xp = SCALE_START_Y;
+		if (xp > SCALE_MY_PIXEL)
+			xp = SCALE_MY_PIXEL;
 
-		p_oszi_draw_line_v(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(215, signed_int - 3, "B", &Arial_7x10, CURSOR_COL,
-				BACKGROUND_COL);
+		p_oszi_draw_line_v(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(215, xp - 3, "B", &Arial_7x10, CURSOR_COL, BACKGROUND_COL);
 	}
 	else if (menu->Cursor.Mode == MENU_CURSOR_MODE_FFT)
 	{
 		//-------------------------------
 		// Cursor (FFT)
 		//-------------------------------
-		signed_int = menu->Cursor.F1 * FAKTOR_F;
-		signed_int += FFT_START_Y + 1;
-		if (signed_int < FFT_START_Y)
-			signed_int = FFT_START_Y;
-		if (signed_int > (FFT_START_Y + FFT_VISIBLE_LENGTH))
-			signed_int = (FFT_START_Y + FFT_VISIBLE_LENGTH);
+		xp = menu->Cursor.F1 * FAKTOR_F;
+		xp += FFT_START_Y + 1;
+		if (xp < FFT_START_Y)
+			xp = FFT_START_Y;
+		if (xp > (FFT_START_Y + FFT_VISIBLE_LENGTH))
+			xp = (FFT_START_Y + FFT_VISIBLE_LENGTH);
 
-		p_oszi_draw_line_v(signed_int, CURSOR_COL, 2);
-		UB_Font_DrawString(215, signed_int - 3, "A", &Arial_7x10, CURSOR_COL,
+		p_oszi_draw_line_v(xp, CURSOR_COL, 2);
+		UB_Font_DrawString(215, xp - 3, "A", &Arial_7x10, CURSOR_COL,
 				BACKGROUND_COL);
 	}
 }
@@ -613,24 +526,17 @@ void p_oszi_draw_line_h(uint16_t xp, uint16_t c, uint16_t m)
 	uint32_t n, t;
 
 	if (m == 0)
-	{
-		// Linie : "X----X----X----X----X----X"
+	{	// Line : "X----X----X----X----X----X"
 		for (n = 0; n <= SCALE_W; n += 5)
-		{
 			UB_Graphic2D_DrawPixelNormal(xp, n + SCALE_START_Y, c);
-		}
 	}
 	else if (m == 1)
-	{
-		// Linie : "X-X-X-X-X-X-X-X-X"
+	{	// Line : "X-X-X-X-X-X-X-X-X"
 		for (n = 0; n <= SCALE_W; n += 2)
-		{
 			UB_Graphic2D_DrawPixelNormal(xp, n + SCALE_START_Y, c);
-		}
 	}
 	else if (m == 2)
-	{
-		// Linie : "XX---XX---XX---XX---XX"
+	{	// Line : "XX---XX---XX---XX---XX"
 		t = 0;
 		for (n = 0; n <= SCALE_W; n++)
 		{
@@ -655,17 +561,13 @@ void p_oszi_draw_line_v(uint16_t yp, uint16_t c, uint16_t m)
 	{
 		// Linie : "X----X----X----X----X----X"
 		for (n = 0; n <= SCALE_H; n += 5)
-		{
 			UB_Graphic2D_DrawPixelNormal(n + SCALE_START_X, yp, c);
-		}
 	}
 	else if (m == 1)
 	{
 		// Linie : "X-X-X-X-X-X-X-X-X"
 		for (n = 0; n <= SCALE_H; n += 2)
-		{
 			UB_Graphic2D_DrawPixelNormal(n + SCALE_START_X, yp, c);
-		}
 	}
 	else if (m == 2)
 	{
@@ -699,7 +601,7 @@ void p_oszi_sort_adc(void)
 {
 	uint32_t n = 0;
 	uint32_t start = 0, anz1 = 0, anz2 = 0;
-	uint16_t wert;
+	uint16_t data;
 
 	if (ADC_UB.TriggerQuarter == 1)
 	{
@@ -714,10 +616,10 @@ void p_oszi_sort_adc(void)
 		//-------------------------------
 		for (n = 0; n < anz1; n++)
 		{
-			wert = ADC_DMA_Buffer_B[(start + n) * 2];
-			ADC_DMA_Buffer_C[n * 2] = wert;
-			wert = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[(n * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_B[(start + n) * 2];
+			ADC_DMA_Buffer_C[n * 2] = data;
+			data = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[(n * 2) + 1] = data;
 		}
 		//-------------------------------
 		// rechter Teil kopieren
@@ -726,10 +628,10 @@ void p_oszi_sort_adc(void)
 		start = 0;
 		for (n = 0; n < anz2; n++)
 		{
-			wert = ADC_DMA_Buffer_A[(start + n) * 2];
-			ADC_DMA_Buffer_C[(n + anz1) * 2] = wert;
-			wert = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_A[(start + n) * 2];
+			ADC_DMA_Buffer_C[(n + anz1) * 2] = data;
+			data = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = data;
 		}
 	}
 	else if (ADC_UB.TriggerQuarter == 2)
@@ -745,10 +647,10 @@ void p_oszi_sort_adc(void)
 		//-------------------------------
 		for (n = 0; n < anz1; n++)
 		{
-			wert = ADC_DMA_Buffer_A[(start + n) * 2];
-			ADC_DMA_Buffer_C[n * 2] = wert;
-			wert = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[(n * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_A[(start + n) * 2];
+			ADC_DMA_Buffer_C[n * 2] = data;
+			data = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[(n * 2) + 1] = data;
 		}
 		//-------------------------------
 		// rechter Teil kopieren
@@ -757,10 +659,10 @@ void p_oszi_sort_adc(void)
 		start = 0;
 		for (n = 0; n < anz2; n++)
 		{
-			wert = ADC_DMA_Buffer_B[(start + n) * 2];
-			ADC_DMA_Buffer_C[(n + anz1) * 2] = wert;
-			wert = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_B[(start + n) * 2];
+			ADC_DMA_Buffer_C[(n + anz1) * 2] = data;
+			data = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = data;
 		}
 	}
 	else if (ADC_UB.TriggerQuarter == 3)
@@ -776,10 +678,10 @@ void p_oszi_sort_adc(void)
 		//-------------------------------
 		for (n = 0; n < anz1; n++)
 		{
-			wert = ADC_DMA_Buffer_A[(start + n) * 2];
-			ADC_DMA_Buffer_C[n * 2] = wert;
-			wert = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[(n * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_A[(start + n) * 2];
+			ADC_DMA_Buffer_C[n * 2] = data;
+			data = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[(n * 2) + 1] = data;
 		}
 		//-------------------------------
 		// rechter Teil kopieren
@@ -788,10 +690,10 @@ void p_oszi_sort_adc(void)
 		start = 0;
 		for (n = 0; n < anz2; n++)
 		{
-			wert = ADC_DMA_Buffer_B[(start + n) * 2];
-			ADC_DMA_Buffer_C[(n + anz1) * 2] = wert;
-			wert = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_B[(start + n) * 2];
+			ADC_DMA_Buffer_C[(n + anz1) * 2] = data;
+			data = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = data;
 		}
 	}
 	else if (ADC_UB.TriggerQuarter == 4)
@@ -807,10 +709,10 @@ void p_oszi_sort_adc(void)
 		//-------------------------------
 		for (n = 0; n < anz1; n++)
 		{
-			wert = ADC_DMA_Buffer_B[(start + n) * 2];
-			ADC_DMA_Buffer_C[n * 2] = wert;
-			wert = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[(n * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_B[(start + n) * 2];
+			ADC_DMA_Buffer_C[n * 2] = data;
+			data = ADC_DMA_Buffer_B[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[(n * 2) + 1] = data;
 		}
 		//-------------------------------
 		// rechter Teil kopieren
@@ -819,10 +721,10 @@ void p_oszi_sort_adc(void)
 		start = 0;
 		for (n = 0; n < anz2; n++)
 		{
-			wert = ADC_DMA_Buffer_A[(start + n) * 2];
-			ADC_DMA_Buffer_C[(n + anz1) * 2] = wert;
-			wert = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
-			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = wert;
+			data = ADC_DMA_Buffer_A[(start + n) * 2];
+			ADC_DMA_Buffer_C[(n + anz1) * 2] = data;
+			data = ADC_DMA_Buffer_A[((start + n) * 2) + 1];
+			ADC_DMA_Buffer_C[((n + anz1) * 2) + 1] = data;
 		}
 	}
 }
@@ -834,39 +736,27 @@ void p_oszi_sort_adc(void)
 //--------------------------------------------------------------
 void p_oszi_fill_fft(void)
 {
-	register Menu_t *menu = &Menu;
+	Menu_t *menu = &Menu;
 	uint32_t n, m = 0;
 
-	if (menu->FFT.Mode == 1)
-	{
+	if (menu->FFT == MENU_FFT_MODE_CH1)
 		for (n = 0; n < FFT_LENGTH; n++)
 		{
 			if (m < SCALE_W)
-			{
 				FFT_DATA_IN[n] = (float32_t)(((float)(ADC_DMA_Buffer_C[(m * 2)]) - 2048.0f) / 1000.0f);
-			}
 			else
-			{
 				FFT_DATA_IN[n] = 0.0;
-			}
 			m++;
 		}
-	}
-	else if (menu->FFT.Mode == 2)
-	{
+	else if (menu->FFT == MENU_FFT_MODE_CH2)
 		for (n = 0; n < FFT_LENGTH; n++)
 		{
 			if (m < SCALE_W)
-			{
 				FFT_DATA_IN[n] = (float32_t)((((float)ADC_DMA_Buffer_C[(m * 2) + 1]) - 2048.0f) / 1000.0f);
-			}
 			else
-			{
 				FFT_DATA_IN[n] = 0.0;
-			}
 			m++;
 		}
-	}
 }
 
 //--------------------------------------------------------------
@@ -874,82 +764,82 @@ void p_oszi_fill_fft(void)
 //--------------------------------------------------------------
 void p_oszi_draw_adc(void)
 {
-	register Menu_t *menu = &Menu;
+	Menu_t *menu = &Menu;
 	uint32_t n = 0;
-	int16_t ch1_wert1, ch1_wert2;
-	int16_t ch2_wert1, ch2_wert2;
-	int16_t fft_wert1, fft_wert2;
+	int16_t ch1_data1, ch1_data2;
+	int16_t ch2_data1, ch2_data2;
+	int16_t fft_data1, fft_data2;
 
 	p_oszi_draw_background();
 	UB_LCD_SetLayer_Menu();
 
 	// Start values
-	ch1_wert1 = oszi_adc2pixel(ADC_DMA_Buffer_C[0], menu->Ch1.Factor);
-	ch1_wert1 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
-	if (ch1_wert1 < SCALE_START_X)
-		ch1_wert1 = SCALE_START_X;
-	if (ch1_wert1 > SCALE_MX_PIXEL)
-		ch1_wert1 = SCALE_MX_PIXEL;
+	ch1_data1 = oszi_adc2pixel(ADC_DMA_Buffer_C[0], menu->Ch1.Factor);
+	ch1_data1 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
+	if (ch1_data1 < SCALE_START_X)
+		ch1_data1 = SCALE_START_X;
+	if (ch1_data1 > SCALE_MX_PIXEL)
+		ch1_data1 = SCALE_MX_PIXEL;
 
-	ch2_wert1 = oszi_adc2pixel(ADC_DMA_Buffer_C[1], menu->Ch2.Factor);
-	ch2_wert1 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
-	if (ch2_wert1 < SCALE_START_X)
-		ch2_wert1 = SCALE_START_X;
-	if (ch2_wert1 > SCALE_MX_PIXEL)
-		ch2_wert1 = SCALE_MX_PIXEL;
+	ch2_data1 = oszi_adc2pixel(ADC_DMA_Buffer_C[1], menu->Ch2.Factor);
+	ch2_data1 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
+	if (ch2_data1 < SCALE_START_X)
+		ch2_data1 = SCALE_START_X;
+	if (ch2_data1 > SCALE_MX_PIXEL)
+		ch2_data1 = SCALE_MX_PIXEL;
 
-	fft_wert1 = FFT_UINT_DATA[0];
-	fft_wert1 += FFT_START_X;
-	if (fft_wert1 < SCALE_START_X)
-		fft_wert1 = SCALE_START_X;
-	if (fft_wert1 > SCALE_MX_PIXEL)
-		fft_wert1 = SCALE_MX_PIXEL;
+	fft_data1 = FFT_UINT_DATA[0];
+	fft_data1 += FFT_START_X;
+	if (fft_data1 < SCALE_START_X)
+		fft_data1 = SCALE_START_X;
+	if (fft_data1 > SCALE_MX_PIXEL)
+		fft_data1 = SCALE_MX_PIXEL;
 
 	// Complete curve
 	for (n = 1; n < SCALE_W; n++)
 	{
 		if (menu->Ch1.Visible == MENU_CH_VISIBLE_ON)
 		{
-			ch1_wert2 = oszi_adc2pixel(ADC_DMA_Buffer_C[n * 2], menu->Ch1.Factor);
-			ch1_wert2 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
-			if (ch1_wert2 < SCALE_START_X)
-				ch1_wert2 = SCALE_START_X;
-			if (ch1_wert2 > SCALE_MX_PIXEL)
-				ch1_wert2 = SCALE_MX_PIXEL;
-			UB_Graphic2D_DrawLineNormal(ch1_wert1, SCALE_START_Y + n, ch1_wert2,
+			ch1_data2 = oszi_adc2pixel(ADC_DMA_Buffer_C[n * 2], menu->Ch1.Factor);
+			ch1_data2 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch1.Position;
+			if (ch1_data2 < SCALE_START_X)
+				ch1_data2 = SCALE_START_X;
+			if (ch1_data2 > SCALE_MX_PIXEL)
+				ch1_data2 = SCALE_MX_PIXEL;
+			UB_Graphic2D_DrawLineNormal(ch1_data1, SCALE_START_Y + n, ch1_data2,
 					SCALE_START_Y + n + 1, ADC_CH1_COL);
-			ch1_wert1 = ch1_wert2;
+			ch1_data1 = ch1_data2;
 		}
 
 		if (menu->Ch2.Visible == MENU_CH_VISIBLE_ON)
 		{
-			ch2_wert2 = oszi_adc2pixel(ADC_DMA_Buffer_C[(n * 2) + 1], menu->Ch2.Factor);
-			ch2_wert2 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
-			if (ch2_wert2 < SCALE_START_X)
-				ch2_wert2 = SCALE_START_X;
-			if (ch2_wert2 > SCALE_MX_PIXEL)
-				ch2_wert2 = SCALE_MX_PIXEL;
-			UB_Graphic2D_DrawLineNormal(ch2_wert1, SCALE_START_Y + n, ch2_wert2,
+			ch2_data2 = oszi_adc2pixel(ADC_DMA_Buffer_C[(n * 2) + 1], menu->Ch2.Factor);
+			ch2_data2 += SCALE_Y_MITTE + SCALE_START_X + menu->Ch2.Position;
+			if (ch2_data2 < SCALE_START_X)
+				ch2_data2 = SCALE_START_X;
+			if (ch2_data2 > SCALE_MX_PIXEL)
+				ch2_data2 = SCALE_MX_PIXEL;
+			UB_Graphic2D_DrawLineNormal(ch2_data1, SCALE_START_Y + n, ch2_data2,
 					SCALE_START_Y + n + 1, ADC_CH2_COL);
-			ch2_wert1 = ch2_wert2;
+			ch2_data1 = ch2_data2;
 		}
 	}
 
 	// nur die linke hälfte der FFT zeichnen
 	// (die rechte ist das Spiegelbild)
-	if (menu->FFT.Mode != 0)
+	if (menu->FFT != MENU_FFT_MODE_OFF)
 	{
 		for (n = 1; n < FFT_VISIBLE_LENGTH; n++)
 		{
-			fft_wert2 = FFT_UINT_DATA[n];
-			fft_wert2 += FFT_START_X;
-			if (fft_wert2 < SCALE_START_X)
-				fft_wert2 = SCALE_START_X;
-			if (fft_wert2 > SCALE_MX_PIXEL)
-				fft_wert2 = SCALE_MX_PIXEL;
-			UB_Graphic2D_DrawLineNormal(fft_wert1, FFT_START_Y + n, fft_wert2,
+			fft_data2 = FFT_UINT_DATA[n];
+			fft_data2 += FFT_START_X;
+			if (fft_data2 < SCALE_START_X)
+				fft_data2 = SCALE_START_X;
+			if (fft_data2 > SCALE_MX_PIXEL)
+				fft_data2 = SCALE_MX_PIXEL;
+			UB_Graphic2D_DrawLineNormal(fft_data1, FFT_START_Y + n, fft_data2,
 					FFT_START_Y + n + 1, FFT_COL);
-			fft_wert1 = fft_wert2;
+			fft_data1 = fft_data2;
 		}
 	}
 
@@ -959,23 +849,15 @@ void p_oszi_draw_adc(void)
 //--------------------------------------------------------------
 // To convert from adc value in pixel position
 //--------------------------------------------------------------
+const uint32_t adc2pixel_factors[] = {
+//	FAKTOR_5V	FAKTOR_2V	FAKTOR_1V	FAKTOR_0V5	FAKTOR_0V2	FAKTOR_0V1
+	68250ul,	27300ul,	13650ul,	6825ul,		2730ul,		1365ul
+};
 int16_t oszi_adc2pixel(uint16_t adc, uint16_t factor)
 {
-	switch (factor)
-	{
-		case 0:
-			return adc * FAKTOR_5V;
-		case 1:
-			return adc * FAKTOR_2V;
-		case 2:
-			return adc * FAKTOR_1V;
-		case 3:
-			return adc * FAKTOR_0V5;
-		case 4:
-			return adc * FAKTOR_0V2;
-		case 5:
-			return adc * FAKTOR_0V1;
-	}
+	uint32_t value = (uint32_t)adc;
+	if (factor <= 5)
+		return (value * SCALE_SPACE * 10) / adc2pixel_factors[factor];
 	return 0;
 }
 
@@ -984,9 +866,9 @@ int16_t oszi_adc2pixel(uint16_t adc, uint16_t factor)
 //--------------------------------------------------------------
 void p_oszi_send_data(void)
 {
-	register Menu_t *menu = &Menu;
+	Menu_t *menu = &Menu;
 	uint32_t n;
-	uint16_t wert1, wert2;
+	uint16_t data1, data2;
 	char buf[10];
 	extern const SM_Item_t UM_01[];
 	extern const SM_Item_t UM_02[];
@@ -1023,7 +905,7 @@ void p_oszi_send_data(void)
 		p_oszi_send_uart(buf);
 	}
 
-	sprintf(buf, "Time=%s/div", UM_02[menu->Timebase.Value].Text);
+	sprintf(buf, "Time=%s/div", UM_02[menu->Timebase].Text);
 	p_oszi_send_uart(buf);
 	p_oszi_send_uart("1div=25");
 
@@ -1039,8 +921,8 @@ void p_oszi_send_data(void)
 		p_oszi_send_uart("CH1");
 		for (n = 0; n < SCALE_W; n++)
 		{
-			wert1 = ADC_DMA_Buffer_C[n * 2];
-			sprintf(buf, "%d", wert1);
+			data1 = ADC_DMA_Buffer_C[n * 2];
+			sprintf(buf, "%d", data1);
 			p_oszi_send_uart(buf);
 		}
 	}
@@ -1049,8 +931,8 @@ void p_oszi_send_data(void)
 		p_oszi_send_uart("CH2");
 		for (n = 0; n < SCALE_W; n++)
 		{
-			wert2 = ADC_DMA_Buffer_C[(n * 2) + 1];
-			sprintf(buf, "%d", wert2);
+			data2 = ADC_DMA_Buffer_C[(n * 2) + 1];
+			sprintf(buf, "%d", data2);
 			p_oszi_send_uart(buf);
 		}
 	}
@@ -1059,9 +941,9 @@ void p_oszi_send_data(void)
 		p_oszi_send_uart("CH1,CH2");
 		for (n = 0; n < SCALE_W; n++)
 		{
-			wert1 = ADC_DMA_Buffer_C[n * 2];
-			wert2 = ADC_DMA_Buffer_C[(n * 2) + 1];
-			sprintf(buf, "%d,%d", wert1, wert2);
+			data1 = ADC_DMA_Buffer_C[n * 2];
+			data2 = ADC_DMA_Buffer_C[(n * 2) + 1];
+			sprintf(buf, "%d,%d", data1, data2);
 			p_oszi_send_uart(buf);
 		}
 	}
@@ -1074,7 +956,7 @@ void p_oszi_send_data(void)
 	||	menu->Send.Mode == MENU_SEND_MODE_CH1_CH2_FFT
 		)
 	{
-		if (menu->FFT.Mode == 1)
+		if (menu->FFT == MENU_FFT_MODE_CH1)
 		{
 			p_oszi_send_uart("FFT:");
 			p_oszi_send_uart("CH1");
@@ -1082,12 +964,12 @@ void p_oszi_send_data(void)
 			p_oszi_send_uart(buf);
 			for (n = 0; n < FFT_VISIBLE_LENGTH; n++)
 			{
-				wert2 = FFT_UINT_DATA[n];
-				sprintf(buf, "%d", wert2);
+				data2 = FFT_UINT_DATA[n];
+				sprintf(buf, "%d", data2);
 				p_oszi_send_uart(buf);
 			}
 		}
-		else if (menu->FFT.Mode == 2)
+		else if (menu->FFT == MENU_FFT_MODE_CH2)
 		{
 			p_oszi_send_uart("FFT:");
 			p_oszi_send_uart("CH2");
@@ -1095,8 +977,8 @@ void p_oszi_send_data(void)
 			p_oszi_send_uart(buf);
 			for (n = 0; n < FFT_VISIBLE_LENGTH; n++)
 			{
-				wert2 = FFT_UINT_DATA[n];
-				sprintf(buf, "%d", wert2);
+				data2 = FFT_UINT_DATA[n];
+				sprintf(buf, "%d", data2);
 				p_oszi_send_uart(buf);
 			}
 		}
@@ -1120,13 +1002,10 @@ void p_oszi_send_screen(void)
 {
 	uint32_t n, addr;
 	uint16_t x, y, color;
-	uint8_t r, g, b;
 
 	// Send BMP-Header
 	for (n = 0; n < sizeof(BMP_HEADER); n++)
-	{
 		UB_Uart_SendByte(COM1, BMP_HEADER[n]);
-	}
 
 	// The buffer Richigen raussuchen to send
 	addr = LCD_FRAME_BUFFER;
@@ -1135,17 +1014,12 @@ void p_oszi_send_screen(void)
 
 	// Send all color data
 	for (x = 0; x < LCD_MAXX; x++)
-	{
 		for (y = 0; y < LCD_MAXY; y++)
 		{
-			n = y * (LCD_MAXX * 2) + (x * 2);
-			color = *(volatile uint16_t*) (addr + n);
-			r = ((color & 0xF800) >> 8); // 5bit rot
-			g = ((color & 0x07E0) >> 3); // 6bit gruen
-			b = ((color & 0x001F) << 3); // 5bit blau
-			UB_Uart_SendByte(COM1, b);
-			UB_Uart_SendByte(COM1, g);
-			UB_Uart_SendByte(COM1, r);
+			n = y * LCD_MAXX * 2 + x * 2;
+			color = *(uint16_t*)(addr + n);
+			UB_Uart_SendByte(COM1, (color & 0x001F) << 3);	// 5bit blue
+			UB_Uart_SendByte(COM1, (color & 0x07E0) >> 3);	// 6bit green;
+			UB_Uart_SendByte(COM1, (color & 0xF800) >> 8);	// 5bit red;
 		}
-	}
 }

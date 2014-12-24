@@ -28,8 +28,8 @@
 //--------------------------------------------------------------
 void UB_Font_DrawChar(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font *font, uint16_t fg, uint16_t bg)
 {
-	register uint16_t xn, yn, start_mask, mask;
-	register const uint16_t *bitmap;
+	uint16_t xn, yn, start_mask, mask;
+	const uint16_t *bitmap;
 
 	ascii -= ' ';
 	bitmap = &font->table[ascii * font->height];
@@ -71,8 +71,8 @@ void UB_Font_DrawChar(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font *font
 //--------------------------------------------------------------
 void UB_Font_DrawString(uint16_t x, uint16_t y, const char *ptr, const UB_Font *font, uint16_t fg, uint16_t bg)
 {
-	register uint16_t pos;
-	register char ch;
+	uint16_t pos;
+	char ch;
 
 	if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
 	{
@@ -102,9 +102,9 @@ void UB_Font_DrawString(uint16_t x, uint16_t y, const char *ptr, const UB_Font *
 //--------------------------------------------------------------
 void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font32 *font, uint16_t fg, uint16_t bg)
 {
-	register uint16_t xn, yn;
-	register uint32_t start_mask, mask;
-	register const uint32_t *bitmap;
+	uint16_t xn, yn;
+	uint32_t start_mask, mask;
+	const uint32_t *bitmap;
 
 	ascii -= ' ';
 	bitmap = &font->table[ascii * font->height];
@@ -153,8 +153,8 @@ void UB_Font_DrawChar32(uint16_t x, uint16_t y, uint8_t ascii, const UB_Font32 *
 //--------------------------------------------------------------
 void UB_Font_DrawString32(uint16_t x, uint16_t y, const char *ptr, const UB_Font32 *font, uint16_t fg, uint16_t bg)
 {
-	register uint16_t pos;
-	register char ch;
+	uint16_t pos;
+	char ch;
 
 	if (LCD_Context.LCD_DISPLAY_MODE == PORTRAIT)
 	{

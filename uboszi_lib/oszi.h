@@ -77,7 +77,4 @@
 #define  CURSOR_COL         RGB_COL_GREEN	// Farbe vom Cursor
 #define  FFT_COL            RGB_COL_RED		// Farbe der FFT
 
-void oszi_init(void);
-void oszi_start(void) __attribute__((noreturn));
-
 #endif // __STM32F4_UB_OSZI_H

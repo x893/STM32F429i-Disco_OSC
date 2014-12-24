@@ -9,18 +9,18 @@
 // IDE      : CooCox CoIDE 1.7.4
 // GCC      : 4.7 2012q4
 // Module   : ARM_DSP-Module
-// Funktion : FFT
+// Function : FFT
 //
-// Hineise :
-// "Config/Compile/Options"  : "FPU soft" oder "FPU hard"
-// "Config/Compile/Defines"  : "ARM_MATH_CM4" , "__FPU_PRESENT=1"
-// "Config/Link/MiscControl" : "-lm; -lgcc; -lc; " hinzufьgen
+// Notes:
+// "Config / Compile / Options": "FPU soft" or "hard FPU"
+// "Config / compile / defines": "ARM_MATH_CM4", "__FPU_PRESENT = 1"
+// "Config / Link / MiscControl": "-lm; -lgcc; -lc;" Add
 //--------------------------------------------------------------
 
 #include "fft.h"
 
-static float32_t FFT_CMPLX_DATA[FFT_CMPLX_LENGTH];
-static float32_t FFT_MAG_DATA[FFT_LENGTH];
+float32_t FFT_CMPLX_DATA[FFT_CMPLX_LENGTH];
+float32_t FFT_MAG_DATA[FFT_LENGTH];
 
 arm_cfft_radix4_instance_f32 S_CFFT;
 arm_rfft_instance_f32 S;

@@ -2,21 +2,10 @@
 // File     : stm32_ub_uart.h
 //--------------------------------------------------------------
 
-//--------------------------------------------------------------
 #ifndef __STM32F4_UB_UART_H
 #define __STM32F4_UB_UART_H
 
-
-//--------------------------------------------------------------
-// Includes
-//--------------------------------------------------------------
 #include "stm32f4xx.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_usart.h"
-#include "misc.h"
-
-
 
 //--------------------------------------------------------------
 // Liste aller UARTs
@@ -30,81 +19,74 @@ typedef enum
 } UART_NAME_t;
 
 //--------------------------------------------------------------
-// Endekennung beim Senden
+// End ID when sending
 //--------------------------------------------------------------
 typedef enum {
-	NONE = 0,  // keine Endekennung
-	LFCR,      // LineFeed + CarriageReturn (0x0A,0x0D)
-	CRLF,      // CarriageReturn + LineFeed (0x0D,0x0A)
-	LF,        // nur LineFeed (0x0A)
-	CR         // nur CarriageReturn (0x0D)
+	NONE = 0,  // no end identifier
+	LFCR,      // Line feed + Carriage return (0x0A, 0x0D)
+	CRLF,      // Carriage return + Line feed (0x0D, 0x0A)
+	LF,        // only Line feed (0x0A)
+	CR         // only Carriage return (0x0D)
 } UART_LASTBYTE_t;
 
-
 //--------------------------------------------------------------
-// Status beim Empfangen
+// Status when receiving
 //--------------------------------------------------------------
 typedef enum {
-	RX_EMPTY = 0,  // nichts empfangen
-	RX_READY,      // es steht was im Empfangspuffer
-	RX_FULL        // RX-Puffer ist voll
+	RX_EMPTY = 0,  // Received anything
+	RX_READY,      // It is what in the receive buffer
+	RX_FULL        // RX buffer is full
 } UART_RXSTATUS_t;
 
-
 //--------------------------------------------------------------
-// Struktur eines UART-Pins
+// Structure of a UART pins
 //--------------------------------------------------------------
 typedef struct {
-	GPIO_TypeDef* PORT;     // Port
-	const uint16_t PIN;     // Pin
-	const uint32_t CLK;     // Clock
-	const uint8_t SOURCE;   // Source
+	GPIO_TypeDef* PORT;		// Port
+	const uint16_t PIN;		// Pin
+	const uint32_t CLK;		// Clock
+	const uint8_t SOURCE;	// Source
 } UART_PIN_t;
 
 //--------------------------------------------------------------
-// Struktur eines UARTs
+// Structure of a UART
 //--------------------------------------------------------------
 typedef struct {
-	UART_NAME_t UART_NAME;    // Name
-	const uint32_t CLK;       // Clock
-	const uint8_t AF;         // AF
-	USART_TypeDef* UART;      // UART
-	const uint32_t BAUD;      // Baudrate
-	const uint8_t INT;        // Interrupt
-	UART_PIN_t TX;            // TX-Pin
-	UART_PIN_t RX;            // RX-Pin
+	UART_NAME_t UART_NAME;	// Name
+	const uint32_t CLK;		// Clock
+	const uint8_t AF;		// AF
+	USART_TypeDef* UART;	// UART
+	const uint32_t BAUD;	// Baudrate
+	const uint8_t INT;		// Interrupt
+	UART_PIN_t TX;			// TX-Pin
+	UART_PIN_t RX;			// RX-Pin
 } UART_t;
 
+//--------------------------------------------------------------
+// Defines for receiving
+//--------------------------------------------------------------
+#define  RX_BUF_SIZE   50	// Size of the RX buffer in bytes
+#define  RX_FIRST_CHR  ' '	// First allowed characters (ASCII value)
+#define  RX_LAST_CHR   0x7E	// Last allowed characters (ASCII value)
+#define  RX_END_CHR    '\r'	// End code (ASCII value)
 
 //--------------------------------------------------------------
-// Defines fuer das Empfangen
-//--------------------------------------------------------------
-#define  RX_BUF_SIZE   50    // Grösse vom RX-Puffer in Bytes
-#define  RX_FIRST_CHR  0x20  // erstes erlaubte Zeichen (Ascii-Wert)
-#define  RX_LAST_CHR   0x7E  // letztes erlaubt Zeichen (Ascii-Wert)
-#define  RX_END_CHR    0x0D  // Endekennung (Ascii-Wert)
-
-
-//--------------------------------------------------------------
-// Struktur für UART_RX
+// Structure for UART_RX
 //--------------------------------------------------------------
 typedef struct {
-	uint8_t wr_ptr;					// Write pointer
-	UART_RXSTATUS_t status;			// RX status
-	char rx_buffer[RX_BUF_SIZE];	// RX buffer
+	uint8_t Index;				// Write pointer
+	UART_RXSTATUS_t Status;		// RX status
+	char RxBuffer[RX_BUF_SIZE];	// RX buffer
 } UART_RX_t;
 extern UART_RX_t UART_RX[UART_LAST];
 
-
 //--------------------------------------------------------------
-// Globale Funktionen
+// Global Functions
 //--------------------------------------------------------------
 void UB_Uart_Init(void);
-void UB_Uart_SendByte(UART_NAME_t uart, uint16_t wert);
-void UB_Uart_SendString(UART_NAME_t uart, const char *ptr, UART_LASTBYTE_t end_cmd);
+void UB_Uart_SendByte(UART_NAME_t uart, uint16_t data);
+void UB_Uart_SendString(UART_NAME_t uart, const char *src, UART_LASTBYTE_t end_cmd);
 UART_RXSTATUS_t UB_Uart_ReceiveString(UART_NAME_t uart, char *ptr);
-
-
 
 //--------------------------------------------------------------
 #endif // __STM32F4_UB_UART_H

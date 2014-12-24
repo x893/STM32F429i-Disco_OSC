@@ -11,10 +11,6 @@
 // Includes
 //--------------------------------------------------------------
 #include "stm32f4xx.h"
-#include "stm32f4xx_gpio.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_spi.h"
-#include "stm32f4xx_ltdc.h"
 #include "stm32_ub_spi5.h"
 #include "stm32_ub_sdram.h"
 
@@ -99,7 +95,7 @@ extern LCD_Context_t LCD_Context;
 
 
 //--------------------------------------------------------------
-// Register vom ILI9341
+// ILI9341 Registers
 //--------------------------------------------------------------
 #define LCD_SLEEP_OUT            0x11   // Sleep out register
 #define LCD_GAMMA                0x26   // Gamma register

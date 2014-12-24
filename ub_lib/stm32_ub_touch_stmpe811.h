@@ -45,7 +45,7 @@ extern Touch_Data_t Touch_Data;
 #define STMPE811_DELAY             200000
 
 //--------------------------------------------------------------
-// Register vom STMPE811
+// STMPE811 Registers
 //--------------------------------------------------------------
 #define IOE_REG_SYS_CTRL1          0x03
 #define IOE_REG_SYS_CTRL2          0x04
