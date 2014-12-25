@@ -19,6 +19,7 @@
 
 float32_t FFT_DATA_IN[FFT_LENGTH];
 uint16_t FFT_UINT_DATA[FFT_VISIBLE_LENGTH];
+volatile uint32_t  GUI_Timer_ms;
 
 //--------------------------------------------------------------
 // Private functions
@@ -49,6 +50,21 @@ const uint8_t BMP_HEADER[] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00				// nc
 };
 
+//--------------------------------------------------------------
+// SysTick User Handler
+//--------------------------------------------------------------
+void SysTick_UserHandler(void)
+{
+	// Toggle TST_1_PIN
+	GPIO_TST_1_PORT->ODR ^= GPIO_TST_1_PIN;
+
+	if (GUI_Timer_ms != 0)
+		GUI_Timer_ms--;
+}
+
+//--------------------------------------------------------------
+// Display fatal error
+//--------------------------------------------------------------
 void oszi_error(const char *msg)
 {
 	UB_LCD_FillLayer(BACKGROUND_COL);
@@ -63,8 +79,23 @@ void oszi_error(const char *msg)
 //--------------------------------------------------------------
 void oszi_init(void)
 {
+	GPIO_InitTypeDef  GPIO_InitStructure;
+
 	SystemInit();
 	DBGMCU_Config(DBGMCU_SLEEP | DBGMCU_STOP | DBGMCU_STANDBY, ENABLE);
+
+	GUI_Timer_ms = 0;
+
+	// Clock Enable
+	RCC_AHB1PeriphClockCmd(GPIO_TST_1_CLOCK, ENABLE);
+
+	// Config TST_1_PIN as digital output
+	GPIO_InitStructure.GPIO_Pin = GPIO_TST_1_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIO_TST_1_PORT, &GPIO_InitStructure);
 
 	UB_Systick_Init();
 	UB_Led_Init();

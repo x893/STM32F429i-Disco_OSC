@@ -17,7 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "la.h"
-#include "stm32_ub_led.h" // nur zum test
 
 
 //--------------------------------------------------------------
@@ -30,34 +29,42 @@
 
 
 //--------------------------------------------------------------
-#define   SUMP_CMD_ID_RESET      0x00
-#define   SUMP_CMD_ID_ARM_TRG    0x01
-#define   SUMP_CMD_ID_GET_ID     0x02
-#define   SUMP_CMD_ID_GET_META   0x04
+// SUMP : Kommdando ID
+//--------------------------------------------------------------
+#define   SUMP_CMD_ID_RESET          0x00
+#define   SUMP_CMD_ID_ARM_TRG        0x01
+#define   SUMP_CMD_ID_GET_ID         0x02
+#define   SUMP_CMD_ID_GET_META       0x04
 
-#define   SUMP_CMD_ID_SET_FRQ    0x80
-#define   SUMP_CMD_ID_SET_LEN    0x81
-#define   SUMP_CMD_ID_SET_MASK0  0xC0
-#define   SUMP_CMD_ID_SET_VAL0   0xC1
+#define   SUMP_CMD_ID_SET_FRQ        0x80
+#define   SUMP_CMD_ID_SET_SIZE       0x81
+#define   SUMP_CMD_ID_SET_MASK0      0xC0
+#define   SUMP_CMD_ID_SET_VAL0       0xC1
 
 //--------------------------------------------------------------
-#define   SUMP_META_END	         0x00
+// SUMP : META-Angaben
+//--------------------------------------------------------------
+#define   SUMP_META_END	             0x00
 #define   SUMP_META_NAME	     0x01
-#define   SUMP_META_FPGA_VERSION 0x02
-#define   SUMP_META_CPU_VERSION	 0x03
-#define   SUMP_META_PROBES_DW	 0x20
-#define   SUMP_META_SAMPLE_RAM	 0x21
-#define   SUMP_META_DYNAMIC_RAM	 0x22
-#define   SUMP_META_SAMPLE_RATE	 0x23
-#define   SUMP_META_PROTOCOL	 0x24
-#define   SUMP_META_PROBES_B	 0x40
-#define   SUMP_META_PROTOCOL_B	 0x41
+#define   SUMP_META_FPGA_VERSION     0x02
+#define   SUMP_META_CPU_VERSION	     0x03
+#define   SUMP_META_SAMPLE_RAM	     0x21
+#define   SUMP_META_SAMPLE_RATE	     0x23
+#define   SUMP_META_PROBES	     0x40
+#define   SUMP_META_PROTOCOL	     0x41
 
+
+//--------------------------------------------------------------
+// SUMP : META-Settings
 //--------------------------------------------------------------
 #define maxSampleRate        24000000   // 24 MHz
 #define maxSampleMemory     (1000*1000) // 1M
 #define maxChannelAnz               8   // 8
 
+
+
+//--------------------------------------------------------------
+// Byteumwandlung
 //--------------------------------------------------------------
 #define BYTE1(v) ((uint8_t)v & 0xff)         //LSB
 #define BYTE2(v) ((uint8_t)(v >> 8) & 0xff)  //
@@ -70,8 +77,8 @@
 //--------------------------------------------------------------
 #define  COM_RX_BUF_LEN    100  // laenge in bytes
 #define  COM_TX_BUF_LEN    100  // laenge in bytes
-char com_rx_buf[COM_RX_BUF_LEN];
-char com_tx_buf[COM_TX_BUF_LEN];
+extern char com_rx_buf[COM_RX_BUF_LEN];
+extern char com_tx_buf[COM_TX_BUF_LEN];
 
 
 

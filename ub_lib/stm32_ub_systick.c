@@ -18,8 +18,6 @@
 //--------------------------------------------------------------
 #include "stm32_ub_systick.h"
 
-volatile uint32_t  GUI_Timer_ms;
-
 #if ((SYSTICK_RESOLUTION != 1) && (SYSTICK_RESOLUTION != 1000))
 	#error "WRONG SYSTICK RESOLUTION !"
 #endif
@@ -36,12 +34,9 @@ static volatile uint32_t Systick_Delay;
 void UB_Systick_Init(void)
 {
 	RCC_ClocksTypeDef RCC_Clocks;
-	GPIO_InitTypeDef  GPIO_InitStructure;
 
 	// Reset all variables
 	Systick_Delay = 0;
-	GUI_Timer_ms = 0;
-
 	RCC_GetClocksFreq(&RCC_Clocks);
 
 #if SYSTICK_RESOLUTION == 1
@@ -51,18 +46,6 @@ void UB_Systick_Init(void)
 	// Setting the timer to 1 ms
 	SysTick_Config(RCC_Clocks.HCLK_Frequency / 1000);
 #endif
-
-
-	// Clock Enable
-	RCC_AHB1PeriphClockCmd(GPIO_TST_1_CLOCK, ENABLE);
-
-	// Config TST_1_PIN as digital output
-	GPIO_InitStructure.GPIO_Pin = GPIO_TST_1_PIN;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIO_TST_1_PORT, &GPIO_InitStructure);
 }
 
 #if SYSTICK_RESOLUTION == 1
@@ -77,7 +60,6 @@ void UB_Systick_Pause_us(volatile uint32_t pause)
 		;
 }
 #endif
-
 
 //--------------------------------------------------------------
 // Pause function (in ms)
@@ -112,17 +94,20 @@ void UB_Systick_Pause_s(volatile uint32_t pause)
 }
 
 //--------------------------------------------------------------
+// SysTick User Handler
+//--------------------------------------------------------------
+void SysTick_UserHandler(void) __attribute__((weak));
+void SysTick_UserHandler(void)
+{
+}
+
+//--------------------------------------------------------------
 // SysTick IRQ Handler
 //--------------------------------------------------------------
 void SysTick_Handler(void)
 {
-	// Toggle TST_1_PIN
-	GPIO_TST_1_PORT->ODR ^= GPIO_TST_1_PIN;
-
 	// Tick for Pause
 	if (Systick_Delay != 0)
 		Systick_Delay--;
-
-	if (GUI_Timer_ms != 0)
-		GUI_Timer_ms--;
+	SysTick_UserHandler();
 }

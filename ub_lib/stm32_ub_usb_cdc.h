@@ -21,8 +21,8 @@ typedef enum {
   USB_CDC_NO_INIT =0, // USB-Schnittstelle noch nicht initialisiert
   USB_CDC_DETACHED,   // USB-Verbindung getrennt
   USB_CDC_CONNECTED   // USB-Verbindung hergestellt
-}USB_CDC_STATUS_t;
-USB_CDC_STATUS_t USB_CDC_STATUS;
+} USB_CDC_STATUS_t;
+extern USB_CDC_STATUS_t USB_CDC_STATUS;
 
 //--------------------------------------------------------------
 // Endekennung beim Senden

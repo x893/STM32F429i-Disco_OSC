@@ -11,156 +11,140 @@
 // Includes
 //--------------------------------------------------------------
 #include "stm32f4xx.h"
+#include "stm32_ub_systick.h"
 #include "stm32_ub_led.h"
-#include "stm32_ub_button.h"
 #include "stm32_ub_din_dma.h"
 
 
+
+
 //--------------------------------------------------------------
-// Versions-Nummer (als String)
+// enums der Kommunikation
 //--------------------------------------------------------------
-#define   LA_VERSION  "V:D.03"
-
-
-
 typedef enum {
-  LA_COM_NONE =0,
-  LA_COM_RESET,
-  LA_COM_GET_ID,
-  LA_COM_GET_META,
-  LA_COM_ARM_TRIGGER,
-  LA_COM_SET_FRQ,
-  LA_COM_SET_SAMPLE,
-  LA_COM_SET_MASK,
-  LA_COM_SET_VALUE,
-  LA_COM_SET_CH_EN,
-  LA_COM_SET_CH_VIS,
-  LA_COM_UNKNOWN
-}LA_COM_t;
+	LA_COM_NONE = 0,	// kein Kommando
+	LA_COM_RESET,		// Reset-Kommando
+	LA_COM_GET_ID,		// Abfrage der ID
+	LA_COM_GET_META,	// Abfrage der Meta-Daten
+	LA_COM_ARM_TRIGGER,	// Trigger scharfstellen
+	LA_COM_SET_FRQ,		// Samplerate Kommando
+	LA_COM_SET_SIZE,	// Capturesize Kommando
+	LA_COM_SET_MASK,	// Trigger-Maske
+	LA_COM_SET_VALUE,	// Trigger-Value
+	LA_COM_UNKNOWN		// Kommando unbekannt
+} LA_COM_t;
 
-
-//--------------------------------------------------------------
-// Benutzung vom LCD/Touch kann hier abgeschaltet werden
-// (ohne LCD -> Steuerung nur per Com-Schnittstelle)
-//--------------------------------------------------------------
-//#define   LA_USE_LCD   0  // ohne LCD+Touch
-#define   LA_USE_LCD   1  // mit LCD+Touch
-
-
-#if LA_USE_LCD==1
-  #include "gui.h"
-#endif
+#include "com.h" // include nach "LA_COM_t"
 
 
 
 
 //--------------------------------------------------------------
-// Benutzung der COM-Schnittstelle kann hier abgeschaltet werden
-// (ohne COM -> Steuerung nur per LCD/Touch)
-//--------------------------------------------------------------
-//#define   LA_USE_COM   0  // ohne COM
-#define   LA_USE_COM   1  // mit COM
-
-
-#if LA_USE_COM==1
-  #include "com.h"
-#endif
-
-
-//--------------------------------------------------------------
-#if LA_USE_LCD == 0 && LA_USE_COM==0
-#error aktivate LCD or COM.
-#endif
-
-
-
+// SUMP-Config : "device.channel.count" (dont change)
 //--------------------------------------------------------------
 #define  LA_CHANNEL_ANZ          8  // Anzahl der Kanäle (0...7)
 
 
-//--------------------------------------------------------------
-#define  LA_SETTING_CH_MAX       2047 // [0...2047]
-#define  LA_SETTING_TRG_MAX      2    // [0...2]
 
+
+
+//--------------------------------------------------------------
+// SUMP-Config "device.dividerClockspeed" (dont change)
+//--------------------------------------------------------------
 #define  LA_SUMP_CALC_FRQ        1000000000 // 1 GHz
 
 
+
+//--------------------------------------------------------------
+#define  BLINK_DELAY_MS   100
+
+//--------------------------------------------------------------
+// Trigger-Mode von einem Channel
 //--------------------------------------------------------------
 typedef enum {
-  Trigger_NONE =0,
-  Trigger_LO,
-  Trigger_HI
+	Trigger_NONE = 0,  // dont care
+	Trigger_LO,       // trigger bei Lo-Pegel
+	Trigger_HI        // trigger bei Hi-Pegel
 }Trigger_Mode_t;
 
 
-
+//--------------------------------------------------------------
+// Struktur von einem Channel
+//--------------------------------------------------------------
 typedef struct {
-  bool enable;
-  uint16_t bitmask;
-  bool visible;
-  Trigger_Mode_t trigger;
-  uint16_t ypos;
-  uint8_t old_pegel;
+	uint16_t bitmask;        // Port-Bitmaske            
+	Trigger_Mode_t trigger;  // Trigger-Mode    
 }Channel_t;
 
+
+//--------------------------------------------------------------
+// Struktur vom Trigger
+//--------------------------------------------------------------
 typedef struct {
-  uint16_t maske_c;
-  uint16_t value_c;
-  uint8_t hi_maske_c;
-  uint8_t lo_maske_c;
-  uint8_t hi_maske_e;
-  uint8_t lo_maske_e;
-  uint32_t pos;
+	uint16_t maske;  // Maske (0=dont care, 1=trigger)
+	uint16_t value;  // Value (0=Lo-Pegel, 1=Hi-Pegel)
 }Trigger_t;
 
 
 
-//--------------------------------------------------------------
-// Struktur von einem Untermenu
-//--------------------------------------------------------------
-typedef struct {
-  uint32_t frq;         // frq
-  uint16_t prescale;    // prescale
-  uint16_t periode;     // periode
-}LA_TIM_Item_t;
 
 //--------------------------------------------------------------
-// Struktur von einem Untermenu
+// Struktur fuer die "samplerate"
 //--------------------------------------------------------------
 typedef struct {
-  uint32_t sump_len;  // laenge von sump
-  uint32_t len;       // laenge in bytes
-  uint16_t size;      // buffer size
-  uint16_t anz;       // buffer anzahl
+	uint32_t frq;         // Sample-Frq in Hz
+	uint16_t prescale;    // prescale Einstellung vom Timer
+	uint16_t periode;     // periode Einstellung vom Timer
+}LA_TIM_Item_t;
+
+
+
+
+//--------------------------------------------------------------
+// Struktur fuer die "capturesize"
+//--------------------------------------------------------------
+typedef struct {
+	uint32_t sump_len;  // laenge (von sump uebermittelt)
+	uint32_t len;       // laenge in bytes
+	uint16_t size;      // buffer size (max 65535)
+	uint16_t anz;       // buffer anzahl
 }LA_SAMPLE_Item_t;
 
 
 
-
+//--------------------------------------------------------------
+// Struktur der Settings
+//--------------------------------------------------------------
 typedef struct {
-  uint8_t frq_anz;
-  uint8_t frq;
-  uint8_t sample_anz;
-  uint8_t sample;
-  uint16_t ch_en;
-  uint16_t ch_vis;
+	uint8_t frq_anz;       // Anzahl der Eintrage von "LA_TIM_Item_t"
+	uint8_t frq;           // gewaehlter Eintrag
+	uint8_t sample_anz;    // Anzahl der Eintrage von "LA_SAMPLE_Item_t"
+	uint8_t sample;        // gewaehlter Eintrag
 }Setting_t;
 
+
+//--------------------------------------------------------------
+// Struktur fuer Sump Protokoll
+//--------------------------------------------------------------
 typedef struct {
-  uint8_t id;
-  uint8_t b0;
-  uint8_t b1;
-  uint8_t b2;
-  uint8_t b3;
+	uint8_t id;   // ID
+	uint8_t b0;   // Byte-0
+	uint8_t b1;   // Byte-1
+	uint8_t b2;   // Byte-2
+	uint8_t b3;   // Byte-3
 }SUMP_t;
 
+
+//--------------------------------------------------------------
+// Struktur vom Logic-Analyzer
+//--------------------------------------------------------------
 typedef struct {
-  Channel_t ch[LA_CHANNEL_ANZ];
-  Trigger_t trigger;
-  Setting_t setting;
-  SUMP_t sump;
+	Channel_t ch[LA_CHANNEL_ANZ];
+	Trigger_t trigger;
+	Setting_t setting;
+	SUMP_t sump;
 }LA_t;
-LA_t LA;
+extern LA_t LA;
 
 
 
@@ -171,9 +155,8 @@ LA_t LA;
 //--------------------------------------------------------------
 void la_init(void);
 void la_check_trigger(void);
-uint8_t la_readPegel(uint16_t ch, uint32_t adr);
 void la_update_settings(LA_COM_t com_status);
-uint8_t la_readData(uint32_t adr);
+uint8_t la_readData_8b(uint32_t adr);
 
 
 //--------------------------------------------------------------

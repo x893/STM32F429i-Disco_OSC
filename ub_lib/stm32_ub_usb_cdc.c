@@ -38,10 +38,7 @@
 // Globale Variabeln
 //--------------------------------------------------------------
 USB_OTG_CORE_HANDLE  USB_OTG_dev;
-
-
-
-
+USB_CDC_STATUS_t USB_CDC_STATUS;
 
 //--------------------------------------------------------------
 // Init vom USB-OTG-Port als CDC-Device

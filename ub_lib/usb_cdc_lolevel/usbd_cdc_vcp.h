@@ -16,15 +16,15 @@
 #include "usbd_desc.h"
 
 /* Exported typef ------------------------------------------------------------*/
-/* The following structures groups all needed parameters to be configured for the 
+/* The following structures groups all needed parameters to be configured for the
    ComPort. These parameters can modified on the fly by the host through CDC class
    command class requests. */
 typedef struct
 {
-  uint32_t bitrate;
-  uint8_t  format;
-  uint8_t  paritytype;
-  uint8_t  datatype;
+	uint32_t bitrate;
+	uint8_t  format;
+	uint8_t  paritytype;
+	uint8_t  datatype;
 }LINE_CODING;
 
 
@@ -39,7 +39,7 @@ typedef struct
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
-void UB_VCP_DataTx (uint8_t wert);
+void UB_VCP_DataTx(uint8_t wert);
 uint16_t UB_VCP_StringRx(char *ptr);
 uint16_t UB_VCP_SumpRx(char *ptr);
 

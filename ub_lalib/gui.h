@@ -47,9 +47,9 @@
 // Struktur von einem Untermenu
 //--------------------------------------------------------------
 typedef struct {
-  char *txt;           // Text
-  float faktor;        // faktor
-  uint32_t step;       // step
+	char *txt;           // Text
+	float faktor;        // faktor
+	uint32_t step;       // step
 }XF_Item_t;
 
 
@@ -57,7 +57,7 @@ typedef struct {
 // Struktur von einem Untermenu
 //--------------------------------------------------------------
 typedef struct {
-  char *txt;           // Text
+	char *txt;           // Text
 }TXT_Item_t;
 
 
@@ -65,8 +65,8 @@ typedef struct {
 // Struktur von einem Untermenu
 //--------------------------------------------------------------
 typedef struct {
-  char *txt;           // Text
-  uint16_t color;      // farbe
+	char *txt;           // Text
+	uint16_t color;      // farbe
 }CH_Item_t;
 
 
@@ -75,8 +75,8 @@ typedef struct {
 // returnwerte der GUI
 //--------------------------------------------------------------
 typedef enum {
-  MENU_NO_CHANGE =0,
-  MENU_CHANGE_GUI
+	MENU_NO_CHANGE = 0,
+	MENU_CHANGE_GUI
 }MENU_Status_t;
 
 
@@ -84,11 +84,11 @@ typedef enum {
 // Struktur von "Menu"
 //--------------------------------------------------------------
 typedef struct {
-  uint32_t akt_transparenz;  // aktuelle Transparenz
-  uint32_t xpos_start;
-  uint32_t xadr;
-  uint32_t xfaktor;
-  float xdelta;
+	uint32_t akt_transparenz;  // aktuelle Transparenz
+	uint32_t xpos_start;
+	uint32_t xadr;
+	uint32_t xfaktor;
+	float xdelta;
 }Menu_t;
 Menu_t Menu;
 
@@ -110,21 +110,21 @@ Menu_t Menu;
 // Button der GUI
 //--------------------------------------------------------------
 typedef enum {
-  GUI_BTN_NONE =0,
-  GUI_BTN_UP,
-  GUI_BTN_DOWN,
-  GUI_BTN_LEFT,
-  GUI_BTN_RIGHT,
-  GUI_BTN_SETUP
+	GUI_BTN_NONE = 0,
+	GUI_BTN_UP,
+	GUI_BTN_DOWN,
+	GUI_BTN_LEFT,
+	GUI_BTN_RIGHT,
+	GUI_BTN_SETUP
 }GUI_Button_t;
 
 
 typedef struct {
-  GUI_Button_t name;
-  uint16_t x1;
-  uint16_t y1;
-  uint16_t x2;
-  uint16_t y2;
+	GUI_Button_t name;
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t x2;
+	uint16_t y2;
 }GUI_BTN_POS_t;
 
 
@@ -132,9 +132,9 @@ typedef struct {
 // Struktur der "GUI"
 //--------------------------------------------------------------
 typedef struct {
-  uint32_t gui_xpos;
-  GUI_Button_t akt_button;
-  GUI_Button_t old_button;
+	uint32_t gui_xpos;
+	GUI_Button_t akt_button;
+	GUI_Button_t old_button;
 }GUI_t;
 GUI_t GUI;
 
@@ -142,16 +142,16 @@ GUI_t GUI;
 
 //--------------------------------------------------------------
 typedef enum {
-  GUI_CHANGE_NONE =0,     // keine Aenderung
-  GUI_CHANGE_FRQ          // FRQ-Wert aendern
+	GUI_CHANGE_NONE = 0,     // keine Aenderung
+	GUI_CHANGE_FRQ          // FRQ-Wert aendern
 }GUI_CHANGE_t;
 
 
 
 typedef enum {
-  GUI_DRAW_NONE =0,  // nichts zeichnen
-  GUI_DRAW_NORMAL,
-  GUI_DRAW_AT_TRIGGER_POS
+	GUI_DRAW_NONE = 0,  // nichts zeichnen
+	GUI_DRAW_NORMAL,
+	GUI_DRAW_AT_TRIGGER_POS
 }GUI_DRAW_t;
 
 //--------------------------------------------------------------
